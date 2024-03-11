@@ -1,0 +1,13 @@
+# Ignore compiled files
+*.exe
+*.o
+
+# Ignore settings and cache files
+*.pyc
+*.json
+
+# Ignore build directories
+build/
+
+# Ignore IDE-specific folders
+.vscode/
