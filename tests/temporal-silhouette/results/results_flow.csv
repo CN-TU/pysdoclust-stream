@@ -1,0 +1,16 @@
+0,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,SDOstreamc,0.5700850338131294,,3.259045362472534
+1,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,GT,1.0,,0.00015592575073242188
+0,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,SDOstreamc,0.5814892105332767,,21.81273126602173
+1,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,GT,1.0,,0.0007696151733398438
+0,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,SDOstreamc,0.5814892105332767,,21.21704864501953
+1,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,DenStream,0.558915232685673,,38.679616928100586
+2,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,GT,1.0,,0.0005517005920410156
+0,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,SDOstreamc,0.5700850338131294,,3.3673717975616455
+1,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,DenStream,0.5605686265650124,,37.970491886138916
+2,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,GT,1.0,,0.00013899803161621094
+0,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,SDOstreamc,0.5749857269053017,,42.539880990982056
+1,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,DenStream,0.5605686265650124,,38.10688591003418
+2,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,GT,1.0,,0.00014925003051757812
+0,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,SDOstreamc,0.5972824933417815,,16.274048328399658
+1,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,DenStream,0.5605686265650124,,38.875035524368286
+2,dataF/subtype/flow_traffic_subtype.arff,thirdp,normal,0,GT,1.0,,0.00012993812561035156

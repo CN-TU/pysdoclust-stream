@@ -1,0 +1,15 @@
+name: netsec  # Replace 'myenv' with your preferred environment name.
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+  - numpy
+  - pandas
+  - matplotlib
+  - scipy  
+  - scikit-learn  # scikit-learn package
+  - seaborn
+  - pip
+  - pip:
+    - clusopt-core
+    - cvi
