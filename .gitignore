@@ -5,7 +5,7 @@
 # Ignore settings and cache files
 *.pyc
 *.json
-*.gout
+*.out
 
 # Ignore build directories
 build/
