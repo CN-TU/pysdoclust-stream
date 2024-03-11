@@ -1,7 +1,7 @@
 # pysdoclust-stream
 incremental stream clustering algorithm based on SDO
 
-## Usage in pythong
+## Usage in python
 
 ```python
 from dSalmon import clustering
@@ -33,6 +33,10 @@ for o in obs:
 for l in all_labels:
       print(l)
 ```
+
+## Testing
+
+Tests for this project are located in the `tests/temporal-silhouette/` folder. The test framework is mostly adapted from [py-temporal-silhouette](https://github.com/CN-TU/py-temporal-silhouette).
 
 ## Rebuilding
 
