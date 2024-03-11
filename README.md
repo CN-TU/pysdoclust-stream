@@ -1,11 +1,8 @@
 # pysdoclust-stream
 incremental stream clustering algorithm based on SDO
 
-Rebuilding
-^^^^^^^^^^
+## Rebuilding
 
 When adding new algorithms or modifying the interface, the SWIG wrappers have to be rebuilt. To this end, SWIG has to be installed and a ``pip`` package can be created and installed  using
 
-.. code-block:: sh
-
-    make && pip3 install dSalmon.tar.xz
+```make && pip3 install dSalmon.tar.xz```
