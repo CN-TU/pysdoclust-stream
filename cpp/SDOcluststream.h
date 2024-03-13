@@ -22,6 +22,7 @@
 #include "Vector.h"
 #include "Gamma.h"
 #include "MTree.h"
+#include "KLowestHeap.h"
 
 template<typename FloatType=double>
 class SDOcluststream {
@@ -64,7 +65,7 @@ class SDOcluststream {
     FloatType chi_prop;
     FloatType zeta;
     FloatType h; // global h (median of all h)
-    std::size_t e; // unused by now
+    std::size_t e; 
 
     int last_color;
 
@@ -73,7 +74,6 @@ class SDOcluststream {
     typedef std::vector<std::pair<TreeIterator, FloatType>> TreeNeighbors;
     class TreeNodeUpdater; // tree
     struct MyTieBreaker; // tree
-
 
     // Observer Structures
     struct Observer;
@@ -98,30 +98,12 @@ class SDOcluststream {
     typedef boost::container::multiset<ClusterModel,ClusterModelCompare> ClusterModelMap;    
     ClusterModelMap clusters;
     std::unordered_map<int, FloatType>  modelColorDistribution;
-   
-
-    // Distance Matrix Structures
-    struct IndexDistancePair; // sorted
-    struct DistanceCompare;  // sorted
-    DistanceCompare distance_compare;
-    typedef boost::multi_index::multi_index_container<
-        IndexDistancePair,
-        boost::multi_index::indexed_by<
-            // boost::multi_index::hashed_unique< // probably not ideal for small datasize
-            boost::multi_index::ordered_unique<
-                boost::multi_index::member<IndexDistancePair, int, &IndexDistancePair::index>
-            >,
-            boost::multi_index::ordered_unique<
-                boost::multi_index::identity<IndexDistancePair>,
-                DistanceCompare
-            >
-        >
-    > DistanceMapType; 
-
-    typedef std::unordered_map<int, DistanceMapType> DistanceMatrix;
-    DistanceMatrix distance_matrix;
     
     struct TopKDistanceHeap; // sorted
+
+    typedef KLowestBufferHeap<int, FloatType> HeapType;
+    typedef std::unordered_map<int, HeapType> HeapMatrix;
+    HeapMatrix heap_matrix;
 
     Gamma<FloatType> gamma_dist;
 
@@ -146,12 +128,12 @@ class SDOcluststream {
 
     void setObsScaler(); // util
 
-    void updateH_single(MapIterator it, size_t n);
-    void updateH_all(const size_t& chi);
+    void updateH_single(MapIterator it, size_t n); // tree // heap
+    void updateH_all(const size_t& chi); // graph
     
     bool hasEdge(FloatType distance, const MapIterator& it); // util
     
-    void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it); // sorted or tree
+    void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it); // sorted or  tree // heap
 
     void fit_impl(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
@@ -166,7 +148,6 @@ class SDOcluststream {
             const FloatType& now,            
             const int& current_observer_cnt,
             const int& current_neighbor_cnt); // tree
-
     void predict_impl(
             int& label,
             FloatType& score,
@@ -182,12 +163,11 @@ class SDOcluststream {
             const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores); // util
 
     bool sampleData( 
-        std::unordered_set<int>& sampled,
-        const FloatType& now,
-        const int& batch_size, // actually batch size - 1
-        const FloatType& batch_time,
-        const int& current_index); // util
-
+            std::unordered_set<int>& sampled,
+            const FloatType& now,
+            const int& batch_size, // actually batch size - 1
+            const FloatType& batch_time,
+            const int& current_index); // util
     void sampleData(
             std::unordered_set<int>& sampled,
             const Vector<FloatType>& point,
@@ -195,7 +175,43 @@ class SDOcluststream {
             FloatType observations_sum,
             const int& current_observer_cnt,
             const int& current_neighbor_cnt,
-            const int& current_index); // util
+            const int& current_index); // tree
+
+    bool sampleData(
+            std::unordered_set<int>& sampled,
+            HeapType& heap,
+            const Vector<FloatType>& point,
+            const FloatType& now,
+            FloatType observations_sum,
+            const int& current_observer_cnt,
+            const int& current_neighbor_cnt,
+            const int& current_index); // heap
+    void fit_impl(
+            std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+            HeapType& heap,
+            const FloatType& now,          
+            const int& current_observer_cnt,
+            const int& current_neighbor_cnt); // heap
+    void predict_impl(
+            int& label,
+            FloatType& score,
+            HeapType heap,
+            const int& active_threshold,
+            const int& current_neighbor_cnt); // heap
+    void updateHeap(
+            HeapType& heap, // map of heaps // const?
+            const Vector<FloatType>& point,        
+            const std::unordered_set<int>& dropped,
+            const std::unordered_set<int>& sampled,
+            int observer_index,
+            int current_neighbor_cnt); // heap
+    void updateHeapMatrix(
+            HeapMatrix& sampled, // map of heaps // const?
+            const std::unordered_set<int>& dropped,
+            const std::unordered_set<int>& active,
+            const std::unordered_set<int>& inactive,
+            const std::unordered_set<int>& activated,
+            const std::unordered_set<int>& deactivated);
 
     void replaceObservers(
             Vector<FloatType> data,
@@ -219,7 +235,7 @@ class SDOcluststream {
     std::vector<int> fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& time_data, 
-        bool fit_only); //tree
+        bool fit_only); //tree //heap
 
 public:
     SDOcluststream(
@@ -258,9 +274,8 @@ public:
         observers(observer_compare),  // Initialize observers container with initial capacity and comparison function
         clusters(),
         modelColorDistribution(),
-        distance_compare(),
-        distance_matrix(),
         gamma_dist(),
+        heap_matrix(),
         tree(distance_function),
         tree_active(distance_function)
     {
@@ -338,6 +353,7 @@ public:
 // #include "SDOcluststream_graph.h"
 
 // #include "SDOcluststream_sorted.h"
-#include "SDOcluststream_tree.h"
+// #include "SDOcluststream_tree.h"
+#include "SDOcluststream_heap.h"
 
 #endif  // SDOCLUSTSTREAM_H

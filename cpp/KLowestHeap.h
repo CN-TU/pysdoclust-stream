@@ -11,11 +11,11 @@
 #include <unordered_map>
 #include <boost/heap/binomial_heap.hpp>
 
-// Define a template class for KLowestHeap
-template<typename T, typename FloatType>
-class KLowestHeap {
+// Define a template class for KHeap
+template<typename ValueType, typename T>
+class KHeap {
   public:  
-    typedef std::pair<T, FloatType> PairType;
+    typedef std::pair<T, ValueType> PairType;
   private:  
     struct greater {    
         bool operator()(const PairType& lhs, const PairType& rhs) const {
@@ -31,18 +31,18 @@ class KLowestHeap {
   public:
     typedef boost::heap::binomial_heap<PairType, boost::heap::compare<less>> MaxHeap;    
     typedef typename MaxHeap::handle_type handle_type;
-    typedef typename MaxHeap::iterator iterator;  // Iterator for kLowest heap
-    typedef typename MaxHeap::ordered_iterator ordered_iterator;  // Ordered iterator for kLowest heap    
+    typedef typename MaxHeap::iterator iterator;  // Iterator for kHeap heap
+    typedef typename MaxHeap::ordered_iterator ordered_iterator;  // Ordered iterator for kHeap heap    
     typedef boost::heap::binomial_heap<PairType, boost::heap::compare<greater>> MinHeap;
-    typedef typename MinHeap::handle_type handle_type2;
-    typedef typename MinHeap::iterator iterator2;  // Iterator for others heap
-    typedef typename MinHeap::ordered_iterator ordered_iterator2;  // Ordered iterator for others heap   
+    typedef typename MinHeap::handle_type rhandle_type;
+    typedef typename MinHeap::iterator riterator;  // Iterator for rBuffer heap
+    typedef typename MinHeap::ordered_iterator ordered_riterator;  // Ordered iterator for rBuffer heap   
   private:
-    int k;
-    MaxHeap kLowest; // Max heap for k lowest elements, largest on top
-    std::unordered_map<T, handle_type> kLowestMap;
-    MinHeap others; // Min heap for other elements, smallest on top    
-    std::unordered_map<T, handle_type2> othersMap;
+    std::size_t k;
+    MaxHeap kHeap; // Max heap for k lowest elements, largest on top
+    std::unordered_map<T, handle_type> kHeapMap;
+    MinHeap rBuffer; // Min heap for other elements, smallest on top    
+    std::unordered_map<T, rhandle_type> rBufferMap;
 
     PairType replace0(
             PairType newPair,
@@ -58,9 +58,9 @@ class KLowestHeap {
     PairType replace0(
             PairType newPair,
             MinHeap& heap,
-            std::unordered_map<int, handle_type2>& map) {
+            std::unordered_map<int, rhandle_type>& map) {
         PairType pair = heap.top();
-        handle_type2 ha = map[pair.first];
+        rhandle_type ha = map[pair.first];
         heap.update(ha, newPair);
         map.erase(pair.first);
         map[newPair.first] = ha;
@@ -80,8 +80,8 @@ class KLowestHeap {
             int element,
             PairType pair,
             MinHeap& heap,
-            std::unordered_map<int, handle_type2>& map) {
-        handle_type2 ha = map[element];
+            std::unordered_map<int, rhandle_type>& map) {
+        rhandle_type ha = map[element];
         heap.update(ha, pair);
         map.erase(element);
         map[pair.first] = ha;
@@ -97,28 +97,29 @@ class KLowestHeap {
     void erase0(
             int element,
             MinHeap& heap,
-            std::unordered_map<int, handle_type2>& map) {
-        handle_type2 ha = map[element];    
+            std::unordered_map<int, rhandle_type>& map) {
+        rhandle_type ha = map[element];    
         heap.erase(ha);       
         map.erase(element);
     }  
   public:
     // Constructor to initialize with a specific value of k
-    KLowestHeap(int k) : k(k) {} 
+    KHeap() : k(0) {}
+    KHeap(std::size_t k) : k(k) {} 
 
     // Insert a new element with its distance
     void insert(
             const T& element, 
-            const FloatType& distance) {
+            const ValueType& distance) {
         PairType newPair(element, distance);
-        if (kLowest.size() < k) {
-            kLowestMap[element] = kLowest.push(newPair);
+        if (kHeap.size() < k) {
+            kHeapMap[element] = kHeap.push(newPair);
         } else {  
-            if (kLowest.value_comp()(newPair, kLowest.top())) { 
-                PairType pair = replace0(newPair, kLowest, kLowestMap); 
-                othersMap[pair.first] = others.push(pair);                
+            if (kHeap.value_comp()(newPair, kHeap.top())) { 
+                PairType pair = replace0(newPair, kHeap, kHeapMap); 
+                rBufferMap[pair.first] = rBuffer.push(pair);                
             } else {                
-                othersMap[element] = others.push(newPair);
+                rBufferMap[element] = rBuffer.push(newPair);
             }
         }
     }
@@ -126,37 +127,37 @@ class KLowestHeap {
     
     void erase(
             const T& element) {
-        if (kLowestMap.count(element)>0) {
-            if (!others.empty()) {
-                // pop smallest from others
-                PairType pair = others.top();                
-                erase0(pair.first, others, othersMap);
-                update0(element, pair, kLowest, kLowestMap);
+        if (kHeapMap.count(element)>0) {
+            if (!rBuffer.empty()) {
+                // pop smallest from rBuffer
+                PairType pair = rBuffer.top();                
+                erase0(pair.first, rBuffer, rBufferMap);
+                update0(element, pair, kHeap, kHeapMap);
             } else {
-                erase0(element, kLowest, kLowestMap);                
+                erase0(element, kHeap, kHeapMap);                
             }       
-        } else { // must be in othersMap            
-            erase0(element, others, othersMap);             
+        } else { // must be in rBufferMap            
+            erase0(element, rBuffer, rBufferMap);             
         }        
     }
 
     void update(
             const T& elementToUpdate,
             const T& element, 
-            const FloatType& distance) {
+            const ValueType& distance) {
         PairType newPair(element, distance);
-        if (kLowestMap.count(elementToUpdate)>0) {
-            if ( kLowest.value_comp()(newPair, kLowest.top()) || 
-                (others.value_comp()(others.top(), newPair) && kLowest.top().first == elementToUpdate) ) {
-                update0(elementToUpdate, newPair, kLowest, kLowestMap);
+        if (kHeapMap.count(elementToUpdate)>0) {
+            if ( kHeap.value_comp()(newPair, kHeap.top()) || 
+                (rBuffer.value_comp()(rBuffer.top(), newPair) && kHeap.top().first == elementToUpdate) ) {
+                update0(elementToUpdate, newPair, kHeap, kHeapMap);
             } else {
                 erase(elementToUpdate);
                 insert(element, distance);
             }
         } else {
-            if ( others.value_comp()(newPair, others.top()) ||
-                (kLowest.value_comp()(kLowest.top(), newPair) && others.top().first == elementToUpdate) ) {
-                update0(elementToUpdate, newPair, others, othersMap);
+            if ( rBuffer.value_comp()(newPair, rBuffer.top()) ||
+                (kHeap.value_comp()(kHeap.top(), newPair) && rBuffer.top().first == elementToUpdate) ) {
+                update0(elementToUpdate, newPair, rBuffer, rBufferMap);
             } else {
                 erase(elementToUpdate);
                 insert(element, distance);
@@ -165,17 +166,17 @@ class KLowestHeap {
     }
 
     void setK(
-            int k_new) {
+            std::size_t k_new) {
         k = k_new;
-        while (kLowest.size() > k) {
-            PairType pair = kLowest.top();
-            erase0(pair.first, kLowest, kLowestMap);              
-            othersMap[pair.first] = others.push(pair);
+        while (kHeap.size() > k) {
+            PairType pair = kHeap.top();
+            erase0(pair.first, kHeap, kHeapMap);              
+            rBufferMap[pair.first] = rBuffer.push(pair);
         }
-        while (kLowest.size() < k && !others.empty()) {
-            PairType pair = others.top();
-            erase0(pair.first, others, othersMap);            
-            kLowestMap[pair.first] = kLowest.push(pair);
+        while (kHeap.size() < k && !rBuffer.empty()) {
+            PairType pair = rBuffer.top();
+            erase0(pair.first, rBuffer, rBufferMap);            
+            kHeapMap[pair.first] = kHeap.push(pair);
         }
     }
 
@@ -183,231 +184,237 @@ class KLowestHeap {
         return k;
     }
 
-    FloatType top() {
-        return kLowest.top().second;
+    ValueType top() {
+        return kHeap.top().second;
     }
 
-    // Get iterators for kLowest heap
-    iterator begin() const { return kLowest.begin(); }    
-    iterator end() const { return kLowest.end(); }
-    ordered_iterator ordered_begin() const { return kLowest.ordered_begin(); }
-    ordered_iterator ordered_end() const { return kLowest.ordered_end(); }
+    // Get iterators for kHeap heap
+    iterator begin() const { return kHeap.begin(); }    
+    iterator end() const { return kHeap.end(); }
+    ordered_iterator ordered_begin() const { return kHeap.ordered_begin(); }
+    ordered_iterator ordered_end() const { return kHeap.ordered_end(); }
 
-    // Get iterators for others heap
-    iterator2 begin2() const { return others.begin(); }    
-    iterator2 end2() const { return others.end(); }
-    ordered_iterator2 ordered_begin2() const { return others.ordered_begin(); }
-    ordered_iterator2 ordered_end2() const { return others.ordered_end(); }
+    // Get iterators for rBuffer heap
+    riterator begin2() const { return rBuffer.begin(); }    
+    riterator end2() const { return rBuffer.end(); }
+    ordered_riterator ordered_begin2() const { return rBuffer.ordered_begin(); }
+    ordered_riterator ordered_end2() const { return rBuffer.ordered_end(); }
 };
 
 
-
-
-template<typename T, typename FloatType>
-class KLowestBufferHeap {
+template<typename ValueType, typename T>
+class KBufferHeap {
   public:  
-    typedef std::pair<T, FloatType> PairType;
-  private:  
-    struct greater {    
-        bool operator()(const PairType& lhs, const PairType& rhs) const {
-            return (lhs.second != rhs.second) ? (lhs.second > rhs.second) : (lhs.first > rhs.first);
-        }
-    };
-    // Define custom comparator for max heap
-    struct less {
-        bool operator()(const PairType& lhs, const PairType& rhs) const {
-            return (lhs.second != rhs.second) ? (lhs.second < rhs.second) : (lhs.first < rhs.first);
-        }
-    };
-  public:
-    typedef boost::heap::binomial_heap<PairType, boost::heap::compare<less>> MaxHeap;    
+    typedef std::pair<ValueType, T> PairType; // val, key
+    typedef boost::heap::binomial_heap<PairType> MaxHeap;    
     typedef typename MaxHeap::handle_type handle_type;
-    typedef typename MaxHeap::iterator iterator;  // Iterator for kLowest heap
-    typedef typename MaxHeap::ordered_iterator ordered_iterator;  // Ordered iterator for kLowest heap    
-    typedef boost::heap::binomial_heap<PairType, boost::heap::compare<greater>> MinHeap;
-    typedef typename MinHeap::handle_type handle_type2;
-    typedef typename MinHeap::iterator iterator2;  // Iterator for others heap
-    typedef typename MinHeap::ordered_iterator ordered_iterator2;  // Ordered iterator for others heap 
+    typedef typename MaxHeap::iterator iterator;  // Iterator for kHeap heap
+    typedef typename MaxHeap::ordered_iterator ordered_iterator;  // Ordered iterator for kHeap heap    
+    typedef boost::heap::binomial_heap<PairType, boost::heap::compare<std::greater>> MinHeap;
+    typedef typename MinHeap::handle_type rhandle_type;
+    typedef typename MinHeap::iterator riterator;  // Iterator for rBuffer heap
+    typedef typename MinHeap::ordered_iterator ordered_riterator;  // Ordered iterator for rBuffer heap 
   private:
-    typedef std::pair<handle_type, FloatType> PairType2;
+    typedef std::pair<handle_type, rhandle_type> HandlePairType;
 
-    int k;
-    int buffer_size;
-    MaxHeap kLowest; // Max heap for k lowest elements, largest on top
-    std::unordered_map<T, PairType2> kLowestMap;
-    MinHeap others; // Min heap for other elements, smallest on top       
-    std::unordered_map<T, handle_type2> othersMap;     
-    MaxHeap mirror;          
-    std::unordered_map<T, PairType2> mirrorMap;    
-    std::unordered_map<T, FloatType> inactiveMap;
+    std::size_t k;
+    std::size_t max_buffer_size;
 
-    PairType replace0(
-        PairType newPair,
-        MaxHeap& heap,
-        std::unordered_map<int, PairType2>& map) {
-            PairType pair = heap.top();
-            handle_type ha = map[pair.first].first;
-            heap.update(ha, newPair);
-            map.erase(pair.first);
-            map[newPair.first] = PairType2(ha, newPair.second);
-            return pair;
-    } 
-    PairType replace0(
-        PairType newPair,
-        MinHeap& heap,
-        std::unordered_map<int, handle_type2>& map) {
-            PairType pair = heap.top();
-            handle_type2 ha = map[pair.first];
-            heap.update(ha, newPair);
-            map.erase(pair.first);
-            map[newPair.first] = ha;
-            return pair;
-    } 
-    void update0(
-            int element,
-            PairType pair,
-            MaxHeap& heap,
-            std::unordered_map<int, PairType2>& map) {
-        handle_type ha = map[element].first;
-        heap.update(ha, pair);
-        map.erase(element);
-        map[pair.first] = PairType2(ha, pair.second);
-    }
-    void update0(
-            int element,
-            PairType pair,
-            MinHeap& heap,
-            std::unordered_map<int, handle_type2>& map) {
-        handle_type2 ha = map[element];
-        heap.update(ha, pair);
-        map.erase(element);
-        map[pair.first] = ha;
-    }
-    void erase0(
-            int element,
-            MaxHeap& heap,
-            std::unordered_map<int, PairType2>& map) {
-        handle_type ha = map[element].first;    
-        heap.erase(ha);       
-        map.erase(element);
-    }
-    void erase0(
-            int element,
-            MinHeap& heap,
-            std::unordered_map<int, handle_type2>& map) {
-        handle_type2 ha = map[element];    
-        heap.erase(ha);       
-        map.erase(element);
-    }
-  public:
-    // Constructor to initialize with a specific value of k and buffer_size
-    KLowestBufferHeap(int k, int buffer_size) : k(k), buffer_size(buffer_size) {} 
+    MaxHeap kHeap; // Max heap for k lowest elements, largest on top
+    std::unordered_map<T, handle_type> kHeapMap;
 
-    // Insert a new element with its distance
-    bool insert(
-            const T& element, 
-            const FloatType& distance,
-            bool inactive = false) {
-        PairType newPair(element, distance);
-        if (inactive) { inactiveMap[element] = distance; return true; }
-        if (kLowest.size() < k) {
-            kLowestMap[element] = PairType2(kLowest.push(newPair), distance);
+    MaxHeap buffer;          
+    MinHeap rBuffer; // Min heap for other elements, smallest on top 
+    std::unordered_map<T, HandlePairType> bufferMap;  
+
+    std::unordered_map<T, ValueType> inactiveMap;
+
+    bool in_h(const T& key) const { return kHeapMap.count(key)>0; }
+    bool in_b(const T& key) const { return bufferMap.count(key)>0; }
+    bool in_ia(const T& key) const { return inactiveMap.count(key)>0; }
+
+    bool erase_h(const T& key) {
+        if (in_h(key)) {
+            handle_type ha = kHeapMap[key];
+            kHeap.erase(ha)
+            kHeapMap.erase(key);
             return true;
-        } else {   
-            if (kLowest.value_comp()(newPair, kLowest.top())) {     
-                PairType pair = replace0(newPair, kLowest, kLowestMap);
-                if (others.size() < buffer_size) {
-                    othersMap[pair.first] = others.push(pair);   
-                    mirrorMap[pair.first] = PairType2(mirror.push(pair), pair.second); 
-                    return true;            
-                } else if (mirror.value_comp()(pair, mirror.top()) ) {
-                    PairType oldPair = replace0(pair, mirror, mirrorMap);
-                    update0(oldPair.first, pair, others, othersMap);
-                    return true;
-                }                
-            } else {   
-                if (others.size() < buffer_size) {                       
-                    othersMap[element] = others.push(newPair);
-                    mirrorMap[element] = PairType2(mirror.push(newPair), distance);
-                    return true;
-                } else if (mirror.value_comp()(newPair, mirror.top()) ) {
-                    PairType oldPair = replace0(newPair, mirror, mirrorMap);
-                    update0(oldPair.first, newPair, others, othersMap);
-                    return true;
-                }
-            }
         }
         return false;
     }
-    bool insert(const PairType& newPair, bool inactive = false) { return insert(newPair.first, newPair.second, inactive); }
-    
-    bool erase(
-            const T& element) {
-        if (kLowestMap.count(element)>0) {            
-            if (!others.empty()) {
-                // pop smallest from others
-                PairType pair = others.top();                
-                erase0(pair.first, others, othersMap);
-                erase0(pair.first, mirror, mirrorMap);
-                // update kLowest
-                update0(element, pair, kLowest, kLowestMap);
-            } else {
-                erase0(element, kLowest, kLowestMap);                
-            }  
-            return true;           
-        } else if (othersMap.count(element)>0) {
-            erase0(element, others, othersMap);  
-            erase0(element, mirror, mirrorMap);  
-            return true;      
-        } else if (inactiveMap.count(element>0)) {
-            inactiveMap.erase(element);
+    bool erase_b(const T& key) {
+        if (in_b(key)) {
+            HandlePairType hpair = bufferMap[key];
+            buffer.erase(hpair.first);
+            rBuffer.erase(hpair.second);
+            bufferMap.erase(key);
+            return true;
         }
+        return false;
+    }
+    bool erase_ia (const T& key) {
+        if (in_ia(key)) {
+            inactiveMap.erase(key);
+            return true;
+        }
+        return false;
+    }
+
+    bool insert_h(const T key, const ValueType val) {
+        if ( kHeap.size()<k && ((kHeap.value_comp()(PairType(val, key), kHeap.top())) || kHeap.empty()) ) {
+            handle_type ha = kHeap.insert(PairType(val, key));
+            kHeapMap[key] = ha;
+            return true;
+        }
+        return false;
+    }
+    bool insert_h(const PairType pair) { return insert_h(pair.second, pair.first); }
+    bool insert_b(const T key, const ValueType val) {
+        if ( buffer.size() < max_buffer_size && ((buffer.value_comp()(PairType(val, key), buffer.top())) || buffer.empty()) ) {
+            handle_type = buffer.insert(PairType(val, key));
+            rhandle_type = rBuffer.insert(PairType(val, key));
+            bufferMap[key] = HandlePairType(handle_type, rhandle_type);
+            return true;
+        }
+        return false;
+    }
+    bool insert_b(const PairType pair) { return insert_b(pair.second, pair.first); }
+    bool insert_ia(const T key, const ValueType val) {
+        inactiveMap[key] = val;
+        return true;
+    }
+    bool insert_ia(const PairType pair) { return insert_ia(pair.second, pair.first); }
+
+    bool update_h(const T& oldKey, const T key, const ValueType val) {
+        if ( in_h(oldKey) && ((kHeap.value_comp()(PairType(val, key), rBuffer.top())) || buffer.empty()) ) {
+            handleType ha = kHeapMap(oldKey);
+            kHeap.update(ha, PairType(val, key));
+            kHeapMap.erase(oldKey);
+            kHeapMap[key] = ha;
+            return true;
+        } else if (in_h(oldKey)) { // shift top pair from buffer to heap in oldKey s place
+            PairType topPair = rBuffer.top();            
+            if (!update_b(pair.second, key, val)) { throw std::runtime_error("Should be impossible to happen: " + std::to_string(oldKey)); } // key, val must be larger than top pair 
+            if (!update_h(oldKey, topPair)) { throw std::runtime_error("Should be impossible to happen: " + std::to_string(oldKey));}
+            return true;
+        }
+        return false;
+    }
+    bool update_h(const T& oldKey, const PairType pair) { return update_h(oldKey, pair.second, pair.first); }
+    bool update_b(const T& oldKey, const T key, const ValueType val) {
+        if ( in_b(oldKey) && ((rBuffer.value_comp()(PairType(val, key), kHeap.top())) || kHeap.empty()) ) {
+            HandlePairType hpair = bufferMap(oldKey);
+            buffer.update(hpair.first, PairType(val, key));
+            rBuffer.update(hpair.second, PairType(val, key));
+            bufferMap.erase(oldKey);
+            bufferMap[key] = hpair;
+            return true;
+        } else if (in_b(oldKey)) { // shift top pair from heap to buffer in oldKey s place
+            PairType topPair = kHeap.top();            
+            if (!update_h(pair.second, key, val)) { throw std::runtime_error("Should be impossible to happen: " + std::to_string(oldKey)); } // key, val must be larger than top pair 
+            if (!update_n(oldKey, topPair)) { throw std::runtime_error("Should be impossible to happen: " + std::to_string(oldKey));}
+            return true;
+        }
+
+        return false;
+    }
+    bool update_b(const T& oldKey, const PairType pair) { return update_b(oldKey, pair.second, pair.first); }
+
+    bool update_and_shift_h(const T& oldKey, const T key, const ValueType val) {
+        if ( in_h(oldKey) && buffer.size()>0) {
+            
+        }
+        return false;
+    }
+    
+    bool shift_or_erase_h(const T& oldKey) { // shift top buffer to kHeap
+        if (in_h(oldKey)) {
+            if (buffer.size()>0) {
+                PairType topPair = rBuffer.top();
+                erase_b(topPair.second);
+                update_h(oldKey, topPair);
+            } 
+            else {
+                erase_h(oldKey);
+            }
+            return true;
+        } 
+        return false;       
+    }
+
+    bool shift_to_h() { // shift top buffer to kHeap
+        if (buffer.size()>0 && kHeap.size()<k) {
+            PairType topPair = rBuffer.top();
+            erase_b(topPair.second);
+            insert_h(topPair);            
+            return true;
+        } 
+        return false;       
+    }
+    bool shift_to_b() { // shift top buffer to kHeap
+        if (kHeap.size()>k) {
+            PairType topPair = kHeap.top();
+            erase_h(topPair.second);
+            insert_b(topPair);            
+            return true;
+        } 
+        return false;       
+    }
+
+  public:
+    // Constructor to initialize with a specific value of k and max_buffer_size
+    KBufferHeap() : k(0), max_buffer_size(0) {}
+    KBufferHeap(int k, int max_buffer_size) : k(k), max_buffer_size(max_buffer_size) {} 
+
+    // Insert a new element with its distance
+    bool insert(const T key, const ValueType val, bool inactive = false) {
+        if (inactive) { return insert_ia(key, val); }
+        if (insert_b(key, val)) { return true; } 
+        if (insert_h(key, val)) { return true; }
+        return false;
+    }
+    bool insert(const PairType pair, bool inactive = false) { return insert(pair.second, pair.first, inactive); }
+    
+    bool erase(const T& key) {
+        if (erase_ia(key)) { return true; } 
+        if (erase_b(key)) { return true; } 
+        if (erase_h(key)) { return true; } 
         return false;      
     }
 
     void update(
-            const T& elementToUpdate,
-            const T& element, 
-            const FloatType& distance) {
-        PairType newPair(element, distance);
-        if (kLowestMap.count(elementToUpdate)>0) {
-            if ( kLowest.value_comp()(newPair, kLowest.top()) || 
-                (others.value_comp()(others.top(), newPair) && kLowest.top().first == elementToUpdate) ) {
-                update0(elementToUpdate, newPair, kLowest, kLowestMap);
-            } else {
-                erase(elementToUpdate);
-                insert(element, distance);
-            }
-        } else {
-            if ( others.value_comp()(newPair, others.top()) ||
-                (kLowest.value_comp()(kLowest.top(), newPair) && others.top().first == elementToUpdate) ) {
-                update0(elementToUpdate, newPair, others, othersMap);
-                update0(elementToUpdate, newPair, mirror, mirrorMap);
-            } else {
-                erase(elementToUpdate);
-                insert(element, distance);
-            }
-        }
+            const T& oldKey,
+            const T key, 
+            const ValueType val) {
+        if (update_ia(oldKey, key, val)) { return true; }
+        if (update_b(oldKey, key, val)) { return true; }
+        if (update_h(oldKey, key, val)) { return true; }
+        return false;       
     }
 
     bool active(
             const T& element) {
-        return inactiveMap.count(element)>0;
+        return !(inactiveMap.count(element)>0) && ((kHeapMap.count(element)>0) || (rBufferMap.count(element)>0));
+    }
+
+    bool inactive(
+            const T& element) {
+        return (inactiveMap.count(element)>0);
     }
 
     void activate(
             const T& element) {
-        FloatType distance = inactiveMap[element];
+        ValueType distance = inactiveMap[element];
         inactiveMap.erase(element);
         insert(element, distance);
     }
 
     void deactivate(
             const T& element) {
-        if (mirrorMap.count(element)>0) {
-            inactiveMap[element] = mirrorMap[element].second;
+        if (bufferMap.count(element)>0) {
+            inactiveMap[element] = bufferMap[element].second;
         } else {
-            inactiveMap[element] = kLowestMap[element].second;
+            inactiveMap[element] = kHeapMap[element].second;
         }
         erase(element);
     }
@@ -415,67 +422,34 @@ class KLowestBufferHeap {
     void setK(
             int k_new) {  
         if (k_new < k) {
-            buffer_size += k - k_new; // increase buffer_size
+            max_buffer_size += k - k_new; // increase max_buffer_size
         } 
-        if (k < k_new && (k_new-k) > buffer_size) {
-            buffer_size = 0;
+        if (k < k_new && (k_new-k) > max_buffer_size) {
+            max_buffer_size = 0;
         }           
-        k = k_new;
-        while (kLowest.size() > k) {
-            PairType pair = kLowest.top();
-            erase0(pair.first, kLowest, kLowestMap);              
-            othersMap[pair.first] = others.push(pair); 
-            mirrorMap[pair.first] = PairType2(mirror.push(pair), pair.second); 
-        }
-        while (kLowest.size() < k && !others.empty()) {
-            PairType pair = others.top();
-            erase0(pair.first, others, othersMap); 
-            erase0(pair.first, mirror, mirrorMap);            
-            kLowestMap[pair.first] = PairType2(kLowest.push(pair), pair.second);
-        }
+        k = k_new;        
+        
     }
-    void setBufferSize(int bs_new) { buffer_size = bs_new; }
+    void setMaxBufferSize(int bs_new) { max_buffer_size = bs_new; }
 
-    int getK() {
-        return k;
-    }
+    std::size_t getMaxBufferSize() { return max_buffer_size; }
+    std::size_t getK() { return k; }
 
-    FloatType top() {
-        return kLowest.top().second;
-    }
+    ValueType top() { return kHeap.top().first; }
+    ValueType bottom() { return buffer.top().first; }
 
-    FloatType bottom() {
-        return mirror.top().second;
-    }
-
-    bool isin(int element) {
-        return (kLowestMap.count(element)>0) || (othersMap.count(element)>0);
-    }
-
-    bool empty() {
-        return kLowest.empty();
-    }
-    
-    std::size_t size() {
-        return kLowest.size();
-    }
-
-    std::size_t sizeB() {
-        return others.size();
-    }
-
-    std::size_t sizeA() {
-        return kLowest.size() + others.size();
-    }
-
-
-    FloatType median() {
-        ordered_iterator it = kLowest.ordered_begin();
-        int steps = k/2 - (k - kLowest.size());
+    bool isin(int element) { return in_h() || in_b() || in_ia(); }
+    bool empty() { return kHeap.empty(); }    
+    std::size_t size() { return kHeap.size(); }
+    std::size_t size_buffer() { return rBuffer.size(); }
+    std::size_t size_all() { return kHeap.size() + rBuffer.size(); }
+    ValueType median() {
+        ordered_iterator it = kHeap.ordered_begin();
+        int steps = k/2 - (k - kHeap.size());
         if (steps > 0) {
             if (k % 2 == 0) {
-                FloatType m(0);
-                int steps = (k-1)/2 - (k - kLowest.size());
+                ValueType m(0);
+                int steps = (k-1)/2 - (k - kHeap.size());
                 std::advance(it, steps);
                 m += it->second;
                 it++;
@@ -486,34 +460,54 @@ class KLowestBufferHeap {
                 return it->second;            
             }
         } else {
-            if (!kLowest.empty()) { return it->second; } // highest value
+            if (!kHeap.empty()) { return it->second; } // highest value
             else { return 0.0; }
         }
     }
 
-    // Get iterators for kLowest heap
-    iterator begin() const { return kLowest.begin(); }    
-    iterator end() const { return kLowest.end(); }
-    ordered_iterator ordered_begin() const { return kLowest.ordered_begin(); }
-    ordered_iterator ordered_end() const { return kLowest.ordered_end(); }
+    void print() {
+        std::cout << "K lowest: " << std::endl;
+        for (auto it = kHeap.begin(); it != kHeap.end(); ++it) {
+            std::cout << "(" << it->first << ": " << it->second << ") " ;
+        }
+        std::cout << std::endl << "Buffer: " << std::endl;
+        for (auto it = buffer.begin(); it != buffer.end(); ++it) {
+            std::cout << "(" << it->first << ": " << it->second << ") ";
+        }
+        std::cout << std::endl << "Buffer rBuffer: " << std::endl;
+        for (auto it = rBuffer.begin(); it != rBuffer.end(); ++it) {
+            std::cout << "(" << it->first << ": " << it->second << ") ";
+        }
+        std::cout << std::endl << "Inactive: " << std::endl;
+        for (auto pair: inactiveMap) {
+            std::cout << "(" << pair.first << ": " << pair.second << ") ";
+        }
+        std::cout << std::endl;
+    }
 
-    // Get iterators for others heap
-    iterator2 begin2() const { return others.begin(); }    
-    iterator2 end2() const { return others.end(); }
-    ordered_iterator2 ordered_begin2() const { return others.ordered_begin(); }
-    ordered_iterator2 ordered_end2() const { return others.ordered_end(); }
+    // Get iterators for kHeap heap
+    iterator begin() const { return kHeap.begin(); }    
+    iterator end() const { return kHeap.end(); }
+    ordered_iterator ordered_begin() const { return kHeap.ordered_begin(); }
+    ordered_iterator ordered_end() const { return kHeap.ordered_end(); }
 
-    // Get iterators for mirrors heap
-    ordered_iterator ordered_rbegin2() const { return mirror.ordered_begin(); }
-    ordered_iterator ordered_rend2() const { return mirror.ordered_end(); }
+    // Get iterators for rBuffer heap
+    riterator begin2() const { return rBuffer.begin(); }    
+    riterator end2() const { return rBuffer.end(); }
+    ordered_riterator ordered_begin2() const { return rBuffer.ordered_begin(); }
+    ordered_riterator ordered_end2() const { return rBuffer.ordered_end(); }
+
+    // Get iterators for buffers heap
+    ordered_iterator ordered_rbegin2() const { return buffer.ordered_begin(); }
+    ordered_iterator ordered_rend2() const { return buffer.ordered_end(); }
 };
 
 
 
-// template<typename T, typename FloatType>
-// class KLowestBufferHeap {
+// template<typename T, typename ValueType>
+// class KBufferHeap {
 //   public:  
-//     typedef std::pair<T, FloatType> PairType;
+//     typedef std::pair<T, ValueType> PairType;
 //   private:  
 //     struct greater {    
 //         bool operator()(const PairType& lhs, const PairType& rhs) const {
@@ -529,24 +523,24 @@ class KLowestBufferHeap {
 //   public:
 //     typedef boost::heap::binomial_heap<PairType, boost::heap::compare<less>> MaxHeap;    
 //     typedef typename MaxHeap::handle_type handle_type;
-//     typedef typename MaxHeap::iterator iterator;  // Iterator for kLowest heap
-//     typedef typename MaxHeap::ordered_iterator ordered_iterator;  // Ordered iterator for kLowest heap    
+//     typedef typename MaxHeap::iterator iterator;  // Iterator for kHeap heap
+//     typedef typename MaxHeap::ordered_iterator ordered_iterator;  // Ordered iterator for kHeap heap    
 //     typedef boost::heap::binomial_heap<PairType, boost::heap::compare<greater>> MinHeap;
-//     typedef typename MinHeap::handle_type handle_type2;
-//     typedef typename MinHeap::iterator iterator2;  // Iterator for others heap
-//     typedef typename MinHeap::ordered_iterator ordered_iterator2;  // Ordered iterator for others heap 
+//     typedef typename MinHeap::handle_type rhandle_type;
+//     typedef typename MinHeap::iterator riterator;  // Iterator for rBuffer heap
+//     typedef typename MinHeap::ordered_iterator ordered_riterator;  // Ordered iterator for rBuffer heap 
 //   private:
-//     typedef std::pair<handle_type, FloatType> PairType2;
+//     typedef std::pair<handle_type, ValueType> rhandle_type;
 
 //     int k;
-//     int buffer_size;
-//     MaxHeap kLowest; // Max heap for k lowest elements, largest on top
-//     std::unordered_map<T, handle_type> kLowestMap;
-//     MinHeap others; // Min heap for other elements, smallest on top       
-//     std::unordered_map<T, handle_type2> othersMap;     
-//     MaxHeap mirror;          
-//     std::unordered_map<T, handle_type> mirrorMap;    
-//     // std::unordered_map<T, FloatType> inactiveMap;
+//     int max_buffer_size;
+//     MaxHeap kHeap; // Max heap for k lowest elements, largest on top
+//     std::unordered_map<T, handle_type> kHeapMap;
+//     MinHeap rBuffer; // Min heap for other elements, smallest on top       
+//     std::unordered_map<T, rhandle_type> rBufferMap;     
+//     MaxHeap buffer;          
+//     std::unordered_map<T, handle_type> bufferMap;    
+//     // std::unordered_map<T, ValueType> inactiveMap;
 
 //     PairType replace0(
 //         PairType newPair,
@@ -562,9 +556,9 @@ class KLowestBufferHeap {
 //     PairType replace0(
 //         PairType newPair,
 //         MinHeap& heap,
-//         std::unordered_map<int, handle_type2>& map) {
+//         std::unordered_map<int, rhandle_type>& map) {
 //             PairType pair = heap.top();
-//             handle_type2 ha = map[pair.first];
+//             rhandle_type ha = map[pair.first];
 //             heap.update(ha, newPair);
 //             map.erase(pair.first);
 //             map[newPair.first] = ha;
@@ -584,8 +578,8 @@ class KLowestBufferHeap {
 //             int element,
 //             PairType pair,
 //             MinHeap& heap,
-//             std::unordered_map<int, handle_type2>& map) {
-//         handle_type2 ha = map[element];
+//             std::unordered_map<int, rhandle_type>& map) {
+//         rhandle_type ha = map[element];
 //         heap.update(ha, pair);
 //         map.erase(element);
 //         map[pair.first] = ha;
@@ -601,43 +595,43 @@ class KLowestBufferHeap {
 //     void erase0(
 //             int element,
 //             MinHeap& heap,
-//             std::unordered_map<int, handle_type2>& map) {
-//         handle_type2 ha = map[element];    
+//             std::unordered_map<int, rhandle_type>& map) {
+//         rhandle_type ha = map[element];    
 //         heap.erase(ha);       
 //         map.erase(element);
 //     }
 //   public:
-//     // Constructor to initialize with a specific value of k and buffer_size
-//     KLowestBufferHeap(int k, int buffer_size) : k(k), buffer_size(buffer_size) {} 
+//     // Constructor to initialize with a specific value of k and max_buffer_size
+//     KBufferHeap(int k, int max_buffer_size) : k(k), max_buffer_size(max_buffer_size) {} 
 
 //     // Insert a new element with its distance
 //     bool insert(
 //             const T& element, 
-//             const FloatType& distance) {
+//             const ValueType& distance) {
 //         PairType newPair(element, distance);
-//         if (kLowest.size() < k) {
-//             kLowestMap[element] = kLowest.push(newPair);
+//         if (kHeap.size() < k) {
+//             kHeapMap[element] = kHeap.push(newPair);
 //             return true;
 //         } else {   
-//             if (kLowest.value_comp()(newPair, kLowest.top())) {     
-//                 PairType pair = replace0(newPair, kLowest, kLowestMap);
-//                 if (others.size() < buffer_size) {
-//                     othersMap[pair.first] = others.push(pair);   
-//                     mirrorMap[pair.first] = mirror.push(pair); 
+//             if (kHeap.value_comp()(newPair, kHeap.top())) {     
+//                 PairType pair = replace0(newPair, kHeap, kHeapMap);
+//                 if (rBuffer.size() < max_buffer_size) {
+//                     rBufferMap[pair.first] = rBuffer.push(pair);   
+//                     bufferMap[pair.first] = buffer.push(pair); 
 //                     return true;            
-//                 } else if (mirror.value_comp()(pair, mirror.top()) ) {
-//                     PairType oldPair = replace0(pair, mirror, mirrorMap);
-//                     update0(oldPair.first, pair, others, othersMap);
+//                 } else if (buffer.value_comp()(pair, buffer.top()) ) {
+//                     PairType oldPair = replace0(pair, buffer, bufferMap);
+//                     update0(oldPair.first, pair, rBuffer, rBufferMap);
 //                     return true;
 //                 }                
 //             } else {   
-//                 if (others.size() < buffer_size) {                       
-//                     othersMap[element] = others.push(newPair);
-//                     mirrorMap[element] = mirror.push(newPair);
+//                 if (rBuffer.size() < max_buffer_size) {                       
+//                     rBufferMap[element] = rBuffer.push(newPair);
+//                     bufferMap[element] = buffer.push(newPair);
 //                     return true;
-//                 } else if (mirror.value_comp()(newPair, mirror.top()) ) {
-//                     PairType oldPair = replace0(newPair, mirror, mirrorMap);
-//                     update0(oldPair.first, newPair, others, othersMap);
+//                 } else if (buffer.value_comp()(newPair, buffer.top()) ) {
+//                     PairType oldPair = replace0(newPair, buffer, bufferMap);
+//                     update0(oldPair.first, newPair, rBuffer, rBufferMap);
 //                     return true;
 //                 }
 //             }
@@ -648,21 +642,21 @@ class KLowestBufferHeap {
     
 //     bool erase(
 //             const T& element) {
-//         if (kLowestMap.count(element)>0) {            
-//             if (!others.empty()) {
-//                 // pop smallest from others
-//                 PairType pair = others.top();                
-//                 erase0(pair.first, others, othersMap);
-//                 erase0(pair.first, mirror, mirrorMap);
-//                 // update kLowest
-//                 update0(element, pair, kLowest, kLowestMap);
+//         if (kHeapMap.count(element)>0) {            
+//             if (!rBuffer.empty()) {
+//                 // pop smallest from rBuffer
+//                 PairType pair = rBuffer.top();                
+//                 erase0(pair.first, rBuffer, rBufferMap);
+//                 erase0(pair.first, buffer, bufferMap);
+//                 // update kHeap
+//                 update0(element, pair, kHeap, kHeapMap);
 //             } else {
-//                 erase0(element, kLowest, kLowestMap);                
+//                 erase0(element, kHeap, kHeapMap);                
 //             }  
 //             return true;           
-//         } else if (othersMap.count(element)>0) {
-//             erase0(element, others, othersMap);  
-//             erase0(element, mirror, mirrorMap);  
+//         } else if (rBufferMap.count(element)>0) {
+//             erase0(element, rBuffer, rBufferMap);  
+//             erase0(element, buffer, bufferMap);  
 //             return true;      
 //         }  
 //         return false;      
@@ -671,21 +665,21 @@ class KLowestBufferHeap {
 //     void update(
 //             const T& elementToUpdate,
 //             const T& element, 
-//             const FloatType& distance) {
+//             const ValueType& distance) {
 //         PairType newPair(element, distance);
-//         if (kLowestMap.count(elementToUpdate)>0) {
-//             if ( kLowest.value_comp()(newPair, kLowest.top()) || 
-//                 (others.value_comp()(others.top(), newPair) && kLowest.top().first == elementToUpdate) ) {
-//                 update0(elementToUpdate, newPair, kLowest, kLowestMap);
+//         if (kHeapMap.count(elementToUpdate)>0) {
+//             if ( kHeap.value_comp()(newPair, kHeap.top()) || 
+//                 (rBuffer.value_comp()(rBuffer.top(), newPair) && kHeap.top().first == elementToUpdate) ) {
+//                 update0(elementToUpdate, newPair, kHeap, kHeapMap);
 //             } else {
 //                 erase(elementToUpdate);
 //                 insert(element, distance);
 //             }
 //         } else {
-//             if ( others.value_comp()(newPair, others.top()) ||
-//                 (kLowest.value_comp()(kLowest.top(), newPair) && others.top().first == elementToUpdate) ) {
-//                 update0(elementToUpdate, newPair, others, othersMap);
-//                 update0(elementToUpdate, newPair, mirror, mirrorMap);
+//             if ( rBuffer.value_comp()(newPair, rBuffer.top()) ||
+//                 (kHeap.value_comp()(kHeap.top(), newPair) && rBuffer.top().first == elementToUpdate) ) {
+//                 update0(elementToUpdate, newPair, rBuffer, rBufferMap);
+//                 update0(elementToUpdate, newPair, buffer, bufferMap);
 //             } else {
 //                 erase(elementToUpdate);
 //                 insert(element, distance);
@@ -696,67 +690,67 @@ class KLowestBufferHeap {
 //     void setK(
 //             int k_new) {  
 //         if (k_new < k) {
-//             buffer_size += k - k_new; // increase buffer_size
+//             max_buffer_size += k - k_new; // increase max_buffer_size
 //         } 
-//         if (k < k_new && (k_new-k) > buffer_size) {
-//             buffer_size = 0;
+//         if (k < k_new && (k_new-k) > max_buffer_size) {
+//             max_buffer_size = 0;
 //         }           
 //         k = k_new;
-//         while (kLowest.size() > k) {
-//             PairType pair = kLowest.top();
-//             erase0(pair.first, kLowest, kLowestMap);              
-//             othersMap[pair.first] = others.push(pair); 
-//             mirrorMap[pair.first] = mirror.push(pair); 
+//         while (kHeap.size() > k) {
+//             PairType pair = kHeap.top();
+//             erase0(pair.first, kHeap, kHeapMap);              
+//             rBufferMap[pair.first] = rBuffer.push(pair); 
+//             bufferMap[pair.first] = buffer.push(pair); 
 //         }
-//         while (kLowest.size() < k && !others.empty()) {
-//             PairType pair = others.top();
-//             erase0(pair.first, others, othersMap); 
-//             erase0(pair.first, mirror, mirrorMap);            
-//             kLowestMap[pair.first] = kLowest.push(pair);
+//         while (kHeap.size() < k && !rBuffer.empty()) {
+//             PairType pair = rBuffer.top();
+//             erase0(pair.first, rBuffer, rBufferMap); 
+//             erase0(pair.first, buffer, bufferMap);            
+//             kHeapMap[pair.first] = kHeap.push(pair);
 //         }
 //     }
-//     void setBufferSize(int bs_new) { buffer_size = bs_new; }
+//     void setBufferSize(int bs_new) { max_buffer_size = bs_new; }
 
 //     int getK() {
 //         return k;
 //     }
 
-//     FloatType top() {
-//         return kLowest.top().second;
+//     ValueType top() {
+//         return kHeap.top().second;
 //     }
 
-//     FloatType bottom() {
-//         return mirror.top().second;
+//     ValueType bottom() {
+//         return buffer.top().second;
 //     }
 
 //     bool isin(int element) {
-//         return (kLowestMap.count(element)>0) || (othersMap.count(element)>0);
+//         return (kHeapMap.count(element)>0) || (rBufferMap.count(element)>0);
 //     }
 
 //     bool empty() {
-//         return kLowest.empty();
+//         return kHeap.empty();
 //     }
     
 //     std::size_t size() {
-//         return kLowest.size();
+//         return kHeap.size();
 //     }
 
 //     std::size_t sizeB() {
-//         return others.size();
+//         return rBuffer.size();
 //     }
 
 //     std::size_t sizeA() {
-//         return kLowest.size() + others.size();
+//         return kHeap.size() + rBuffer.size();
 //     }
 
 
-//     FloatType median() {
-//         ordered_iterator it = kLowest.ordered_begin();
-//         int steps = k/2 - (k - kLowest.size());
+//     ValueType median() {
+//         ordered_iterator it = kHeap.ordered_begin();
+//         int steps = k/2 - (k - kHeap.size());
 //         if (steps > 0) {
 //             if (k % 2 == 0) {
-//                 FloatType m(0);
-//                 int steps = (k-1)/2 - (k - kLowest.size());
+//                 ValueType m(0);
+//                 int steps = (k-1)/2 - (k - kHeap.size());
 //                 std::advance(it, steps);
 //                 m += it->second;
 //                 it++;
@@ -767,26 +761,26 @@ class KLowestBufferHeap {
 //                 return it->second;            
 //             }
 //         } else {
-//             if (!kLowest.empty()) { return it->second; } // highest value
+//             if (!kHeap.empty()) { return it->second; } // highest value
 //             else { return 0.0; }
 //         }
 //     }
 
-//     // Get iterators for kLowest heap
-//     iterator begin() const { return kLowest.begin(); }    
-//     iterator end() const { return kLowest.end(); }
-//     ordered_iterator ordered_begin() const { return kLowest.ordered_begin(); }
-//     ordered_iterator ordered_end() const { return kLowest.ordered_end(); }
+//     // Get iterators for kHeap heap
+//     iterator begin() const { return kHeap.begin(); }    
+//     iterator end() const { return kHeap.end(); }
+//     ordered_iterator ordered_begin() const { return kHeap.ordered_begin(); }
+//     ordered_iterator ordered_end() const { return kHeap.ordered_end(); }
 
-//     // Get iterators for others heap
-//     iterator2 begin2() const { return others.begin(); }    
-//     iterator2 end2() const { return others.end(); }
-//     ordered_iterator2 ordered_begin2() const { return others.ordered_begin(); }
-//     ordered_iterator2 ordered_end2() const { return others.ordered_end(); }
+//     // Get iterators for rBuffer heap
+//     riterator begin2() const { return rBuffer.begin(); }    
+//     riterator end2() const { return rBuffer.end(); }
+//     ordered_riterator ordered_begin2() const { return rBuffer.ordered_begin(); }
+//     ordered_riterator ordered_end2() const { return rBuffer.ordered_end(); }
 
-//     // Get iterators for mirrors heap
-//     ordered_iterator ordered_rbegin2() const { return mirror.ordered_begin(); }
-//     ordered_iterator ordered_rend2() const { return mirror.ordered_end(); }
+//     // Get iterators for buffers heap
+//     ordered_iterator ordered_rbegin2() const { return buffer.ordered_begin(); }
+//     ordered_iterator ordered_rend2() const { return buffer.ordered_end(); }
 // };
 
 #endif

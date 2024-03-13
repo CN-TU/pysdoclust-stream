@@ -4,6 +4,7 @@
 #ifndef SDOCLUSTSTREAM_TREE_H
 #define SDOCLUSTSTREAM_TREE_H
 
+#include "SDOcluststream_util.h"
 #include "SDOcluststream_print.h"
 #include "SDOcluststream_graph.h"
 #include "SDOcluststream_sorted.h"
