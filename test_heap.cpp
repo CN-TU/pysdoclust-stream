@@ -27,7 +27,7 @@ void print(KBufferHeap<double,int>& kdHeap) {
 
 int main() {
     // Create a KDistanceHeap with k = 3
-    KBufferHeap<double, int> kdHeap(3, 8);
+    KBufferHeap<double, int> kdHeap(3, 11);
 
     // Insert some elements
 
@@ -49,40 +49,41 @@ int main() {
     kdHeap.insert(15, 0.3);
     kdHeap.print();
 
-    print(kdHeap);
+    std::cout << std::endl << "Balance: " << std::endl << std::endl;
 
-    std::cout << std::endl << "Balance: " << std::endl;
-
-    kdHeap.balanceK(5);
-    print(kdHeap);
     kdHeap.balanceK(2);
-    print(kdHeap);
-    // std::cout << "Median:" << kdHeap.median() << std::endl;
+    kdHeap.print();
+    kdHeap.balanceK(5);
+    kdHeap.print();
+    
+    std::cout << "Update: " << std::endl << std::endl;
+    kdHeap.update(6, 16, 0.1);
+    kdHeap.print();
+    kdHeap.update(5, 17, 0.4);
+    kdHeap.print();
 
-    // kdHeap.setK(5);
-    // print(kdHeap);
-    // kdHeap.setK(2);
-    // print(kdHeap);
+    std::cout << "erase: " << std::endl << std::endl;
+    kdHeap.erase(5);
+    kdHeap.erase(17);
+    kdHeap.erase(9);
+    kdHeap.print();
 
-    // kdHeap.update(7, 10, 0.1);
-    // print(kdHeap);
-    // kdHeap.update(5, 11, 1.0);
-    // print(kdHeap);
+    std::cout << "deactivate: " << std::endl << std::endl;
+    kdHeap.deactivate(11);
+    kdHeap.deactivate(16);
+    kdHeap.deactivate(9);
+    kdHeap.print();
 
-    // kdHeap.erase(1);
-    // print(kdHeap);
-    // kdHeap.erase(9);
-    // print(kdHeap);
-    // kdHeap.erase(8);
-    // print(kdHeap);
-    // kdHeap.erase(2);
-    // print(kdHeap);
-    // kdHeap.erase(4);
-    // print(kdHeap);
-    // kdHeap.erase(6);
-    // print(kdHeap);
-    // kdHeap.erase(10);
-    // print(kdHeap);
+    std::cout << "swap: " << std::endl << std::endl;
+    kdHeap.swap_active(10, 11);
+    kdHeap.swap_active(15, 16);
+    kdHeap.print();
+
+    std::cout << "activate: " << std::endl << std::endl;
+    kdHeap.activate(10);
+    kdHeap.activate(15);
+    kdHeap.activate(9);
+    kdHeap.print();
 
     return 0;
 }

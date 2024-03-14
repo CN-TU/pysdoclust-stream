@@ -2,6 +2,7 @@
 #define SDOCLUSTSTREAM_PRINT_H
 
 #include "SDOcluststream_observer.h"
+// #include "SDOcluststream.h"
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::printClusters() {
@@ -36,6 +37,23 @@ void SDOcluststream<FloatType>::printClusters() {
 //     }
 //     std::cout << std::endl;
 // };
+template<typename FloatType>
+void SDOcluststream<FloatType>::printHeapMatrix() {
+    std::cout << std::endl << "heap matrix" << std::endl;
+    for (const auto& pair : heap_matrix) {
+        std::cout << "Index " << pair.first << std::endl;
+        pair.second.print();
+    }
+}
+
+template<typename FloatType>
+void SDOcluststream<FloatType>::printHeapMatrix(HeapMatrix& heapM) {
+    std::cout << std::endl << "heap matrix" << std::endl;
+    for (const auto& pair : heapM) {
+        std::cout << "Index " << pair.first << std::endl;
+        pair.second.print();
+    }
+}
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::printObservers(

@@ -36,7 +36,7 @@ class KBufferHeap {
     MinHeap rBuffer; // Min heap for other elements, smallest on top 
     std::unordered_map<T, HandlePairType> bufferMap;  
 
-    MaxHeap inactive; // Max heap for k lowest elements, largest on top
+    // MaxHeap inactive; // Max heap for k lowest elements, largest on top
     std::unordered_map<T, ValueType> inactiveMap;
 
     bool in_h(const T& key) const { return kHeapMap.count(key)>0; }
@@ -49,21 +49,29 @@ class KBufferHeap {
 
     bool check_b(const T key, const ValueType val, bool insert = true) const {
         if ( !(max_buffer_size>0) ) {return false; }
+        if ( in(key) ) { return false; }
         if (insert) { return !check_h(key, val) && 
             (!full_b() || buffer.value_comp()(PairType(val, key), buffer.top())); }
-        return !empty_b() && !check_h(key, val, true);
+        return !empty_b() && check_b(key, val); 
     }
     bool check_h(const T key, const ValueType val, bool insert = true) const {
         if ( !(k>0) ) { return false; }
+        if ( in(key) ) { return false; }
         if (insert) { return !full_h() || kHeap.value_comp()(PairType(val, key), kHeap.top()); }
-        return !empty_h() || !full_h() || empty_b() || kHeap.value_comp()(PairType(val, key), rBuffer.top());
+        return !empty_h() && (empty_b() || kHeap.value_comp()(PairType(val, key), rBuffer.top()));
     }
 
     bool erase_h(const T key) {
         if (in_h(key)) {
-            handle_type ha = kHeapMap[key];
-            kHeap.erase(ha);
-            kHeapMap.erase(key);
+            if (empty_b()) {
+                handle_type ha = kHeapMap[key];
+                kHeap.erase(ha);
+                kHeapMap.erase(key);
+            } else {
+                PairType topPair = rBuffer.top();
+                erase_b(topPair.second);
+                update_h(key, topPair);
+            }            
             return true;
         }
         return false;
@@ -116,7 +124,6 @@ class KBufferHeap {
         }        
         return false;
     }
-   
     bool insert_b(const PairType pair) { return insert_b(pair.second, pair.first); }
     bool insert_ia(const T key, const ValueType val) {
         inactiveMap[key] = val;
@@ -161,6 +168,7 @@ class KBufferHeap {
 
     void shift_to_left() {
         ++k;
+        --max_buffer_size;
         if (!empty_b()) {
             PairType topPair = rBuffer.top();
             erase_b(topPair.second);
@@ -169,6 +177,7 @@ class KBufferHeap {
     }
     void shift_to_right() {
         --k;
+        ++max_buffer_size;
         if (!empty_h()) {
             PairType topPair = kHeap.top();
             erase_h(topPair.second);
@@ -206,7 +215,7 @@ class KBufferHeap {
     bool update(const T& oldKey, const PairType pair) { return update(oldKey, pair.second, pair.first); }
 
     bool activate(const T& key) {
-        if (in(key) && !active(key)) {
+        if (in_ia(key)) {
             PairType pair(inactiveMap[key], key);
             inactiveMap.erase(key);
             if (insert_b(pair)) { return true; }
@@ -218,25 +227,27 @@ class KBufferHeap {
     bool deactivate(const T& key) {
         if (active(key)) {
             handle_type ha;
-            if (in_h(key)) { handle_type ha = kHeapMap[key]; }
-            if (in_b(key)) { handle_type ha = bufferMap[key]; }                      
-            inactiveMap[ha->second] = ha->first;
-            if (erase_b(ha->second)) { return true; }
-            if (erase_h(ha->second)) { return true; }
+            if (in_h(key)) { ha = kHeapMap[key]; }
+            if (in_b(key)) { ha = bufferMap[key].first; }      
+            PairType pair = *ha;                
+            inactiveMap[pair.second] = pair.first;
+            if (erase_b(pair.second)) { return true; }
+            if (erase_h(pair.second)) { return true; }
         }
         return false;
     }
 
-    bool update(const T& key_a, const T& key_ia) {
-        if (active(key_a) && in(key_ia) && !active(key_ia)) {
-            PairType pair(inactiveMap[key_ia], key_ia);
+    bool swap_active(const T& key_a, const T& key_ia) {
+        if (active(key_a) && in_ia(key_ia)) {
+            PairType pair_ia(inactiveMap[key_ia], key_ia);
             inactiveMap.erase(key_ia);
             handle_type ha;
-            if (in_b(key_a)) { ha = bufferMap[key_a]; }
-            if (in_h(key_a)) { ha = bufferMap[key_a]; }
-            inactiveMap[key_a] = ha->first;
-            if (update_b(key_a, pair)) { return true; }
-            if (update_h(key_a, pair)) { return true; }
+            if (in_h(key_a)) { ha = kHeapMap[key_a]; }
+            if (in_b(key_a)) { ha = bufferMap[key_a].first; }   
+            PairType pair_a = *ha;       
+            inactiveMap[key_a] = pair_a.first;
+            if (update_b(key_a, pair_ia)) { return true; }
+            if (update_h(key_a, pair_ia)) { return true; }
         }
         return false;
     }
@@ -258,10 +269,12 @@ class KBufferHeap {
         if (k_new<0) { return false; }
         if (k_new>max_buffer_size) { return false; }   
         k = k_new;  
+        return true;
     }
     bool setMaxBufferSize(int bs_new) { 
         if (bs_new<0) { return false; }
         max_buffer_size = bs_new; 
+        return true;
     }
 
     std::size_t getMaxBufferSize() const { return max_buffer_size; }
@@ -270,7 +283,8 @@ class KBufferHeap {
     const ValueType kVal() const { return kHeap.top().first; }
     const PairType kPair() const { return kHeap.top(); }
 
-    bool active(const T& key) const { return !in_ia(key) && (in_h(key) || in_b(key)); }
+    bool active(const T& key) const { return (in_h(key) || in_b(key)); }
+    bool inactive(const T& key) const { return in_ia(key); }
     bool in(const T& key) const { return in_h(key) || in_b(key) || in_ia(key); }
     bool empty() const { return kHeap.empty(); }    
     std::size_t size() const { return kHeap.size(); }
@@ -297,7 +311,9 @@ class KBufferHeap {
             else { return 0.0; }
         }
     }
-
+    ValueType topK() const {
+        return kHeap.top().first;
+    }
     void print() const {
         std::cout << "K lowest: " << std::endl;
         for (auto it = kHeap.begin(); it != kHeap.end(); ++it) {

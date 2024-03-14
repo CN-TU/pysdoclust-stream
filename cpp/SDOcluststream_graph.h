@@ -9,10 +9,8 @@ void SDOcluststream<FloatType>::updateH_all(
     std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
     std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
     for (auto it = observers.begin(); it != observers.end(); ++it) {    
-        if (!(it->active)) { break; }      
-        std::cout << "Before Update h: " << it->index << std::endl; 
+        if (!(it->active)) { break; }    
         updateH_single(it, chi); 
-        std::cout << "After Update h: " << it->index << std::endl; 
         // add h to heaps 
         if (maxHeap.empty() || it->h <= maxHeap.top()) {
             maxHeap.push(it->h);

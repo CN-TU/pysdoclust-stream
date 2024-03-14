@@ -22,7 +22,7 @@
 #include "Vector.h"
 #include "Gamma.h"
 #include "MTree.h"
-#include "KLowestHeap.h"
+#include "KHeap.h"
 
 template<typename FloatType=double>
 class SDOcluststream {
@@ -101,7 +101,7 @@ class SDOcluststream {
     
     struct TopKDistanceHeap; // sorted
 
-    typedef KLowestBufferHeap<int, FloatType> HeapType;
+    typedef KBufferHeap<FloatType, int> HeapType;
     typedef std::unordered_map<int, HeapType> HeapMatrix;
     HeapMatrix heap_matrix;
 
@@ -112,6 +112,8 @@ class SDOcluststream {
     
     void printClusters(); // print
     void printDistanceMatrix(); // print
+    void printHeapMatrix(); // print
+    void printHeapMatrix(HeapMatrix& heapM); // print
     void printObservers(FloatType now); // print
 
     void setModelParameters(
@@ -196,7 +198,6 @@ class SDOcluststream {
             int& label,
             FloatType& score,
             HeapType heap,
-            const int& active_threshold,
             const int& current_neighbor_cnt); // heap
     void updateHeap(
             HeapType& heap, // map of heaps // const?
@@ -208,8 +209,6 @@ class SDOcluststream {
     void updateHeapMatrix(
             HeapMatrix& sampled, // map of heaps // const?
             const std::unordered_set<int>& dropped,
-            const std::unordered_set<int>& active,
-            const std::unordered_set<int>& inactive,
             const std::unordered_set<int>& activated,
             const std::unordered_set<int>& deactivated);
 
