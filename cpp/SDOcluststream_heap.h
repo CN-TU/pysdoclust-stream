@@ -187,19 +187,21 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
     }
     // add distances between old Observers and newly sampled Observers
     // drop for the dropped observers
-    for (auto& pair : sampled) {
-        int idx = pair.first;
-        HeapType& heap = pair.second;
-        for (auto hIt = heap.begin(); hIt != heap.end(); ++hIt) {
-            int idy = hIt->second;
-            if (dropped.count(idy)>0) {
-                heap.erase(idy);
-            } else if (sampled.count(idy)==0) { // with new Observers distances exist
-                FloatType distance = hIt->first;
-                heap_matrix[idy].insert(idx, distance);
-            }
-        }
-    }
+    // TODO
+    // for (auto& pair : sampled) {
+    //     int idx = pair.first;
+    //     HeapType& heap = pair.second;
+    //     for (auto it = observers.begin(); it != observers.end(); ++it) {
+    //         int idy = it->index;
+    //         if (dropped.count(idy)>0) {
+    //             heap.erase(idy);
+    //         } else if (sampled.count(idy)==0) { // with new Observers distances exist
+    //             MapIterator& it1 = indexToIterator[idy];
+    //             FloatType distance = distance_function(it->getData(), it1->getData()); // or make retrieve fun from heap_matrix[idx]
+    //             heap_matrix[idy].insert(idx, distance);
+    //         }
+    //     }
+    // }
 
     // (de)activate
     for (auto& pair : heap_matrix) {
@@ -362,7 +364,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         current_neighbor_cnt, current_neighbor_cnt2,
         current_e,
         chi,
-        false); // true for print
+        true); // true for print
 
     std::cout << ">>> Entering Update Heaps " << std::endl;
     for (size_t i = 0; i < data.size(); ++i) {        
@@ -376,7 +378,9 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         );
     }
     
- 
+    std::cout << ">>> ALL HEAPS " << std::endl;
+    printHeapMatrix(heaps);
+
     // fit model
     std::cout << ">>> Entering Fit " << std::endl;
     std::unordered_map<int, std::pair<FloatType, FloatType>> temporary_scores; // index, (score, time_touched)
@@ -399,7 +403,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     std::unordered_set<int> inactive;
     int i = 0;
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {            
-        if (i > current_observer_cnt) {
+        if (i > active_threshold) {
             inactive.insert(it->index);
             if (it->active) {
                 deactivated.insert(it->index);
@@ -418,10 +422,11 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     std::cout << ">>> Entering Set inactive in data heaps " << std::endl;
     for (size_t i = 0; i < data.size(); ++i) { 
         for (int idx : inactive) {
+            std::cout << idx << " ";
             heaps[first_index + i].deactivate(idx);
         }
     }
-    std::cout << ">>> ALL HEAPS " << std::endl;
+    std::cout << ">>> ALL HEAPS AFTER INACTIVE" << std::endl;
     printHeapMatrix(heaps);
 
     

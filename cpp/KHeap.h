@@ -316,15 +316,15 @@ class KBufferHeap {
     }
     void print() const {
         std::cout << "K lowest: " << std::endl;
-        for (auto it = kHeap.begin(); it != kHeap.end(); ++it) {
+        for (auto it = kHeap.ordered_begin(); it != kHeap.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
         std::cout << std::endl << "Buffer: " << std::endl;
-        for (auto it = buffer.begin(); it != buffer.end(); ++it) {
+        for (auto it = buffer.ordered_begin(); it != buffer.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
-        std::cout << std::endl << "Buffer rBuffer: " << std::endl;
-        for (auto it = rBuffer.begin(); it != rBuffer.end(); ++it) {
+        std::cout << std::endl << "rBuffer: " << std::endl;
+        for (auto it = rBuffer.ordered_begin(); it != rBuffer.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
         std::cout << std::endl << "Inactive: " << std::endl;
