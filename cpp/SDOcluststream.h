@@ -209,6 +209,7 @@ class SDOcluststream {
     void updateHeapMatrix(
             HeapMatrix& sampled, // map of heaps // const?
             const std::unordered_set<int>& dropped,
+            const std::unordered_set<int>& inactive,
             const std::unordered_set<int>& activated,
             const std::unordered_set<int>& deactivated);
 

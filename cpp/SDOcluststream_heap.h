@@ -151,22 +151,34 @@ void SDOcluststream<FloatType>::updateHeap(
         int observer_index,
         int current_neighbor_cnt) {
     heap.balanceK(current_neighbor_cnt);
-    for (int idy : dropped) {
-        heap.erase(idy);
-    }
-    for (int idy : sampled) {
-        if (idy != observer_index) {
-            const MapIterator& it1 = indexToIterator[idy];
-            FloatType distance = distance_function(point, it1->getData());
-            heap.insert(idy, distance);
+    if (!dropped.empty()) {
+        FloatType maxDistanceToInsert = heap.last();
+        for (int idy : dropped) {
+            heap.erase(idy);
+        }    
+        for (int idy : sampled) {
+            if (idy != observer_index) {
+                const MapIterator& it1 = indexToIterator[idy];
+                FloatType distance = distance_function(point, it1->getData());
+                if (distance < maxDistanceToInsert) { heap.insert(idy, distance); }            
+            }
+        }        
+    } else {        
+        for (int idy : sampled) {
+            if (idy != observer_index) {
+                const MapIterator& it1 = indexToIterator[idy];
+                FloatType distance = distance_function(point, it1->getData());
+                heap.insert(idy, distance);           
+            }
         }
-    }
+    }    
 };
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::updateHeapMatrix(
         HeapMatrix& sampled, // map of heaps // const?
         const std::unordered_set<int>& dropped,
+        const std::unordered_set<int>& inactive,
         const std::unordered_set<int>& activated,
         const std::unordered_set<int>& deactivated) {
     
@@ -177,7 +189,7 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
             heap_matrix.erase(it);
         }
     }
-    // drop for all heaps the dropped entries
+    // drop for all heaps the drop entries
     for (auto& pair : heap_matrix) {
         int idx = pair.first;
         HeapType& heap = pair.second;
@@ -185,23 +197,35 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
             heap.erase(idy);
         }
     }
-    // add distances between old Observers and newly sampled Observers
-    // drop for the dropped observers
-    // TODO
-    // for (auto& pair : sampled) {
-    //     int idx = pair.first;
-    //     HeapType& heap = pair.second;
-    //     for (auto it = observers.begin(); it != observers.end(); ++it) {
-    //         int idy = it->index;
-    //         if (dropped.count(idy)>0) {
-    //             heap.erase(idy);
-    //         } else if (sampled.count(idy)==0) { // with new Observers distances exist
-    //             MapIterator& it1 = indexToIterator[idy];
-    //             FloatType distance = distance_function(it->getData(), it1->getData()); // or make retrieve fun from heap_matrix[idx]
-    //             heap_matrix[idy].insert(idx, distance);
-    //         }
-    //     }
-    // }
+    
+    // drop for the sampled heap drop enties
+    for (auto& pair : sampled) {
+        int idx = pair.first;
+        HeapType& heap = pair.second;
+        for (int idy : dropped) {
+            heap.erase(idy);
+        }
+    }
+
+    // distance between old obs and newly sampled obs
+    for (auto it = observers.begin(); it != observers.end(); ++it) {
+        int idx = it->index;
+        if (!(sampled.count(idx)>0)) { // with new Observers distances exist
+            std::cout << std::endl << "Update heap " << idx << std::endl;
+            heap_matrix[idx].print();
+            for (auto& pair : sampled) {
+                int idy = pair.first;
+                const HeapType& heap = pair.second;
+                FloatType distance = distance_function(it->getData(), indexToIterator[idy]->getData());
+                heap_matrix[idx].insert(idy, distance);
+                std::cout << "inserted " << idy << ": " << distance << std::endl;
+                heap_matrix[idx].print();
+                // heap_matrix[idx].insert(idy, heap[idx], inactive.count(idy)>0); // condition if inactive or active
+            }
+            std::cout << "After update:" << std::endl;
+            heap_matrix[idx].print();
+        }
+    }
 
     // (de)activate
     for (auto& pair : heap_matrix) {
@@ -282,6 +306,9 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
                         last_index++)
                     ) {firstPointSampled = true;}
             }
+        }
+        for (int idx : sampled) {
+            heaps[idx].setMaxBufferSize(observer_cnt-1);
         }
 
         if (!firstPointSampled) {
@@ -441,10 +468,11 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
 
     std::cout << ">>>  HEAP MATRIX " << std::endl;
     printHeapMatrix();
-
+    std::cout << ">>>  UPDATE HEAP MATRIX " << std::endl;
     updateHeapMatrix(
         sampled_heaps, // map of heaps // const?
         dropped,
+        inactive,
         activated,
         deactivated);
     // printDistanceMatrix();

@@ -42,10 +42,13 @@ class KBufferHeap {
     bool in_h(const T& key) const { return kHeapMap.count(key)>0; }
     bool in_b(const T& key) const { return bufferMap.count(key)>0; }
     bool in_ia(const T& key) const { return inactiveMap.count(key)>0; }
-    bool full_h() const { return kHeap.size()==k; }    
+    bool full_h() const { return kHeap.size()==k; } 
+    bool full_b() const { return buffer.size()==max_buffer_size; }   
     bool empty_h() const { return kHeap.empty(); }
-    bool full_b() const { return buffer.size()==max_buffer_size; }
     bool empty_b() const { return buffer.empty() && rBuffer.empty(); }
+    ValueType get_h(const T& key) const { return (*(kHeapMap.at(key))).first; }
+    ValueType get_b(const T& key) const { return (*(bufferMap.at(key).first)).first; }
+    ValueType get_ia(const T& key) const { return (inactiveMap.at(key)); }
 
     bool check_b(const T key, const ValueType val, bool insert = true) const {
         if ( !(max_buffer_size>0) ) {return false; }
@@ -223,7 +226,6 @@ class KBufferHeap {
         }
         return false;
     }
-
     bool deactivate(const T& key) {
         if (active(key)) {
             handle_type ha;
@@ -236,7 +238,6 @@ class KBufferHeap {
         }
         return false;
     }
-
     bool swap_active(const T& key_a, const T& key_ia) {
         if (active(key_a) && in_ia(key_ia)) {
             PairType pair_ia(inactiveMap[key_ia], key_ia);
@@ -252,7 +253,14 @@ class KBufferHeap {
         return false;
     }
 
-    bool balanceK(int k_new) {
+    ValueType operator[](const T& key) const {
+        if (in_ia(key)) { return get_ia(key); }
+        if (in_b(key)) { return get_b(key); }
+        if (in_h(key)) { return get_h(key); }
+        throw std::runtime_error("KBufferHeap: Key not found");
+    }
+    
+    bool balanceK(std::size_t k_new) {
         if (k_new<0) { return false; }
         if (k_new>max_buffer_size) { return false; }
         while (k != k_new) {
@@ -264,14 +272,7 @@ class KBufferHeap {
         }
         return true;
     }
-
-    bool setK(int k_new) {  
-        if (k_new<0) { return false; }
-        if (k_new>max_buffer_size) { return false; }   
-        k = k_new;  
-        return true;
-    }
-    bool setMaxBufferSize(int bs_new) { 
+    bool setMaxBufferSize(std::size_t bs_new) { 
         if (bs_new<0) { return false; }
         max_buffer_size = bs_new; 
         return true;
@@ -312,24 +313,43 @@ class KBufferHeap {
         }
     }
     ValueType topK() const {
+        if (empty_h()) {throw std::runtime_error("KBufferHeap: No topK element in empty Structure");}
         return kHeap.top().first;
     }
+    ValueType last() const {
+        if (empty_h()) {throw std::runtime_error("KBufferHeap: No last element in empty Structure");}
+        if (empty_b()) { return kHeap.top().first; } else {return buffer.top().first; };
+    }
+    
     void print() const {
+        std::cout << "K: " << k << ", Max Buffer: " << max_buffer_size << std::endl;
         std::cout << "K lowest: " << std::endl;
         for (auto it = kHeap.ordered_begin(); it != kHeap.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
+        }
+        std::cout << std::endl;
+        for (auto pair: kHeapMap) {
+            std::cout << "(" << pair.first << ": " << (*(pair.second)).first << ") ";
         }
         std::cout << std::endl << "Buffer: " << std::endl;
         for (auto it = buffer.ordered_begin(); it != buffer.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
+        std::cout << std::endl;
+        for (auto pair: bufferMap) {
+            std::cout << "(" << pair.first << ": " << (*(pair.second.first)).first << ") ";
+        }
         std::cout << std::endl << "rBuffer: " << std::endl;
         for (auto it = rBuffer.ordered_begin(); it != rBuffer.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
+        std::cout << std::endl;
+        for (auto pair: bufferMap) {
+            std::cout << "(" << pair.first << ": " << (*(pair.second.second)).first << ") ";
+        }
         std::cout << std::endl << "Inactive: " << std::endl;
         for (auto pair: inactiveMap) {
-            std::cout << "(" << pair.second << ": " << pair.first << ") ";
+            std::cout << "(" << pair.first << ": " << pair.second << ") ";
         }
         std::cout << std::endl;
     }
