@@ -178,16 +178,17 @@ class KBufferHeap {
             PairType topPair = rBuffer.top();
             erase_b(topPair.second);
             insert_h(topPair);
-        }        
+        }
     }
     void shift_to_right() {
         --k;
         ++max_buffer_size;
         if (!empty_h()) {
             PairType topPair = kHeap.top();
-            erase_h(topPair.second);
+            kHeap.pop();
+            kHeapMap.erase(topPair.second);
             insert_b(topPair);
-        }        
+        }
     }
 
     void invalidateHandles() {
@@ -400,16 +401,16 @@ class KBufferHeap {
                 ValueType m(0);
                 int steps = (k-1)/2 - (k - kHeap.size());
                 std::advance(it, steps);
-                m += it->second;
+                m += it->first;
                 it++;
-                m += it->second;
+                m += it->first;
                 return 0.5 * m;
             } else {
                 std::advance(it, steps);
-                return it->second;            
+                return it->first;            
             }
         } else {
-            if (!kHeap.empty()) { return it->second; } // highest value
+            if (!kHeap.empty()) { return it->first; } // highest value
             else { return 0.0; }
         }
     }

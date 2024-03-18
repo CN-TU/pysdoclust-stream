@@ -231,10 +231,6 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
     }
     // add heaps from sampled observers
     heap_matrix.reserve(heap_matrix.size() + sampled.size()); // Optional: reserve memory for efficiency    
-    // for (auto it = sampled.begin(); it != sampled.end(); ++it) {
-    //     heap_matrix.emplace(std::move(it->first), std::move(it->second));
-    // }
-
     std::transform(std::make_move_iterator(sampled.begin()), std::make_move_iterator(sampled.end()),
                 std::inserter(heap_matrix, heap_matrix.end()),
                 [](const auto& pair) { return std::make_pair(std::move(pair.first), std::move(pair.second)); });
@@ -266,7 +262,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         observations_sum += it->observations * std::pow<FloatType>(fading, now-it->time_touched);
     }
-    int buffer_size = 10;
+    int buffer_size = 15;
     HeapMatrix heaps;
     if (observers.empty()) {
         bool firstPointSampled(false);
@@ -376,9 +372,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             (sampled.count(first_index + i) > 0) ? first_index + i : -1,
             (sampled.count(first_index + i) > 0) ? current_neighbor_cnt2 : current_neighbor_cnt
         );
-    }
-    // std::cout << std::endl << std::endl << " HEAPS AFTER UPDATE" << std::endl;
-    // printHeapMatrix(heaps);
+    }    
     // fit model
     std::unordered_map<int, std::pair<FloatType, FloatType>> temporary_scores; // index, (score, time_touched)
     for (size_t i = 0; i < data.size(); ++i) { 
@@ -422,10 +416,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
               std::inserter(sampled_heaps, sampled_heaps.end()),
               [&sampled](const auto& pair) { return sampled.count(pair.first) > 0; });
     for (int key : sampled) { heaps.erase(key); }
-    // std::cout << std::endl << std::endl << " SAMPLED" << std::endl;
-    // printHeapMatrix(sampled_heaps);
-    // std::cout << std::endl << std::endl << " HEAPS AFTER SAMPLED" << std::endl;
-    // printHeapMatrix(heaps);
     updateHeapMatrix(
         sampled_heaps, // map of heaps // const?
         dropped,
@@ -433,8 +423,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         activated,
         deactivated);    
     // update graph
-    std::cout << std::endl << std::endl << " HEAPS MATRIX AFTER UPDATE" << std::endl;
-    printHeapMatrix();
     now = time_data.back(); // last timestamp of batch    
     updateGraph(
         now,
@@ -442,27 +430,23 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         e, // current_e,
         chi);
     std::vector<FloatType> scores(data.size(), 0);  
-    std::cout << std::endl << std::endl << " HEAPS MATRIX AFTER GRAPH UPDATE" << std::endl;
-    printHeapMatrix();
-
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
             int current_index = first_index + i;
             bool is_observer =  (sampled.count(current_index) > 0);            
             int label(0);
-            FloatType score(0);
             predict_impl(
                 labels[i],
                 scores[i],
                 is_observer ? heap_matrix[current_index] : heaps[current_index],
                 is_observer ? current_neighbor_cnt2 : current_neighbor_cnt);
             // gamma_dist.update(score);
-            gamma_dist.update(score, fading, time_data[i]);
+            gamma_dist.update(scores[i], fading, time_data[i]);
         }        
         gamma_dist.update();
         for (size_t i = 0; i < scores.size(); ++i) {
             if (gamma_dist.isOutlier(scores[i], p_outlier)) {labels[i] = 0;}
-        }
+        }    
     } 
     return labels;
 };

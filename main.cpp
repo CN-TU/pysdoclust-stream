@@ -32,8 +32,8 @@ std::vector<Vector<double>> generateRandomVectors(std::size_t N, std::size_t k, 
 
 int main() {
     // Set data parameters
-    int m = 10; // Number of Batches
-    int n = 20; // Batch size
+    int m = 200; // Number of Batches
+    int n = 250; // Batch size
     int k = 5;   // Dimensionality
 
     // Seed the random number generator for reproducibility
@@ -42,15 +42,15 @@ int main() {
 
     // initialise algorithm
     SDOcluststream<double> sdoclust(
-            40, 
-            100, 
+            500, 
+            2000, 
             0.3f, 
             6, // x
             7, // chi
             0.15f,
             0.6f,
             7, // e
-            0.99);
+            0.98);
 
     // Measure time taken for fitPredict
     auto start0 = std::chrono::steady_clock::now();
