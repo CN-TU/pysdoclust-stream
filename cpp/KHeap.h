@@ -9,6 +9,7 @@
 #include <vector>
 #include <utility>
 #include <unordered_map>
+#include <memory>
 #include <boost/heap/binomial_heap.hpp>
 
 template<typename ValueType, typename T>
@@ -38,6 +39,7 @@ class KBufferHeap {
 
     // MaxHeap inactive; // Max heap for k lowest elements, largest on top
     std::unordered_map<T, ValueType> inactiveMap;
+    
 
     bool in_h(const T& key) const { return kHeapMap.count(key)>0; }
     bool in_b(const T& key) const { return bufferMap.count(key)>0; }
@@ -188,11 +190,110 @@ class KBufferHeap {
         }        
     }
 
+    void invalidateHandles() {
+        // Invalidate all handles in the object to prevent usage after move
+        kHeap.clear();  // Clear the max heap (invalidates handles)
+        buffer.clear();   // Clear the max heap (invalidates handles)
+        rBuffer.clear();  // Clear the min heap (invalidates handles)
+        kHeapMap.clear(); // Clear the map storing kHeap handles
+        bufferMap.clear();// Clear the map storing buffer handles
+        inactiveMap.clear();
+    }
+
    
   public:
     // Constructor to initialize with a specific value of k and max_buffer_size
     KBufferHeap() : k(0), max_buffer_size(0) {}
     KBufferHeap(std::size_t k, std::size_t max_buffer_size) : k(k), max_buffer_size(max_buffer_size) {} 
+
+    KBufferHeap(KBufferHeap&& other) noexcept {
+        // Move internal resources from `other` to this object
+        kHeap = std::move(other.kHeap);
+        buffer = std::move(other.buffer);
+        rBuffer = std::move(other.rBuffer);
+        // Move the maps too
+        kHeapMap = std::move(other.kHeapMap);
+        bufferMap = std::move(other.bufferMap);
+        inactiveMap = std::move(other.inactiveMap);
+        // Transfer sizes for consistency
+        k = other.k;  // Assuming `k` is the size variable for kHeap
+        max_buffer_size = other.max_buffer_size;
+        // Invalidate handles in the original object        
+        other.invalidateHandles();
+    }
+
+    // Move assignment operator (transfers ownership)
+    KBufferHeap& operator=(KBufferHeap&& other) noexcept {
+        // Similar logic as move constructor, but assign to this object
+        kHeap = std::move(other.kHeap);
+        buffer = std::move(other.buffer);
+        rBuffer = std::move(other.rBuffer);
+        // Move the maps too
+        kHeapMap = std::move(other.kHeapMap);
+        bufferMap = std::move(other.bufferMap);
+        inactiveMap = std::move(other.inactiveMap);
+        // Transfer sizes for consistency
+        k = other.k;  // Assuming `k` is the size variable for kHeap
+        max_buffer_size = other.max_buffer_size;
+        // Invalidate handles in the original object    
+        invalidateHandles();
+        return *this;
+    }
+
+    KBufferHeap(const KBufferHeap& other) {
+        // Copy heaps
+        kHeap = other.kHeap;  
+        buffer = other.buffer;
+        rBuffer = other.rBuffer;
+        // Copy the maps
+        for (iterator it = kHeap.begin(); it != kHeap.end(); ++it) {            
+            kHeapMap[it->second] = boost::heap::binomial_heap<PairType>::s_handle_from_iterator(it);
+        }        
+        std::unordered_map<T, handle_type> tempBufferMap;
+        for (iterator it = buffer.begin(); it != buffer.end(); ++it) {            
+            tempBufferMap[it->second] = boost::heap::binomial_heap<PairType>::s_handle_from_iterator(it);
+        }
+        std::unordered_map<T, rhandle_type> temprBufferMap;
+        for (riterator it = rBuffer.begin(); it != rBuffer.end(); ++it) {            
+            temprBufferMap[it->second] = boost::heap::binomial_heap< PairType, boost::heap::compare<std::greater<PairType>>>::s_handle_from_iterator(it);
+        }
+        for (const auto& [key, value] : tempBufferMap) {
+            bufferMap.emplace(key, HandlePairType(value, temprBufferMap.at(key)));  // Use at() for potential throws
+        }
+        inactiveMap = other.inactiveMap;
+        // Copy size variables
+        k = other.k;
+        max_buffer_size = other.max_buffer_size;
+    }
+
+    KBufferHeap& operator=(const KBufferHeap& other) {
+        if (this != &other) {
+            // Copy heaps
+            kHeap = other.kHeap;  
+            buffer = other.buffer;
+            rBuffer = other.rBuffer;
+            // Copy the maps
+            for (iterator it = kHeap.begin(); it != kHeap.end(); ++it) {            
+                kHeapMap[it->second] = boost::heap::binomial_heap<PairType>::s_handle_from_iterator(it);
+            }        
+            std::unordered_map<T, handle_type> tempBufferMap;
+            for (iterator it = buffer.begin(); it != buffer.end(); ++it) {            
+                tempBufferMap[it->second] = boost::heap::binomial_heap<PairType>::s_handle_from_iterator(it);
+            }
+            std::unordered_map<T, rhandle_type> temprBufferMap;
+            for (riterator it = rBuffer.begin(); it != rBuffer.end(); ++it) {            
+                temprBufferMap[it->second] = boost::heap::binomial_heap< PairType, boost::heap::compare<std::greater<PairType>>>::s_handle_from_iterator(it);
+            }
+            for (const auto& [key, value] : tempBufferMap) {
+                bufferMap.emplace(key, HandlePairType(value, temprBufferMap.at(key)));  // Use at() for potential throws
+            }
+            inactiveMap = other.inactiveMap;
+            // Copy size variables
+            k = other.k;
+            max_buffer_size = other.max_buffer_size;
+        }
+        return *this;
+    }
 
     // Insert a new element with its distance
     bool insert(const T key, const ValueType val, bool inactive = false) {
@@ -231,7 +332,7 @@ class KBufferHeap {
             handle_type ha;
             if (in_h(key)) { ha = kHeapMap[key]; }
             if (in_b(key)) { ha = bufferMap[key].first; }      
-            PairType pair = *ha;                
+            PairType& pair = *ha;                
             inactiveMap[pair.second] = pair.first;
             if (erase_b(pair.second)) { return true; }
             if (erase_h(pair.second)) { return true; }
@@ -322,12 +423,12 @@ class KBufferHeap {
     }
     
     void print() const {
-        std::cout << "K: " << k << ", Max Buffer: " << max_buffer_size << std::endl;
+        std::cout << std::endl << "K: " << k << ", Max Buffer: " << max_buffer_size << std::endl;
         std::cout << "K lowest: " << std::endl;
         for (auto it = kHeap.ordered_begin(); it != kHeap.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
-        std::cout << std::endl;
+        std::cout << std::endl << std::endl;
         for (auto pair: kHeapMap) {
             std::cout << "(" << pair.first << ": " << (*(pair.second)).first << ") ";
         }
@@ -335,7 +436,7 @@ class KBufferHeap {
         for (auto it = buffer.ordered_begin(); it != buffer.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
-        std::cout << std::endl;
+        std::cout << std::endl << std::endl;
         for (auto pair: bufferMap) {
             std::cout << "(" << pair.first << ": " << (*(pair.second.first)).first << ") ";
         }
@@ -343,7 +444,7 @@ class KBufferHeap {
         for (auto it = rBuffer.ordered_begin(); it != rBuffer.ordered_end(); ++it) {
             std::cout << "(" << it->second << ": " << it->first << ") " ;
         }
-        std::cout << std::endl;
+        std::cout << std::endl << std::endl;
         for (auto pair: bufferMap) {
             std::cout << "(" << pair.first << ": " << (*(pair.second.second)).first << ") ";
         }

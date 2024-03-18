@@ -27,6 +27,8 @@ void print(KBufferHeap<double,int>& kdHeap) {
 
 int main() {
     // Create a KDistanceHeap with k = 3
+
+    std::unordered_map<int, KBufferHeap<double, int>> test_map;
     KBufferHeap<double, int> kdHeap(1, 11);
 
     // Insert some elements
@@ -51,6 +53,33 @@ int main() {
     kdHeap.insert(14, 0.2);
     kdHeap.insert(15, 0.3);
     kdHeap.print();
+
+    test_map[1] = kdHeap;
+
+    KBufferHeap<double, int> kdHeap2(1, 11);
+
+    kdHeap2.insert(6, 0.721);
+    kdHeap2.insert(2, 0.8972);   
+    kdHeap2.deactivate(2); 
+    kdHeap2.insert(11, 0.538);
+    kdHeap2.insert(12, 0.558);   
+    // kdHeap2.print(); 
+    kdHeap2.insert(13, 0.59);    
+    // kdHeap2.print();
+    kdHeap2.insert(6, 0.53);
+    kdHeap2.insert(7, 0.3);
+    kdHeap2.insert(8, 0.125);
+    kdHeap2.insert(9, 0.12);
+    kdHeap2.insert(0, 0.22);
+    kdHeap2.insert(10, 0.13);
+    kdHeap2.insert(11, 0.52);
+    kdHeap2.insert(12, 0.1);
+    kdHeap2.insert(13, 1.1);
+    kdHeap2.insert(14, 0.12);
+    kdHeap2.insert(15, 0.39);
+    kdHeap.print();
+    kdHeap2.print();
+    // kdHeap2.print();
 
     // std::cout << std::endl << "Balance: " << std::endl << std::endl;
 

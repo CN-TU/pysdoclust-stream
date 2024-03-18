@@ -96,9 +96,9 @@ void SDOcluststream<FloatType>::updateGraph(
     const int& active_threshold,
     const std::size_t current_e,
     const std::size_t& chi) {
-        std::cout << "Before update H: " << std::endl;
+        // std::cout << "Before update H: " << std::endl;
         updateH_all(chi);
-        std::cout << std::endl << "global h: " << h << std::endl;
+        // std::cout << std::endl << "global h: " << h << std::endl;
         clusters.clear();
         IndexSetType processed;
         for (auto it = observers.begin(); it != observers.end(); ++it) {

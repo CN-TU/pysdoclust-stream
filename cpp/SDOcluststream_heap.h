@@ -81,7 +81,7 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
         FloatType& score,
-        HeapType heap,
+        HeapType& heap,
         const int& current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
     heap.balanceK(current_neighbor_cnt);
@@ -89,7 +89,6 @@ void SDOcluststream<FloatType>::predict_impl(
     if (heap.size() < current_neighbor_cnt) {
         std::cerr << "Warning: Heap size " << heap.size() << " is smaller than the threshold!" << std::endl;
     }
-
     score = heap.median(); // if buffer was too small heap can have less than current_neighbor_cnt elements
     for (auto hIt = heap.begin(); hIt != heap.end(); ++hIt) { // not ordered, but not necessary here
         int idx = hIt->second;
@@ -180,8 +179,7 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
         const std::unordered_set<int>& dropped,
         const std::unordered_set<int>& inactive,
         const std::unordered_set<int>& activated,
-        const std::unordered_set<int>& deactivated) {
-    
+        const std::unordered_set<int>& deactivated) {    
     // drop heaps from dropped observers
     for (int idx : dropped) {
         auto it = heap_matrix.find(idx);
@@ -196,8 +194,7 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
         for (int idy : dropped) {
             heap.erase(idy);
         }
-    }
-    
+    }    
     // drop for the sampled heap drop enties
     for (auto& pair : sampled) {
         int idx = pair.first;
@@ -206,27 +203,19 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
             heap.erase(idy);
         }
     }
-
     // distance between old obs and newly sampled obs
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         int idx = it->index;
         if (!(sampled.count(idx)>0)) { // with new Observers distances exist
-            std::cout << std::endl << "Update heap " << idx << std::endl;
-            heap_matrix[idx].print();
             for (auto& pair : sampled) {
                 int idy = pair.first;
                 const HeapType& heap = pair.second;
                 FloatType distance = distance_function(it->getData(), indexToIterator[idy]->getData());
-                heap_matrix[idx].insert(idy, distance);
-                std::cout << "inserted " << idy << ": " << distance << std::endl;
-                heap_matrix[idx].print();
-                // heap_matrix[idx].insert(idy, heap[idx], inactive.count(idy)>0); // condition if inactive or active
+                // heap_matrix[idx].insert(idy, distance);
+                heap_matrix[idx].insert(idy, heap[idx], inactive.count(idy)>0); // condition if inactive or active
             }
-            std::cout << "After update:" << std::endl;
-            heap_matrix[idx].print();
         }
     }
-
     // (de)activate
     for (auto& pair : heap_matrix) {
         int idx = pair.first;
@@ -239,11 +228,18 @@ void SDOcluststream<FloatType>::updateHeapMatrix(
                 heap.activate(idy);
             }    
         }        
-    }    
-
+    }
     // add heaps from sampled observers
     heap_matrix.reserve(heap_matrix.size() + sampled.size()); // Optional: reserve memory for efficiency    
-    heap_matrix.insert(std::move(sampled.begin()), std::move(sampled.end()));
+    // for (auto it = sampled.begin(); it != sampled.end(); ++it) {
+    //     heap_matrix.emplace(std::move(it->first), std::move(it->second));
+    // }
+
+    std::transform(std::make_move_iterator(sampled.begin()), std::make_move_iterator(sampled.end()),
+                std::inserter(heap_matrix, heap_matrix.end()),
+                [](const auto& pair) { return std::make_pair(std::move(pair.first), std::move(pair.second)); });
+
+    sampled.clear();
 };
 
 
@@ -253,37 +249,26 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& time_data, 
         bool fit_only) {
-
-    std::cout << ">>> Entering fitPredict_impl" << std::endl;
-
     // Check for equal lengths:
     if (data.size() != time_data.size()) {
         throw std::invalid_argument("data and now must have the same length");
     }
-
     FloatType now = time_data.front();
     std::vector<int> labels(data.size(), 0);    
     std::unordered_set<int> sampled;
-
     int active_threshold(0), active_threshold2(0);
     int current_neighbor_cnt(0), current_neighbor_cnt2(0);
     int current_observer_cnt(0), current_observer_cnt2(0);
     size_t current_e(0); // unused 
-    size_t chi(0);
-    
+    size_t chi(0);    
     const int first_index(last_index);
-
     FloatType observations_sum(0);     
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         observations_sum += it->observations * std::pow<FloatType>(fading, now-it->time_touched);
     }
-
     int buffer_size = 10;
-
     HeapMatrix heaps;
-    std::cout << ">>> Entering Sampling " << std::endl;
     if (observers.empty()) {
-        // std::cout << std::endl << "init obs: ";
         bool firstPointSampled(false);
         for (size_t i = 0; i < data.size(); ++i) {  
             heaps[i] = HeapType(1, buffer_size);           
@@ -325,25 +310,20 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             current_neighbor_cnt, current_neighbor_cnt2,
             current_e,
             chi,
-            true); // true for print
-
+            false); // true for print
         for (size_t i = 0; i < data.size(); ++i) {    
             heaps[last_index] = HeapType(current_neighbor_cnt, buffer_size);             
             sampleData(
                 sampled,
-                heaps[first_index + i],
+                heaps[first_index+i],
                 data[i],                    
                 time_data[i],
                 observations_sum * std::pow<FloatType>(fading, time_data[i]-now),
                 current_observer_cnt,
                 current_neighbor_cnt,
-                last_index++);                
+                last_index++); 
         }
     }
-
-    std::cout << "HEAP AFTER SAMPLING" << std::endl;
-    printHeapMatrix(heaps);
-
     // Can not replace more observers than max size of model
     if (sampled.size()>observer_cnt) {
         // 1. Transfer elements to a vector:
@@ -365,9 +345,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         worst_observers.push(it);            
     }
-
-    // std::cout << "Before Replace " << std::endl;
-    std::cout << ">>> Entering Replace " << std::endl;
     std::unordered_set<int> dropped;
     for (size_t i = 0; i < data.size(); ++i) {
         if (sampled.count(first_index + i) > 0) {
@@ -379,21 +356,17 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
                 current_observer_cnt,
                 first_index + i
             );
-            std::cout << indexToIterator[first_index+i]->index << " ";
             last_added_index = first_index + i;
             last_added_time = time_data[i];
         }
-    }
-    
+    }    
     setModelParameters(
         current_observer_cnt, current_observer_cnt2,
         active_threshold, active_threshold2,
         current_neighbor_cnt, current_neighbor_cnt2,
         current_e,
         chi,
-        true); // true for print
-
-    std::cout << ">>> Entering Update Heaps " << std::endl;
+        false); // true for print
     for (size_t i = 0; i < data.size(); ++i) {        
         updateHeap(
             heaps[first_index + i],
@@ -404,12 +377,9 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             (sampled.count(first_index + i) > 0) ? current_neighbor_cnt2 : current_neighbor_cnt
         );
     }
-    
-    std::cout << ">>> ALL HEAPS " << std::endl;
-    printHeapMatrix(heaps);
-
+    // std::cout << std::endl << std::endl << " HEAPS AFTER UPDATE" << std::endl;
+    // printHeapMatrix(heaps);
     // fit model
-    std::cout << ">>> Entering Fit " << std::endl;
     std::unordered_map<int, std::pair<FloatType, FloatType>> temporary_scores; // index, (score, time_touched)
     for (size_t i = 0; i < data.size(); ++i) { 
         fit_impl(
@@ -419,10 +389,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             (sampled.count(first_index + i) > 0) ? current_observer_cnt2 : current_observer_cnt, // if sampled or not
             (sampled.count(first_index + i) > 0) ? current_neighbor_cnt2 : current_neighbor_cnt);
     }
-    std::cout << ">>> Entering Update Model " << std::endl;
     updateModel(temporary_scores);
-    std::cout << ">>> Left Update Model " << std::endl;
-
     // update active tree
     std::unordered_set<int> activated;
     std::unordered_set<int> active;
@@ -445,69 +412,58 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         }
         ++i;
     }
-
-    std::cout << ">>> Entering Set inactive in data heaps " << std::endl;
     for (size_t i = 0; i < data.size(); ++i) { 
         for (int idx : inactive) {
-            std::cout << idx << " ";
             heaps[first_index + i].deactivate(idx);
         }
     }
-    std::cout << ">>> ALL HEAPS AFTER INACTIVE" << std::endl;
-    printHeapMatrix(heaps);
-
-    
     HeapMatrix sampled_heaps;
-    std::copy_if(heaps.begin(), heaps.end(),
-                std::inserter(sampled_heaps, sampled_heaps.end()),
-                [&sampled](const auto& pair) { return sampled.count(pair.first)>0; });
-    // update distance heap
-
-    std::cout << ">>> SAMPLED HEAPS " << std::endl;
-    printHeapMatrix(sampled_heaps);
-
-    std::cout << ">>>  HEAP MATRIX " << std::endl;
-    printHeapMatrix();
-    std::cout << ">>>  UPDATE HEAP MATRIX " << std::endl;
+    std::copy_if(std::make_move_iterator(heaps.begin()), std::make_move_iterator(heaps.end()),
+              std::inserter(sampled_heaps, sampled_heaps.end()),
+              [&sampled](const auto& pair) { return sampled.count(pair.first) > 0; });
+    for (int key : sampled) { heaps.erase(key); }
+    // std::cout << std::endl << std::endl << " SAMPLED" << std::endl;
+    // printHeapMatrix(sampled_heaps);
+    // std::cout << std::endl << std::endl << " HEAPS AFTER SAMPLED" << std::endl;
+    // printHeapMatrix(heaps);
     updateHeapMatrix(
         sampled_heaps, // map of heaps // const?
         dropped,
         inactive,
         activated,
-        deactivated);
-    // printDistanceMatrix();
-    std::cout << ">>>  HEAP MATRIX AFTER " << std::endl;
-    printHeapMatrix();
-    
+        deactivated);    
     // update graph
-    std::cout << ">>> Entering Update Graph " << std::endl;
+    std::cout << std::endl << std::endl << " HEAPS MATRIX AFTER UPDATE" << std::endl;
+    printHeapMatrix();
     now = time_data.back(); // last timestamp of batch    
     updateGraph(
         now,
         active_threshold,
         e, // current_e,
         chi);
-    std::cout << ">>> Entering Predict " << std::endl;
-    std::vector<FloatType> scores(data.size(), 0);    
+    std::vector<FloatType> scores(data.size(), 0);  
+    std::cout << std::endl << std::endl << " HEAPS MATRIX AFTER GRAPH UPDATE" << std::endl;
+    printHeapMatrix();
+
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
+            int current_index = first_index + i;
+            bool is_observer =  (sampled.count(current_index) > 0);            
             int label(0);
             FloatType score(0);
             predict_impl(
                 labels[i],
                 scores[i],
-                heaps[first_index + i],
-                (sampled.count(first_index + i) > 0) ? current_neighbor_cnt2 : current_neighbor_cnt);
+                is_observer ? heap_matrix[current_index] : heaps[current_index],
+                is_observer ? current_neighbor_cnt2 : current_neighbor_cnt);
             // gamma_dist.update(score);
             gamma_dist.update(score, fading, time_data[i]);
-        }
-        
+        }        
         gamma_dist.update();
         for (size_t i = 0; i < scores.size(); ++i) {
             if (gamma_dist.isOutlier(scores[i], p_outlier)) {labels[i] = 0;}
         }
-    }     
-
+    } 
     return labels;
 };
 

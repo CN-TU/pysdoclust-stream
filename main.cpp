@@ -33,7 +33,7 @@ std::vector<Vector<double>> generateRandomVectors(std::size_t N, std::size_t k, 
 int main() {
     // Set data parameters
     int m = 10; // Number of Batches
-    int n = 10; // Batch size
+    int n = 20; // Batch size
     int k = 5;   // Dimensionality
 
     // Seed the random number generator for reproducibility

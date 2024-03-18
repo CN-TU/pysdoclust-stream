@@ -197,7 +197,7 @@ class SDOcluststream {
     void predict_impl(
             int& label,
             FloatType& score,
-            HeapType heap,
+            HeapType& heap,
             const int& current_neighbor_cnt); // heap
     void updateHeap(
             HeapType& heap, // map of heaps // const?
