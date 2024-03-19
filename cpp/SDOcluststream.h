@@ -17,6 +17,7 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/identity.hpp>
+#include <boost/heap/fibonacci_heap.hpp>
 #include <queue>
 
 #include "Vector.h"
@@ -105,6 +106,9 @@ class SDOcluststream {
     typedef std::unordered_map<int, HeapType> HeapMatrix;
     HeapMatrix heap_matrix;
 
+    typedef boost::heap::binomial_heap<std::pair<FloatType, int>, boost::heap::compare<std::greater<std::pair<FloatType, int>>>> FibHeapType;  
+    typedef std::unordered_map<int, FibHeapType> FibHeapMatrix;
+
     Gamma<FloatType> gamma_dist;
 
     Tree tree;
@@ -114,6 +118,7 @@ class SDOcluststream {
     void printDistanceMatrix(); // print
     void printHeapMatrix(); // print
     void printHeapMatrix(HeapMatrix& heapM); // print
+    void printFibHeapMatrix(FibHeapMatrix& heapM); // print
     void printObservers(FloatType now); // print
 
     void setModelParameters(
@@ -181,7 +186,7 @@ class SDOcluststream {
 
     bool sampleData(
             std::unordered_set<int>& sampled,
-            HeapType& heap,
+            FibHeapType& heap,
             const Vector<FloatType>& point,
             const FloatType& now,
             FloatType observations_sum,
@@ -190,22 +195,21 @@ class SDOcluststream {
             const int& current_index); // heap
     void fit_impl(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
-            HeapType& heap,
+            FibHeapType& heap,
+            std::unordered_set<int> dropped,
             const FloatType& now,          
             const int& current_observer_cnt,
-            const int& current_neighbor_cnt); // heap
+            const int& current_neighbor_cnt);
     void predict_impl(
             int& label,
             FloatType& score,
-            HeapType& heap,
+            FibHeapType& heap,
             const int& current_neighbor_cnt); // heap
     void updateHeap(
-            HeapType& heap, // map of heaps // const?
-            const Vector<FloatType>& point,        
-            const std::unordered_set<int>& dropped,
+            FibHeapType& heap, // map of heaps // const?
+            const Vector<FloatType>& point,  
             const std::unordered_set<int>& sampled,
-            int observer_index,
-            int current_neighbor_cnt); // heap
+            int observer_index); // heap
     void updateHeapMatrix(
             HeapMatrix& sampled, // map of heaps // const?
             const std::unordered_set<int>& dropped,

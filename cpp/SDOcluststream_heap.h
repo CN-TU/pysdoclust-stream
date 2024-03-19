@@ -8,7 +8,7 @@
 template<typename FloatType>
 bool SDOcluststream<FloatType>::sampleData(
         std::unordered_set<int>& sampled,
-        HeapType& heap,
+        FibHeapType& heap,
         const Vector<FloatType>& point,
         const FloatType& now,
         FloatType observations_sum,
@@ -16,13 +16,11 @@ bool SDOcluststream<FloatType>::sampleData(
         const int& current_neighbor_cnt,
         const int& current_index) {        
     bool add_as_observer;
-    if (!observers.empty()) {            
-        std::vector<std::pair<int, FloatType>> pairs(observers.size());  // Pre-allocate space    
+    if (!observers.empty()) {   
         int i = 0;
         for (auto it = observers.begin(); it != observers.end(); ++it) {
             FloatType distance = distance_function(it->getData(), point); 
-            pairs[i++] = std::make_pair(it->index, distance);
-            heap.insert(it->index, distance);
+            heap.push(std::make_pair(distance, it->index));
         }  
         FloatType observations_nearest_sum(0);      
         for (auto hIt = heap.begin(); hIt != heap.end(); ++hIt) { // not ordered, but not necessary here
@@ -33,15 +31,6 @@ bool SDOcluststream<FloatType>::sampleData(
         add_as_observer = 
             (rng() - rng.min()) * current_neighbor_cnt * observations_sum * (current_index - last_added_index) < 
                 sampling_first * (rng.max() - rng.min()) * current_observer_cnt * observations_nearest_sum * (now - last_added_time);
-        // if observer prepare heap with all distances
-        if (add_as_observer) {
-            heap.setMaxBufferSize(observer_cnt - heap.getK());
-            for (auto pair : pairs) {
-                if (!heap.in(pair.first)) {
-                    heap.insert(pair.first, pair.second);
-                }
-            }
-        }
     } else {
         add_as_observer = 
         (rng() - rng.min()) * (current_index - last_added_index) < 
@@ -59,45 +48,61 @@ bool SDOcluststream<FloatType>::sampleData(
 template<typename FloatType>
 void SDOcluststream<FloatType>::fit_impl(
         std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
-        HeapType& heap,
+        FibHeapType& heap,
+        std::unordered_set<int> dropped,
         const FloatType& now,          
         const int& current_observer_cnt,
-        const int& current_neighbor_cnt) {        
-    heap.balanceK(current_neighbor_cnt);
-    for (auto hIt = heap.begin(); hIt != heap.end(); ++hIt) { // not ordered, but not necessary here
-        int idx = hIt->second;
-        if (temporary_scores.count(idx) > 0) {                
-            auto& value_pair = temporary_scores[idx];
-            value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
-            value_pair.second = now;
-            value_pair.first += obs_scaler[current_observer_cnt];
-        } else {
-            temporary_scores[idx] = std::make_pair(obs_scaler[current_observer_cnt], now);
-        }    
-    }  
+        const int& current_neighbor_cnt) { 
+    FibHeapType tempHeap;
+    int i = 0;
+    while (i<current_neighbor_cnt) {
+        auto pair = heap.top();
+        heap.pop();
+        int idx = pair.second;
+        if (!(dropped.count(idx)>0)) {
+            if (temporary_scores.count(idx) > 0) {                
+                auto& value_pair = temporary_scores[idx];
+                value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
+                value_pair.second = now;
+                value_pair.first += obs_scaler[current_observer_cnt];
+            } else {
+                temporary_scores[idx] = std::make_pair(obs_scaler[current_observer_cnt], now);
+            }   
+            tempHeap.push(pair);
+            i++;
+        }         
+    }
+    heap.merge(tempHeap); 
 };
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
         FloatType& score,
-        HeapType& heap,
+        FibHeapType& heap,
         const int& current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
-    heap.balanceK(current_neighbor_cnt);
-    MapIterator it = observers.begin();    
-    if (heap.size() < current_neighbor_cnt) {
-        std::cerr << "Warning: Heap size " << heap.size() << " is smaller than the threshold!" << std::endl;
-    }
-    score = heap.median(); // if buffer was too small heap can have less than current_neighbor_cnt elements
-    for (auto hIt = heap.begin(); hIt != heap.end(); ++hIt) { // not ordered, but not necessary here
-        int idx = hIt->second;
+    int i = 0;
+    while (i<current_neighbor_cnt) {
+        auto pair = heap.top();
+        heap.pop();
+        int idx = pair.second;
+        // label / color
         const MapIterator& it = indexToIterator[idx];
-        const auto& color_distribution = it->color_distribution;
-        for (const auto& pair : color_distribution) {
-            label_vector[pair.first] += pair.second;
-        }
-    }  
+        if (it->active) {
+            const auto& color_distribution = it->color_distribution;
+            for (const auto& cpair : color_distribution) {
+                label_vector[cpair.first] += cpair.second;
+            }
+            // outlier score / median
+            if (current_neighbor_cnt%2>0) {
+                if (i==current_neighbor_cnt/2) { score = pair.first; }
+            } else {
+                if ((i==current_neighbor_cnt/2) || (i==current_neighbor_cnt/2-1)) { score += 0.5 * pair.first; }
+            }
+            i++;     
+        } 
+    }
     // set label
     FloatType maxColorScore(0);
     for (const auto& pair : label_vector) {
@@ -143,34 +148,17 @@ void SDOcluststream<FloatType>::DFS(
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::updateHeap(
-        HeapType& heap, // map of heaps // const?
-        const Vector<FloatType>& point,        
-        const std::unordered_set<int>& dropped,
+        FibHeapType& heap, // map of heaps // const?
+        const Vector<FloatType>& point,  
         const std::unordered_set<int>& sampled,
-        int observer_index,
-        int current_neighbor_cnt) {
-    heap.balanceK(current_neighbor_cnt);
-    if (!dropped.empty()) {
-        FloatType maxDistanceToInsert = heap.last();
-        for (int idy : dropped) {
-            heap.erase(idy);
-        }    
-        for (int idy : sampled) {
-            if (idy != observer_index) {
-                const MapIterator& it1 = indexToIterator[idy];
-                FloatType distance = distance_function(point, it1->getData());
-                if (distance < maxDistanceToInsert) { heap.insert(idy, distance); }            
-            }
-        }        
-    } else {        
-        for (int idy : sampled) {
-            if (idy != observer_index) {
-                const MapIterator& it1 = indexToIterator[idy];
-                FloatType distance = distance_function(point, it1->getData());
-                heap.insert(idy, distance);           
-            }
+        int observer_index) {
+    for (int idy : sampled) {
+        if (idy != observer_index) {
+            const MapIterator& it1 = indexToIterator[idy];
+            FloatType distance = distance_function(point, it1->getData());
+            heap.push(std::make_pair(distance, idy));           
         }
-    }    
+    }
 };
 
 template<typename FloatType>
@@ -262,34 +250,32 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         observations_sum += it->observations * std::pow<FloatType>(fading, now-it->time_touched);
     }
-    int buffer_size = 15;
-    HeapMatrix heaps;
+    FibHeapMatrix heaps;
     if (observers.empty()) {
         bool firstPointSampled(false);
         for (size_t i = 0; i < data.size(); ++i) {  
-            heaps[i] = HeapType(1, buffer_size);           
+            heaps[i] = FibHeapType();  
+            int current_index = last_index;         
             if (firstPointSampled) {
                 sampleData(
                     sampled,
-                    heaps[i],
+                    heaps[current_index],
                     data[i],                    
                     time_data[i],
                     observations_sum * std::pow<FloatType>(fading, time_data[i]-now), // 0
                     current_observer_cnt,
                     current_neighbor_cnt,
-                    last_index++);        
+                    current_index);        
             } else {
                 if (sampleData(
                         sampled,
                         time_data[i],
                         data.size() - 1,
                         time_data.back() - now,
-                        last_index++)
+                        current_index)
                     ) {firstPointSampled = true;}
             }
-        }
-        for (int idx : sampled) {
-            heaps[idx].setMaxBufferSize(observer_cnt-1);
+            last_index++;
         }
 
         if (!firstPointSampled) {
@@ -307,19 +293,22 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             current_e,
             chi,
             false); // true for print
-        for (size_t i = 0; i < data.size(); ++i) {    
-            heaps[last_index] = HeapType(current_neighbor_cnt, buffer_size);             
+        for (size_t i = 0; i < data.size(); ++i) { 
+            int current_index = last_index;   
+            heaps[current_index] = FibHeapType();               
             sampleData(
                 sampled,
-                heaps[first_index+i],
+                heaps[current_index],
                 data[i],                    
                 time_data[i],
                 observations_sum * std::pow<FloatType>(fading, time_data[i]-now),
                 current_observer_cnt,
                 current_neighbor_cnt,
-                last_index++); 
+                current_index); 
+            last_index++;
         }
     }
+    printFibHeapMatrix(heaps);
     // Can not replace more observers than max size of model
     if (sampled.size()>observer_cnt) {
         // 1. Transfer elements to a vector:
@@ -334,6 +323,8 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         // 4. Reinsert only the desired number of elements:
         sampled.insert(shuffled_elements.begin(), shuffled_elements.begin() + observer_cnt);
     }
+
+
 
     // only push number of sampled into this queue, double side queue necessary then
     IteratorAvCompare iterator_av_compare(fading, now);
@@ -363,25 +354,28 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         current_e,
         chi,
         false); // true for print
-    for (size_t i = 0; i < data.size(); ++i) {        
+    for (size_t i = 0; i < data.size(); ++i) { 
+        int current_index = first_index + i;
+        bool is_observer = sampled.count(current_index) > 0; 
         updateHeap(
-            heaps[first_index + i],
+            heaps[current_index],
             data[i],
-            dropped, 
             sampled,
-            (sampled.count(first_index + i) > 0) ? first_index + i : -1,
-            (sampled.count(first_index + i) > 0) ? current_neighbor_cnt2 : current_neighbor_cnt
-        );
-    }    
+            is_observer ? current_index : -1);
+    }  
+    printFibHeapMatrix(heaps);  
     // fit model
     std::unordered_map<int, std::pair<FloatType, FloatType>> temporary_scores; // index, (score, time_touched)
     for (size_t i = 0; i < data.size(); ++i) { 
+        int current_index = first_index + i;
+        bool is_observer = sampled.count(current_index) > 0; 
         fit_impl(
             temporary_scores,
-            heaps[first_index + i],
+            heaps[current_index],
+            dropped,
             time_data[i],
-            (sampled.count(first_index + i) > 0) ? current_observer_cnt2 : current_observer_cnt, // if sampled or not
-            (sampled.count(first_index + i) > 0) ? current_neighbor_cnt2 : current_neighbor_cnt);
+            is_observer ? current_observer_cnt2 : current_observer_cnt, // if sampled or not
+            is_observer ? current_neighbor_cnt2 : current_neighbor_cnt);
     }
     updateModel(temporary_scores);
     // update active tree
@@ -406,22 +400,33 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         }
         ++i;
     }
+    HeapMatrix sampled_heaps;
     for (size_t i = 0; i < data.size(); ++i) { 
-        for (int idx : inactive) {
-            heaps[first_index + i].deactivate(idx);
+        int idx = first_index + i;
+        if (sampled.count(idx)>0) {
+            std::cout << idx << " ";
+            FibHeapType& heap = heaps[idx];
+            sampled_heaps[idx] = HeapType(current_neighbor_cnt);
+            HeapType& sampled_heap = sampled_heaps[idx];
+            for (auto it = heap.begin(); it != heap.end(); ++it) {
+                if (active.count(it->second)>0) {
+                    sampled_heap.insert(*it);
+                    continue;
+                }
+                if (inactive.count(it->second)>0) {
+                    sampled_heap.insert(*it, true);
+                }
+            }
         }
     }
-    HeapMatrix sampled_heaps;
-    std::copy_if(std::make_move_iterator(heaps.begin()), std::make_move_iterator(heaps.end()),
-              std::inserter(sampled_heaps, sampled_heaps.end()),
-              [&sampled](const auto& pair) { return sampled.count(pair.first) > 0; });
-    for (int key : sampled) { heaps.erase(key); }
+    printHeapMatrix(sampled_heaps);
     updateHeapMatrix(
         sampled_heaps, // map of heaps // const?
         dropped,
         inactive,
         activated,
-        deactivated);    
+        deactivated);  
+    printHeapMatrix();  
     // update graph
     now = time_data.back(); // last timestamp of batch    
     updateGraph(
@@ -438,7 +443,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             predict_impl(
                 labels[i],
                 scores[i],
-                is_observer ? heap_matrix[current_index] : heaps[current_index],
+                heaps[current_index],
                 is_observer ? current_neighbor_cnt2 : current_neighbor_cnt);
             // gamma_dist.update(score);
             gamma_dist.update(scores[i], fading, time_data[i]);

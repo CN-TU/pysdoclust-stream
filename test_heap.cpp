@@ -17,19 +17,19 @@ void print(KBufferHeap<double,int>& kdHeap) {
     }
     std::cout << std::endl;
 
-    // Print elements from mirrors heap
-    std::cout << "\nElements in mirrors heap:" << std::endl;
-    for (auto it = kdHeap.ordered_rbegin2(); it != kdHeap.ordered_rend2(); ++it) {
-        std::cout << it->second << ": " << it->first << ", ";
-    }
-    std::cout << std::endl;
+    // // Print elements from mirrors heap
+    // std::cout << "\nElements in mirrors heap:" << std::endl;
+    // for (auto it = kdHeap.ordered_rbegin2(); it != kdHeap.ordered_rend2(); ++it) {
+    //     std::cout << it->second << ": " << it->first << ", ";
+    // }
+    // std::cout << std::endl;
 };
 
 int main() {
     // Create a KDistanceHeap with k = 3
 
     std::unordered_map<int, KBufferHeap<double, int>> test_map;
-    KBufferHeap<double, int> kdHeap(1, 11);
+    KBufferHeap<double, int> kdHeap(3);
 
     // Insert some elements
 
@@ -56,7 +56,7 @@ int main() {
 
     test_map[1] = kdHeap;
 
-    KBufferHeap<double, int> kdHeap2(1, 11);
+    KBufferHeap<double, int> kdHeap2(4);
 
     kdHeap2.insert(6, 0.721);
     kdHeap2.insert(2, 0.8972);   

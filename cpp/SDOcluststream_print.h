@@ -39,7 +39,7 @@ void SDOcluststream<FloatType>::printClusters() {
 // };
 template<typename FloatType>
 void SDOcluststream<FloatType>::printHeapMatrix() {
-    std::cout << std::endl << "heap matrix" << std::endl;
+    std::cout << std::endl << "heap matrix all" << std::endl;
     for (const auto& pair : heap_matrix) {
         std::cout << "Index " << pair.first << std::endl;
         pair.second.print();
@@ -52,6 +52,19 @@ void SDOcluststream<FloatType>::printHeapMatrix(HeapMatrix& heapM) {
     for (const auto& pair : heapM) {
         std::cout << "Index " << pair.first << std::endl;
         pair.second.print();
+    }
+}
+
+template<typename FloatType>
+void SDOcluststream<FloatType>::printFibHeapMatrix(FibHeapMatrix& heapM) {
+    std::cout << std::endl << "heap matrix" << std::endl;
+    for (const auto& pair : heapM) {
+        std::cout << "Index " << pair.first << std::endl;
+        const FibHeapType& heap = pair.second;
+        for (auto it = heap.begin(); it != heap.end(); ++it) {
+            std::cout << "(" << it->second << ", " << it->first << ") ";
+        }
+        std::cout << std::endl;
     }
 }
 
