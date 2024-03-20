@@ -37,7 +37,7 @@ void SDOcluststream<FloatType>::fit_impl(
         const int& observer_index,            
         const int& current_observer_cnt,
         const int& current_neighbor_cnt) {        
-    auto nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt + 1); // one more cause point is Observer
+    auto nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt + 1); // one more cause one point is Observer
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
         if (idx!=observer_index) {
@@ -308,7 +308,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             ++it;   
             tree.erase(it2);
             continue;
-        }    
+        }
         ++it;
     }
     for (int idx : sampled) {

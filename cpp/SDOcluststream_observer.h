@@ -91,14 +91,11 @@ struct SDOcluststream<FloatType>::ObserverCompare{
     ObserverCompare(FloatType fading) : fading(fading) {}
 
     bool operator()(const Observer& a, const Observer& b) const {
-        FloatType common_touched = std::max(a.time_touched, b.time_touched);
-        
+        FloatType common_touched = std::max(a.time_touched, b.time_touched);        
         FloatType observations_a = a.observations
-            * std::pow(fading, common_touched - a.time_touched);
-        
+            * std::pow(fading, common_touched - a.time_touched);        
         FloatType observations_b = b.observations
-            * std::pow(fading, common_touched - b.time_touched);
-        
+            * std::pow(fading, common_touched - b.time_touched);        
         // tie breaker for reproducibility
         if (observations_a == observations_b)
             return a.index > b.index;

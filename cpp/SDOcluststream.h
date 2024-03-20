@@ -74,7 +74,6 @@ class SDOcluststream {
     class TreeNodeUpdater; // tree
     struct MyTieBreaker; // tree
 
-
     // Observer Structures
     struct Observer;
     struct ObserverCompare;
@@ -333,11 +332,6 @@ public:
     iterator end() { return iterator(fading, observers.end()); }
 }; 
 
-// #include "SDOcluststream_util.h"
-// #include "SDOcluststream_print.h"
-// #include "SDOcluststream_graph.h"
-
-// #include "SDOcluststream_sorted.h"
 #include "SDOcluststream_tree.h"
 
 #endif  // SDOCLUSTSTREAM_H
