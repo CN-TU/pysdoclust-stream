@@ -23,6 +23,23 @@ double random_double(double min, double max) {
     return dis(gen);
 }
 
+class TreeNodeUpdater {
+    std::vector<double> new_data;
+    int new_key;
+    public:
+    TreeNodeUpdater(std::vector<double> new_data, long long new_key) : new_data(new_data), new_key(new_key) {}
+    void operator() (std::vector<double>& vector, long long& key) {        
+        key = new_key;
+        // vector.clear();
+        // std::cout << vector.size() << std::endl;
+        // for (double& element : vector) {
+        //     std::cout << i << " ";
+        //     element = new_data[i];
+        //     i++;            
+        // }
+    }
+};
+
 int main() {
     // Create an MTree with a minimum node size of 5 and a maximum of 10 elements
     // You can adjust these values based on your expected data size and performance requirements.
@@ -86,6 +103,60 @@ int main() {
             // std::cout << "ID " << randomId << " erased successfully." << std::endl;
         } else {
             // std::cout << "ID " << randomId << " not found." << std::endl;
+        }
+    }
+
+    // Check if points and iterators dereferenced from the map still match
+    for (const auto& entry : iteratorMap) {
+        long long id = entry.first;
+        auto it = entry.second;
+        if (it->second!=id) {
+            std::cout << "ID: " << id << " " << it->second << ", Point: [";
+            for (const auto& coord : it->first) {
+                std::cout << coord << ", ";
+            }
+            std::cout << "] does not matche original point: [";
+            for (const auto& coord : pointMap[id]) {
+                std::cout << coord << ", ";
+            }
+            std::cout << "]" << std::endl;
+        }
+    }
+
+    // Number of data points to generate
+    int num_change = 1000; // Change this to the desired number of points
+
+    // Generate random data points
+    data.clear();
+    for (int i = 0; i < num_change; ++i) {
+        std::vector<double> point;
+        point.push_back(random_double(0.0, 10.0)); // Generate random x-coordinate
+        point.push_back(random_double(0.0, 10.0)); // Generate random y-coordinate
+        data.push_back(point);
+    }
+
+    int j = num_points;
+    for (int i = 0; i < num_change; ++i) {
+        long long randomId = dis(gen);
+        // Erase the randomly chosen ID
+        auto itToErase = iteratorMap.find(randomId);
+        if (itToErase != iteratorMap.end()) {
+            for (const auto& coord : (itToErase->second)->first) {
+                std::cout << coord << ", ";
+            }
+            auto modifier = TreeNodeUpdater(data[i], j);
+            
+            std::cout << "ID " << randomId << " to modify. " << (itToErase->second)->second << std::endl;
+            tree.modify(itToErase->second, modifier);
+            std::cout << "ID " << randomId << " to modify. " << (itToErase->second)->second << std::endl;
+            iteratorMap.erase(itToErase);
+            pointMap.erase(randomId);
+            iteratorMap[j] = itToErase->second;
+            pointMap[j] = data[i];
+            j++;
+            std::cout << "ID " << randomId << " modified successfully." << std::endl;
+        } else {
+            std::cout << "ID " << randomId << " not found." << std::endl;
         }
     }
 
