@@ -32,8 +32,8 @@ std::vector<Vector<double>> generateRandomVectors(std::size_t N, std::size_t k, 
 
 int main() {
     // Set data parameters
-    int m = 5; // Number of Batches
-    int n = 20; // Batch size
+    int m = 25; // Number of Batches
+    int n = 200; // Batch size
     int k = 5;   // Dimensionality
 
     // Seed the random number generator for reproducibility
@@ -42,8 +42,8 @@ int main() {
 
     // initialise algorithm
     SDOcluststream<double> sdoclust(
-            50, 
-            200, 
+            500, 
+            2000, 
             0.3f, 
             6, // x
             7, // chi

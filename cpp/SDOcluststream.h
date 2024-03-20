@@ -204,6 +204,7 @@ class SDOcluststream {
             int& label,
             FloatType& score,
             FibHeapType& heap,
+            std::unordered_set<int> dropped,
             const int& current_neighbor_cnt); // heap
     void updateHeap(
             FibHeapType& heap, // map of heaps // const?
