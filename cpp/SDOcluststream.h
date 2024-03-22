@@ -125,7 +125,7 @@ class SDOcluststream {
     Gamma<FloatType> gamma_dist;
 
     Tree tree;
-    Tree tree_active; 
+    Tree treeA; 
     
     void printClusters(); // print
     void printDistanceMatrix(); // print
@@ -147,6 +147,7 @@ class SDOcluststream {
 
     void updateH_single(MapIterator it, size_t n);
     void updateH_all(const size_t& chi);
+    void updateH_all();
     
     bool hasEdge(FloatType distance, const MapIterator& it); // util
     
@@ -155,14 +156,14 @@ class SDOcluststream {
     void fit_impl(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
             const Vector<FloatType>& point,
-            const FloatType& now,
-            const int& observer_index,            
+            const FloatType& now,           
             const int& current_observer_cnt,
-            const int& current_neighbor_cnt); // tree
+            const int& current_neighbor_cnt,
+            const int& observer_index); // tree
     void fit_impl(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
             const Vector<FloatType>& point,
-            const FloatType& now,            
+            const FloatType& now,           
             const int& current_observer_cnt,
             const int& current_neighbor_cnt); // tree
 
@@ -170,8 +171,8 @@ class SDOcluststream {
             int& label,
             FloatType& score,
             const Vector<FloatType>& point, // could be accessed as with observer_index
-            const int& observer_index,
-            const int& current_neighbor_cnt); // tree
+            const int& current_neighbor_cnt,
+            const int& observer_index); // tree
     void predict_impl(
             int& label,
             FloatType& score,
@@ -261,7 +262,7 @@ public:
         distance_matrix(),
         gamma_dist(),
         tree(distance_function),
-        tree_active(distance_function)
+        treeA(distance_function)
     {
         setObsScaler();
     }

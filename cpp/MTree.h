@@ -186,7 +186,8 @@ class MTree {
     // TODO: provide default bound estimator instead
     // BoundEstimator which does nothing
     struct NopBoundEstimator {
-        void operator()(const NodeStats*, DistanceType, DistanceType) {}
+        // void operator()(const NodeStats*, DistanceType, DistanceType) {}
+        void operator()(Query&, const NodeStats*, NodeTagType, NodeTagType, DistanceType, DistanceType) {}
     };
     // A TieBreaker allows the order of knn queries to be specified if points
     // have the same distance to the search query.
@@ -251,6 +252,7 @@ class MTree {
     // only modify stats while leaving key unmodified
     // void modifyStats(iterator pos, Modifier modifier);    
     
+    // template<typename BoundEstimator = NopBoundEstimator> // by me
     Query search(const KeyType& needle, DistanceType min_radius = 0, DistanceType max_radius = std::numeric_limits<DistanceType>::infinity(), bool reverse = false, BoundEstimator estimator = NopBoundEstimator()) {
         return subtreeSearch(needle, min_radius, max_radius, reverse, estimator, *root, false);
     }

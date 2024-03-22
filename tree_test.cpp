@@ -1,5 +1,6 @@
 #include "MTree.h"
 #include <iostream>
+#include <set>
 
 
 // Define the vector type and distance function for your specific needs
@@ -25,12 +26,12 @@ double random_double(double min, double max) {
 
 class TreeNodeUpdater {
     std::vector<double> new_data;
-    int new_key;
+    long long new_key;
     public:
     TreeNodeUpdater(std::vector<double> new_data, long long new_key) : new_data(new_data), new_key(new_key) {}
-    void operator() (std::vector<double>& vector, long long& key) {        
-        key = new_key;
-        // vector.clear();
+    void operator() (std::vector<double>& vector, long long&) {        
+        // key = std::move(new_key);
+        vector = std::move(new_data);
         // std::cout << vector.size() << std::endl;
         // for (double& element : vector) {
         //     std::cout << i << " ";
@@ -91,6 +92,7 @@ int main() {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<long long> dis(0, num_points - 1); // ID range from 0 to (id - 1)
     
+    std::unordered_set<long long> dropped;
     const int num_iterations = num_points / 100; // Adjust this value based on your requirement
     for (int i = 0; i < num_iterations; ++i) {
         long long randomId = dis(gen);
@@ -100,7 +102,8 @@ int main() {
             tree.erase(itToErase->second);
             pointMap.erase(randomId);
             iteratorMap.erase(itToErase);
-            // std::cout << "ID " << randomId << " erased successfully." << std::endl;
+            dropped.insert(randomId);
+            std::cout << "ID " << randomId << " erased successfully." << std::endl;
         } else {
             // std::cout << "ID " << randomId << " not found." << std::endl;
         }
@@ -139,24 +142,28 @@ int main() {
     for (int i = 0; i < num_change; ++i) {
         long long randomId = dis(gen);
         // Erase the randomly chosen ID
-        auto itToErase = iteratorMap.find(randomId);
-        if (itToErase != iteratorMap.end()) {
-            for (const auto& coord : (itToErase->second)->first) {
-                std::cout << coord << ", ";
+        if (!(dropped.count(randomId)>0)) {
+            auto itToErase = iteratorMap.find(randomId);
+            if (itToErase != iteratorMap.end()) {
+                for (const auto& coord : (itToErase->second)->first) {
+                    std::cout << coord << ", ";
+                }
+                auto modifier = TreeNodeUpdater(data[i], j);
+                
+                
+                auto it = itToErase->second;
+                // std::cout << "ID " << randomId << " to modify. " << (itToErase->second)->second << std::endl;
+                // tree.erase(it);
+                // std::cout << "ID " << randomId << " to modify. " << (itToErase->second)->second << std::endl;
+                iteratorMap.erase(itToErase);
+                pointMap.erase(randomId);
+                // iteratorMap[j] = itToErase->second;
+                // pointMap[j] = data[i];
+                j++;
+                std::cout << "ID " << randomId << " modified successfully." << std::endl;
+            } else {
+                std::cout << "ID " << randomId << " not found." << std::endl;
             }
-            auto modifier = TreeNodeUpdater(data[i], j);
-            
-            std::cout << "ID " << randomId << " to modify. " << (itToErase->second)->second << std::endl;
-            tree.modify(itToErase->second, modifier);
-            std::cout << "ID " << randomId << " to modify. " << (itToErase->second)->second << std::endl;
-            iteratorMap.erase(itToErase);
-            pointMap.erase(randomId);
-            iteratorMap[j] = itToErase->second;
-            pointMap[j] = data[i];
-            j++;
-            std::cout << "ID " << randomId << " modified successfully." << std::endl;
-        } else {
-            std::cout << "ID " << randomId << " not found." << std::endl;
         }
     }
 

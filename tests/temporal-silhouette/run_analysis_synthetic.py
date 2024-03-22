@@ -39,18 +39,18 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # if no parameters are provided, the script will be run with these configurations
 DEFAULT_RUNS = '''
 dataS/base/arff results/ base normal
-dataS/base/arff results/ base-r remove
-dataS/base/arff results/ base-p phase
-dataS/moving/arff results/ mov normal
-dataS/moving/arff results/ mov-r remove
-dataS/moving/arff results/ mov-p phase
-dataS/nonstat/arff results/ nonst normal
-dataS/nonstat/arff results/ nonst-r remove
-dataS/nonstat/arff results/ nonst-p phase
-dataS/sequential/arff results/ seq normal
-dataS/sequential/arff results/ seq-r remove
-dataS/sequential/arff results/ seq-p phase
 '''
+# dataS/base/arff results/ base-r remove
+# dataS/base/arff results/ base-p phase
+# dataS/moving/arff results/ mov normal
+# dataS/moving/arff results/ mov-r remove
+# dataS/moving/arff results/ mov-p phase
+# dataS/nonstat/arff results/ nonst normal
+# dataS/nonstat/arff results/ nonst-r remove
+# dataS/nonstat/arff results/ nonst-p phase
+# dataS/sequential/arff results/ seq normal
+# dataS/sequential/arff results/ seq-r remove
+# dataS/sequential/arff results/ seq-p phase
 
 if len(sys.argv) < 2:
     print ('No arguments given. Running default configurations.')
@@ -125,7 +125,7 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
     stk = Streamkm(coresetsize=k * 10, length=5000, seed=42)
     den = DenStream(eps=0.2, lambd=0.1, beta=0.2, mu=11)
     bir = Birch(n_clusters=k, threshold=0.5)
-    dsa = clustering.SDOcluststream(k=500, T=1000, e=5, chi_prop=0.1)
+    dsa = clustering.SDOcluststream(k=250, T=1000, e=7, chi_prop=0.1)
     grt = []
     # algorithms = (("SDOstreamc", dsa),("CluStream", cls),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
     # algorithms = (("SDOstreamc", dsa),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))

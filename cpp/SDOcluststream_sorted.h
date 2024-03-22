@@ -109,38 +109,38 @@ void SDOcluststream<FloatType>::updateH_single(
     }
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::DFS(
-        IndexSetType& cluster, 
-        IndexSetType& processed, 
-        const MapIterator& it) {
-    // insert to sets
-    processed.insert(it->index);   
-    cluster.insert(it->index);
-    const DistanceMapType& distance_map = distance_matrix[it->index];
-    for (auto dIt = distance_map.template get<1>().begin(); dIt != distance_map.template get<1>().end(); ++dIt) {            
-        FloatType distance = dIt->distance;
-        if (!hasEdge(distance, it)) { break; }
-        int idx = dIt->index;
-        if (!(processed.count(idx)>0)) {
-            const MapIterator& it1 = indexToIterator[dIt->index];
-            if (hasEdge(distance, it1)) {
-                DFS(cluster, processed, it1);
-            }
-        }
-    }
-}
+// template<typename FloatType>
+// void SDOcluststream<FloatType>::DFS(
+//         IndexSetType& cluster, 
+//         IndexSetType& processed, 
+//         const MapIterator& it) {
+//     // insert to sets
+//     processed.insert(it->index);   
+//     cluster.insert(it->index);
+//     const DistanceMapType& distance_map = distance_matrix[it->index];
+//     for (auto dIt = distance_map.template get<1>().begin(); dIt != distance_map.template get<1>().end(); ++dIt) {            
+//         FloatType distance = dIt->distance;
+//         if (!hasEdge(distance, it)) { break; }
+//         int idx = dIt->index;
+//         if (!(processed.count(idx)>0)) {
+//             const MapIterator& it1 = indexToIterator[dIt->index];
+//             if (hasEdge(distance, it1)) {
+//                 DFS(cluster, processed, it1);
+//             }
+//         }
+//     }
+// }
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::updateDistanceMatrix(
         const std::unordered_set<int>& active,
         const std::unordered_set<int>& activated,
         const std::unordered_set<int>& deactivated) {
-    for (int idx : activated) {
-        MapIterator it = indexToIterator[idx];
-        Vector<FloatType> point = it->data;
-        tree_active.insert(tree_active.begin(), std::make_pair(point, idx));
-    }
+    // for (int idx : activated) {
+    //     MapIterator it = indexToIterator[idx];
+    //     Vector<FloatType> point = it->data;
+    //     tree_active.insert(tree_active.begin(), std::make_pair(point, idx));
+    // }
     // update distance matrix
     for (int idx : deactivated) {
         auto it = distance_matrix.find(idx);

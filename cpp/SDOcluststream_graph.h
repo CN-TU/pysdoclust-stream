@@ -36,6 +36,37 @@ void SDOcluststream<FloatType>::updateH_all(
     }
 }
 
+template<typename FloatType>
+void SDOcluststream<FloatType>::updateH_all() {        
+    std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
+    std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
+    for (auto it = observers.begin(); it != observers.end(); ++it) {    
+        if (!(it->active)) { break; }      
+        // add h to heaps 
+        if (maxHeap.empty() || it->h <= maxHeap.top()) {
+            maxHeap.push(it->h);
+        } else {
+            minHeap.push(it->h);
+        }
+        // Balance the heaps if their sizes differ by more than 1
+        if (maxHeap.size() > (minHeap.size() + 1)) {
+            minHeap.push(maxHeap.top());
+            maxHeap.pop();
+        } else if (minHeap.size() > (maxHeap.size() + 1)) {
+            maxHeap.push(minHeap.top());
+            minHeap.pop();
+        } 
+    }        
+    // Calculate the median based on the heap sizes and top elements    
+    if (maxHeap.size() == minHeap.size()) {
+        h = (maxHeap.top() + minHeap.top()) / 2.0f;
+    } else if (maxHeap.size() > minHeap.size()) {
+        h = maxHeap.top();
+    } else {
+        h = minHeap.top();
+    }
+}
+
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::DetermineColor(
@@ -96,7 +127,7 @@ void SDOcluststream<FloatType>::updateGraph(
     const int& active_threshold,
     const std::size_t current_e,
     const std::size_t& chi) {
-        updateH_all(chi);
+        // updateH_all(chi);
         // std::cout << std::endl << "global h: " << h << std::endl;
         clusters.clear();
         IndexSetType processed;

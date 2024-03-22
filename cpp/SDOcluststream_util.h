@@ -126,7 +126,7 @@ void SDOcluststream<FloatType>::replaceObservers(
         const int& current_index) {        
     MapIterator obsIt = observers.end();
     if (observers.size() < observer_cnt) {
-        obsIt = observers.insert(Observer(data, obs_scaler[current_observer_cnt], now, now, current_index)); // to add to the distance matrix
+        obsIt = observers.insert(Observer(data, obs_scaler[current_observer_cnt], now, now, current_index, &tree, &treeA)); // to add to the distance matrix
     } else {
         // find worst observer
         obsIt = worst_observers.top();  // Get iterator to the "worst" element         
@@ -138,7 +138,7 @@ void SDOcluststream<FloatType>::replaceObservers(
         // update Observer(s)
         auto node = observers.extract(obsIt);
         Observer& observer = node.value();
-        observer.reset(data, obs_scaler[current_observer_cnt], now, now, current_index);
+        observer.reset(data, obs_scaler[current_observer_cnt], now, now, current_index, &tree, &treeA);
         observers.insert(std::move(node));    
     }
     indexToIterator[current_index] = obsIt;
