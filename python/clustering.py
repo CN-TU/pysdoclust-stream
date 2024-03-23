@@ -132,7 +132,7 @@ class SDOcluststream(Clustering):
     """
     
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
-                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, p_outlier=0.99):
+                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, p_outlier=0.99, outlier_threshold=2.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
 
@@ -146,7 +146,8 @@ class SDOcluststream(Clustering):
         assert p['chi_min'] > 0, 'chi_min must be > 0'
         assert 0 <= p['chi_prop'] < 1, 'chi_prop must be in [0,1)'
         assert p['e'] > 0, 'e must be > 0'
-        assert 0 < p['p_outlier'] <= 1, 'zeta must be in (0,1]'
+        assert 0 < p['p_outlier'] <= 1, 'p_outlier must be in (0,1]'
+        assert 1 <= p['outlier_threshold'], 'outlier_threshold must be in [1,inf)'
 
         # Map the Python metric name to the C++ distance function
         distance_function = lookupDistance(p['metric'], p['float_type'], **(p['metric_params'] or {}))
@@ -159,7 +160,7 @@ class SDOcluststream(Clustering):
         
         self.model = cpp_obj(
             p['k'], p['T'], p['qv'], p['x'], p['chi_min'], p['chi_prop'], p['zeta'],
-            p['e'], p['p_outlier'], distance_function, p['seed']
+            p['e'], p['p_outlier'], p['outlier_threshold'], distance_function, p['seed']
         )
         
         self.last_time = 0

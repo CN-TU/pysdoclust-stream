@@ -48,9 +48,10 @@ int main() {
             6, // x
             7, // chi
             0.15f,
-            1.0f, // zeta
+            0.6f, // zeta
             7, // e
-            0.99);
+            0.99,
+            2.0f);
 
     // Measure time taken for fitPredict
     auto start0 = std::chrono::steady_clock::now();

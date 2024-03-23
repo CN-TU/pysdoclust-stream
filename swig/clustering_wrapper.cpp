@@ -33,9 +33,9 @@ static void fit_predict_ensemble(unsigned ensemble_size, int n_jobs, std::functi
 }
 
 template<typename FloatType>
-SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, FloatType p_outlier, Distance_wrapper<FloatType>* distance, int seed) :
+SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, FloatType p_outlier, FloatType outlier_threshold, Distance_wrapper<FloatType>* distance, int seed) :
     dimension(-1),
-    sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, p_outlier, distance->getFunction(), seed)
+    sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, p_outlier, outlier_threshold, distance->getFunction(), seed)
 {
 }
 

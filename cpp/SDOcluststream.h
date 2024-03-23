@@ -47,6 +47,8 @@ class SDOcluststream {
     // number of nearest observer relative to active_observers
     FloatType p_outlier;
     // quantile of scores that is targeted to be identified as an outlier
+    FloatType outlier_threshold;
+    // outlier_threshold * h_bar >> outlier
     
     std::vector<FloatType> obs_scaler;
 
@@ -99,28 +101,28 @@ class SDOcluststream {
     std::unordered_map<int, FloatType>  modelColorDistribution;
    
 
-    // Distance Matrix Structures
-    struct IndexDistancePair; // sorted
-    struct DistanceCompare;  // sorted
-    DistanceCompare distance_compare;
-    typedef boost::multi_index::multi_index_container<
-        IndexDistancePair,
-        boost::multi_index::indexed_by<
-            // boost::multi_index::hashed_unique< // probably not ideal for small datasize
-            boost::multi_index::ordered_unique<
-                boost::multi_index::member<IndexDistancePair, int, &IndexDistancePair::index>
-            >,
-            boost::multi_index::ordered_unique<
-                boost::multi_index::identity<IndexDistancePair>,
-                DistanceCompare
-            >
-        >
-    > DistanceMapType; 
+    // // Distance Matrix Structures
+    // struct IndexDistancePair; // sorted
+    // struct DistanceCompare;  // sorted
+    // DistanceCompare distance_compare;
+    // typedef boost::multi_index::multi_index_container<
+    //     IndexDistancePair,
+    //     boost::multi_index::indexed_by<
+    //         // boost::multi_index::hashed_unique< // probably not ideal for small datasize
+    //         boost::multi_index::ordered_unique<
+    //             boost::multi_index::member<IndexDistancePair, int, &IndexDistancePair::index>
+    //         >,
+    //         boost::multi_index::ordered_unique<
+    //             boost::multi_index::identity<IndexDistancePair>,
+    //             DistanceCompare
+    //         >
+    //     >
+    // > DistanceMapType; 
 
-    typedef std::unordered_map<int, DistanceMapType> DistanceMatrix;
-    DistanceMatrix distance_matrix;
+    // typedef std::unordered_map<int, DistanceMapType> DistanceMatrix;
+    // DistanceMatrix distance_matrix;
     
-    struct TopKDistanceHeap; // sorted
+    // struct TopKDistanceHeap; // sorted
 
     Gamma<FloatType> gamma_dist;
 
@@ -232,6 +234,7 @@ public:
         FloatType zeta,
         std::size_t e,
         FloatType p_outlier,
+        FloatType outlier_threshold,
         SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclidean, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
@@ -242,6 +245,7 @@ public:
         fading_cluster(FloatType(1)),
         neighbor_cnt(neighbor_cnt),
         p_outlier(p_outlier),
+        outlier_threshold(outlier_threshold),
         obs_scaler(observer_cnt+1),
         last_index(0),
         last_added_index(0),
@@ -258,8 +262,8 @@ public:
         observers(observer_compare),  // Initialize observers container with initial capacity and comparison function
         clusters(),
         modelColorDistribution(),
-        distance_compare(),
-        distance_matrix(),
+        // distance_compare(),
+        // distance_matrix(),
         gamma_dist(),
         tree(distance_function),
         treeA(distance_function)

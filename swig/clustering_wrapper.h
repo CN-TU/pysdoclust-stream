@@ -28,6 +28,7 @@ class SDOcluststream_wrapper {
       FloatType zeta, 
       int e,    
       FloatType p_outlier,
+      FloatType outlier_threshold,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 
