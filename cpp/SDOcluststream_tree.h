@@ -141,7 +141,7 @@ void SDOcluststream<FloatType>::predict_impl(
             for (const auto& pair : color_distribution) {
                 label_vector[pair.first] += (1-outlier_factor) * pair.second;
             }
-            std::cout << outlier_factor << " ";
+            // std::cout << outlier_factor << " ";
             label_vector[-1] += outlier_factor; // outlier weight            
             if (current_neighbor_cnt%2==0) {
                 if ( (i==(current_neighbor_cnt/2-1)) || (i==(current_neighbor_cnt/2)) ) {
@@ -164,7 +164,7 @@ void SDOcluststream<FloatType>::predict_impl(
             maxColorScore = pair.second;
         }
     }
-    std::cout << "label " << label <<std::endl;
+    // std::cout << "label " << label <<std::endl;
 }
 
 template<typename FloatType>
@@ -194,7 +194,7 @@ void SDOcluststream<FloatType>::predict_impl(
         for (const auto& pair : color_distribution) {
             label_vector[pair.first] += (1-outlier_factor) * pair.second;
         }
-        std::cout << outlier_factor << " ";
+        // std::cout << outlier_factor << " ";
         label_vector[-1] += outlier_factor; // outlier weight            
 
         if (current_neighbor_cnt%2==0) {
@@ -217,7 +217,7 @@ void SDOcluststream<FloatType>::predict_impl(
             maxColorScore = pair.second;
         }
     }
-    std::cout << "label " << label <<std::endl;
+    // std::cout << "label " << label <<std::endl;
 };
 
 template<typename FloatType>

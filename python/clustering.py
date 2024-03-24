@@ -132,7 +132,7 @@ class SDOcluststream(Clustering):
     """
     
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
-                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, p_outlier=0.99, outlier_threshold=2.0):
+                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, p_outlier=0.99, outlier_threshold=1.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
 
