@@ -81,10 +81,12 @@ void SDOcluststream<FloatType>::Observer::printColorObservations(
 template<typename FloatType>
 void SDOcluststream<FloatType>::Observer::printColorDistribution() const {
     std::cout << std::endl << "Color Distribution Observer: " << index << ": ";
+    FloatType sum(0);
     for (auto& entry : color_distribution) {
+        sum += entry.second;
         std::cout << "(" << entry.first << "," << entry.second << ") ";
     }
-    std::cout << std::endl;
+    std::cout << "sum " << sum << std::endl;
 };
 
 

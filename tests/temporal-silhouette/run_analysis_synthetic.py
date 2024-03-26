@@ -109,7 +109,7 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
         data = data[labels!=0,:]
 
         labels = labels[labels!=0]
-        data, labels = ub.add_oop_outliers(data, labels,0.01)
+        data, labels = ub.add_oop_outliers(data, labels, 0.01)
 
     timestamps = np.arange(data.shape[0])
     print("Dataset shape:", data.shape)
@@ -126,7 +126,7 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
     stk = Streamkm(coresetsize=k * 10, length=5000, seed=42)
     den = DenStream(eps=0.2, lambd=0.1, beta=0.2, mu=11)
     bir = Birch(n_clusters=k, threshold=0.5)
-    dsa = clustering.SDOcluststream(k=300, T=1500, e=7, chi_prop=0.1, outlier_threshold=1.0)
+    dsa = clustering.SDOcluststream(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=1.0)
     grt = []
     # algorithms = (("SDOstreamc", dsa),("CluStream", cls),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
     # algorithms = (("SDOstreamc", dsa),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
@@ -181,6 +181,11 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
                     y[i:(i+blocksize)] = 0
         
         end_time = time.time()
+
+        if alg_name == 'SDOstreamc' or alg_name == 'DenStream':
+            print("0-labels: " + str(np.mean(y == -1)))
+        if alg_name == 'GT':
+            print("0-labels: " + str(np.mean(y == 0)))
 
         if alg_name == 'SDOstreamc':
             label_encoder = LabelEncoder()

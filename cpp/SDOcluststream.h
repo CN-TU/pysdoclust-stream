@@ -99,32 +99,6 @@ class SDOcluststream {
     typedef boost::container::multiset<ClusterModel,ClusterModelCompare> ClusterModelMap;    
     ClusterModelMap clusters;
     std::unordered_map<int, FloatType>  modelColorDistribution;
-   
-
-    // // Distance Matrix Structures
-    // struct IndexDistancePair; // sorted
-    // struct DistanceCompare;  // sorted
-    // DistanceCompare distance_compare;
-    // typedef boost::multi_index::multi_index_container<
-    //     IndexDistancePair,
-    //     boost::multi_index::indexed_by<
-    //         // boost::multi_index::hashed_unique< // probably not ideal for small datasize
-    //         boost::multi_index::ordered_unique<
-    //             boost::multi_index::member<IndexDistancePair, int, &IndexDistancePair::index>
-    //         >,
-    //         boost::multi_index::ordered_unique<
-    //             boost::multi_index::identity<IndexDistancePair>,
-    //             DistanceCompare
-    //         >
-    //     >
-    // > DistanceMapType; 
-
-    // typedef std::unordered_map<int, DistanceMapType> DistanceMatrix;
-    // DistanceMatrix distance_matrix;
-    
-    // struct TopKDistanceHeap; // sorted
-
-    Gamma<FloatType> gamma_dist;
 
     Tree tree;
     Tree treeA; 
@@ -169,6 +143,9 @@ class SDOcluststream {
             const int& current_observer_cnt,
             const int& current_neighbor_cnt); // tree
 
+    void determineLabelVector(
+            std::unordered_map<int, FloatType>& label_vector,
+            const std::pair<TreeIterator, FloatType>& neighbor);
     void predict_impl(
             int& label,
             FloatType& score,
@@ -264,7 +241,7 @@ public:
         modelColorDistribution(),
         // distance_compare(),
         // distance_matrix(),
-        gamma_dist(),
+        // gamma_dist(),
         tree(distance_function),
         treeA(distance_function)
     {

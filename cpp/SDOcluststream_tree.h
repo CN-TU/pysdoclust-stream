@@ -7,7 +7,6 @@
 #include "SDOcluststream_print.h"
 #include "SDOcluststream_graph.h"
 #include "SDOcluststream_util.h"
-// #include "SDOcluststream_sorted.h"
 
 // template<typename FloatType>
 // class SDOcluststream<FloatType>::TreeNodeUpdater {
@@ -24,11 +23,6 @@
 //         key = new_key;
 //     }
 // };
-
-// template<typename FloatType>
-// struct SDOcluststream<FloatType>::MyTieBreaker {
-//     bool operator() (const typename Tree::ValueType& a, const typename Tree::ValueType& b) { return a.second > b.second; }
-// };  
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::DFS(
@@ -112,6 +106,29 @@ void SDOcluststream<FloatType>::fit_impl(
 };
 
 template<typename FloatType>
+void SDOcluststream<FloatType>::determineLabelVector(
+        std::unordered_map<int, FloatType>& label_vector,
+        const std::pair<TreeIterator, FloatType>& neighbor) {
+    int idx = neighbor.first->second; // second is distance, first->first Vector, Output is ordered
+    const MapIterator& it = indexToIterator[idx];
+    const auto& color_distribution = it->color_distribution;
+    FloatType distance = neighbor.second;
+    FloatType outlier_factor = FloatType(0);
+    if (!hasEdge(distance / outlier_threshold, it)) {   
+        FloatType h_bar = (zeta * it->h + (1 - zeta) * h);   
+        // FloatType x = (distance - outlier_threshold * h_bar);
+        // std::cout << x << " ";
+        FloatType x = 1.0f/5.0f * (distance - outlier_threshold * h_bar) / h_bar; //
+        outlier_factor = x / (1 + x);
+        // 0.5 * ( 1 + kx) = kx >> 0,5 = 0,5*kx 
+    }
+    for (const auto& pair : color_distribution) {
+        label_vector[pair.first] += (1-outlier_factor) * pair.second;
+    }
+    label_vector[-1] += outlier_factor; // outlier weight    
+}
+
+template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
         FloatType& score,
@@ -122,49 +139,26 @@ void SDOcluststream<FloatType>::predict_impl(
     const MapIterator& it0 = indexToIterator[observer_index];
     TreeNeighbors& nearestNeighbors = it0->nearestNeighbors;
     int i = 0;
-    for (const auto& neighbor : nearestNeighbors) {
-        int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
-        if (idx!=observer_index) {
-            const MapIterator& it = indexToIterator[idx];
-            const auto& color_distribution = it->color_distribution;
-            FloatType distance = neighbor.second;
-            FloatType outlier_factor = FloatType(0);
-            if (!hasEdge(distance / outlier_threshold, it)) {
-            // if (!hasEdge(distance, it)) {
-                // FloatType ratio = distance / (zeta * it->h + (1 - zeta) * h);
-                // if (ratio > outlier_threshold) { outlier_factor = FloatType(1); }
-                // else { outlier_factor = (ratio-1) / (outlier_threshold-1); }
-
-                FloatType x = distance - outlier_threshold * (zeta * it->h + (1 - zeta) * h);
-                outlier_factor = x / (1 + x); 
-            }
-            for (const auto& pair : color_distribution) {
-                label_vector[pair.first] += (1-outlier_factor) * pair.second;
-            }
-            // std::cout << outlier_factor << " ";
-            label_vector[-1] += outlier_factor; // outlier weight            
-            if (current_neighbor_cnt%2==0) {
-                if ( (i==(current_neighbor_cnt/2-1)) || (i==(current_neighbor_cnt/2)) ) {
-                    score += 0.5 * distance;
-                }
-            } else {
-                if ((i==((current_neighbor_cnt-1)/2))) {
-                    score += distance;
-                }
-            }
+    for (const auto& neighbor : nearestNeighbors) {        
+        if (observer_index!= neighbor.first->second) {            
+            determineLabelVector(label_vector, neighbor);          
             ++i;
             if (i > current_neighbor_cnt) { break; }
         }
     }  
     // set label
     FloatType maxColorScore(0);
-    for (const auto& pair : label_vector) {
-        if ( pair.second > maxColorScore || (pair.second == maxColorScore && pair.first < label) ) {
-            label = pair.first;
-            maxColorScore = pair.second;
+    if ( label_vector[-1]>(current_neighbor_cnt*0.5) ) {
+        label = -1;
+    } else {
+        for (const auto& pair : label_vector) {            
+            if (pair.first<0) { continue; }
+            if (pair.second > maxColorScore || (pair.second == maxColorScore && pair.first < label) ) {
+                label = pair.first;
+                maxColorScore = pair.second;
+            }
         }
     }
-    // std::cout << "label " << label <<std::endl;
 }
 
 template<typename FloatType>
@@ -177,47 +171,23 @@ void SDOcluststream<FloatType>::predict_impl(
     TreeNeighbors nearestNeighbors = treeA.knnSearch(point, current_neighbor_cnt, true, 0, std::numeric_limits<FloatType>::infinity(), false, false);
     int i = 0;
     for (const auto& neighbor : nearestNeighbors) {
-        int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
-        const MapIterator& it = indexToIterator[idx];
-        const auto& color_distribution = it->color_distribution;
-        FloatType distance = neighbor.second;
-        FloatType outlier_factor = FloatType(0);
-        if (!hasEdge(distance / outlier_threshold, it)) {
-            // if (!hasEdge(distance, it)) {
-                // FloatType ratio = distance / (zeta * it->h + (1 - zeta) * h);
-                // if (ratio > outlier_threshold) { outlier_factor = FloatType(1); }
-                // else { outlier_factor = (ratio-1) / (outlier_threshold-1); }
-
-                FloatType x = distance - outlier_threshold * (zeta * it->h + (1 - zeta) * h);
-                outlier_factor = x / (1 + x); 
-            }
-        for (const auto& pair : color_distribution) {
-            label_vector[pair.first] += (1-outlier_factor) * pair.second;
-        }
-        // std::cout << outlier_factor << " ";
-        label_vector[-1] += outlier_factor; // outlier weight            
-
-        if (current_neighbor_cnt%2==0) {
-            if ( (i==(current_neighbor_cnt/2-1)) || (i==(current_neighbor_cnt/2)) ) {
-                score += 0.5 * distance;
-            }
-        } else {
-            if ((i==((current_neighbor_cnt-1)/2))) {
-                score += distance;
-            }
-        }
+        determineLabelVector(label_vector, neighbor);  
         ++i;
         if (i > current_neighbor_cnt) { break; }
     }  
-    // set label
+    //set label
     FloatType maxColorScore(0);
-    for (const auto& pair : label_vector) {
-        if ( pair.second > maxColorScore || (pair.second == maxColorScore && pair.first < label) ) {
-            label = pair.first;
-            maxColorScore = pair.second;
+    if ( label_vector[-1]>(current_neighbor_cnt*0.5) ) {
+        label = -1;
+    } else {
+        for (const auto& pair : label_vector) {
+            if (pair.first<0) { continue; }
+            if (pair.second > maxColorScore || (pair.second == maxColorScore && pair.first < label) ) {
+                label = pair.first;
+                maxColorScore = pair.second;
+            }
         }
     }
-    // std::cout << "label " << label <<std::endl;
 };
 
 template<typename FloatType>
@@ -434,14 +404,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             }
             labels[i] = label;
             scores[i] = score;   
-            // gamma_dist.update(score);
-            // gamma_dist.update(score, fading, time_data[i]);
         }
-        
-        // gamma_dist.update();
-        // for (size_t i = 0; i < scores.size(); ++i) {
-        //     if (gamma_dist.isOutlier(scores[i], p_outlier)) {labels[i] = 0;}
-        // }
     }     
 
     return labels;

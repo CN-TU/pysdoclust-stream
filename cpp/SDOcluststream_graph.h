@@ -153,8 +153,8 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::Observer::updateColorDistribution() {
     // Calculate the sum of all color observations
     FloatType sum = std::accumulate(color_observations.begin(), color_observations.end(), FloatType(0),
-        [](FloatType acc, const std::pair<int, FloatType>& entry) {
-            return acc + entry.second;
+        [](FloatType sum, const std::pair<int, FloatType>& entry) {
+            return sum + entry.second;
         });
     // Update color distribution
     for (auto& entry : color_observations) {
