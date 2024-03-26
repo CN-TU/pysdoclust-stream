@@ -114,13 +114,9 @@ void SDOcluststream<FloatType>::determineLabelVector(
     const auto& color_distribution = it->color_distribution;
     FloatType distance = neighbor.second;
     FloatType outlier_factor = FloatType(0);
-    if (!hasEdge(distance / outlier_threshold, it)) {   
+    if (!hasEdge(distance, it)) {   
         FloatType h_bar = (zeta * it->h + (1 - zeta) * h);   
-        // FloatType x = (distance - outlier_threshold * h_bar);
-        // std::cout << x << " ";
-        FloatType x = 1.0f/5.0f * (distance - outlier_threshold * h_bar) / h_bar; //
-        outlier_factor = x / (1 + x);
-        // 0.5 * ( 1 + kx) = kx >> 0,5 = 0,5*kx 
+        outlier_factor = tanh( k_tanh * (distance - h_bar) / h_bar );
     }
     for (const auto& pair : color_distribution) {
         label_vector[pair.first] += (1-outlier_factor) * pair.second;
@@ -147,10 +143,9 @@ void SDOcluststream<FloatType>::predict_impl(
         }
     }  
     // set label
+    label = -1;
     FloatType maxColorScore(0);
-    if ( label_vector[-1]>(current_neighbor_cnt*0.5) ) {
-        label = -1;
-    } else {
+    if ( label_vector[-1]<(current_neighbor_cnt*0.5) ) {
         for (const auto& pair : label_vector) {            
             if (pair.first<0) { continue; }
             if (pair.second > maxColorScore || (pair.second == maxColorScore && pair.first < label) ) {
@@ -175,12 +170,11 @@ void SDOcluststream<FloatType>::predict_impl(
         ++i;
         if (i > current_neighbor_cnt) { break; }
     }  
-    //set label
+    // set label
+    label = -1;
     FloatType maxColorScore(0);
-    if ( label_vector[-1]>(current_neighbor_cnt*0.5) ) {
-        label = -1;
-    } else {
-        for (const auto& pair : label_vector) {
+    if ( label_vector[-1]<(current_neighbor_cnt*0.5) ) {
+        for (const auto& pair : label_vector) {            
             if (pair.first<0) { continue; }
             if (pair.second > maxColorScore || (pair.second == maxColorScore && pair.first < label) ) {
                 label = pair.first;

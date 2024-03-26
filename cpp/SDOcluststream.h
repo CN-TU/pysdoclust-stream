@@ -20,7 +20,7 @@
 #include <queue>
 
 #include "Vector.h"
-#include "Gamma.h"
+// #include "Gamma.h"
 #include "MTree.h"
 
 template<typename FloatType=double>
@@ -45,10 +45,8 @@ class SDOcluststream {
     // number of nearest observers to consider
     std::size_t neighbor_cnt;
     // number of nearest observer relative to active_observers
-    FloatType p_outlier;
-    // quantile of scores that is targeted to be identified as an outlier
-    FloatType outlier_threshold;
-    // outlier_threshold * h_bar >> outlier
+    FloatType k_tanh;
+    // tanh(( k_tanh * (outlier_threshold-1)) = 0.5 where outlier_threshold is a factor of h_bar(Observer)
     
     std::vector<FloatType> obs_scaler;
 
@@ -210,7 +208,6 @@ public:
         FloatType chi_prop,
         FloatType zeta,
         std::size_t e,
-        FloatType p_outlier,
         FloatType outlier_threshold,
         SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclidean, 
         int seed = 0
@@ -221,8 +218,7 @@ public:
         fading(std::exp(-1/T)),
         fading_cluster(FloatType(1)),
         neighbor_cnt(neighbor_cnt),
-        p_outlier(p_outlier),
-        outlier_threshold(outlier_threshold),
+        k_tanh( atanh(0.5f) / (outlier_threshold-1) ),
         obs_scaler(observer_cnt+1),
         last_index(0),
         last_added_index(0),
