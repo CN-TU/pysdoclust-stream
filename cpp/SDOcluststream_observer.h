@@ -4,9 +4,10 @@
 template<typename FloatType>
 struct SDOcluststream<FloatType>::Observer {
     Vector<FloatType> data;
-    FloatType observations;
-    FloatType time_touched;        
-    FloatType time_added;
+    std::vector<std::complex<FloatType>> observations;
+    FloatType time_touched;       
+	FloatType age;    
+    // FloatType time_added;
     int index;
     TreeIterator treeIt;
     bool active;
@@ -23,16 +24,16 @@ struct SDOcluststream<FloatType>::Observer {
     // Constructor for Observer
     Observer(
         Vector<FloatType> data,
-        FloatType observations,
+        std::vector<std::complex<FloatType>> observations,
         FloatType time_touched,
-        FloatType time_added,
+        FloatType age,
         int index,
         Tree* tree,
         Tree* treeA // should contain index and data soon
     ) : data(data),
         observations(observations),
         time_touched(time_touched),
-        time_added(time_added),
+        age(age),
         index(index),
         treeIt(tree->end()),
         active(false),
@@ -45,6 +46,33 @@ struct SDOcluststream<FloatType>::Observer {
         nearestNeighbors() {
             treeIt = tree->insert(tree->end(), std::make_pair(data, index)); 
         }
+
+    FloatType getProjObservations(
+            const std::vector<std::complex<FloatType>>& now_vector, 
+            std::size_t freq_bins, 
+            FloatType fading_factor) const {
+        FloatType proj_observations(0);
+        for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+            proj_observations += real(observations[freq_ind] * conj(now_vector[freq_ind])) * fading_factor;
+        }
+        return proj_observations;
+    }
+
+    void updateAge(FloatType age_factor, FloatType score = 1) {
+        age *= age_factor;
+        age += score;
+    }
+
+    void updateObservations(
+            std::size_t freq_bins, 
+            FloatType fading_factor,
+            const std::vector<std::complex<FloatType>>& score_vector) {
+        for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+            observations[freq_ind] *= fading_factor;
+            observations[freq_ind] += score_vector[freq_ind];
+        }
+        updateAge(fading_factor, real(score_vector[0]));
+    }
     
     int getIndex() const {
         return index;
@@ -86,9 +114,9 @@ struct SDOcluststream<FloatType>::Observer {
 
     void reset(
         Vector<FloatType> _data,
-        FloatType _observations,
+        std::vector<std::complex<FloatType>> _observations,
         FloatType _time_touched,
-        FloatType _time_added,
+        FloatType _age, 
         int _index,
         Tree* tree,
         Tree* treeA
@@ -96,7 +124,7 @@ struct SDOcluststream<FloatType>::Observer {
         data = _data;
         observations = _observations;
         time_touched = _time_touched;
-        time_added = _time_added;
+        age = _age;
         time_cluster_touched = _time_touched;
         index = _index;        
         color_observations.clear();
@@ -134,9 +162,9 @@ struct SDOcluststream<FloatType>::ObserverCompare{
 
     bool operator()(const Observer& a, const Observer& b) const {
         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
-        FloatType observations_a = a.observations
+        FloatType observations_a = real(a.observations[0])
             * std::pow(fading, common_touched - a.time_touched);        
-        FloatType observations_b = b.observations
+        FloatType observations_b = real(b.observations[0])
             * std::pow(fading, common_touched - b.time_touched);        
         // tie breaker for reproducibility
         if (observations_a == observations_b)
@@ -152,14 +180,15 @@ struct SDOcluststream<FloatType>::ObserverAvCompare{
     bool operator()(FloatType now, const Observer& a, const Observer& b) {
         FloatType common_touched = std::max(a.time_touched, b.time_touched);
         
-        FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);
-        FloatType age_a = 1-std::pow(fading, now-a.time_added);
+        FloatType observations_a = real(a.observations[0]) * std::pow(fading, common_touched - a.time_touched);
+        // FloatType age_a = 1-std::pow(fading, now-a.time_added);
         
-        FloatType observations_b = b.observations * std::pow(fading, common_touched - b.time_touched);
-        FloatType age_b = 1-std::pow(fading, now-b.time_added);
+        FloatType observations_b = real(b.observations[0]) * std::pow(fading, common_touched - b.time_touched);
+        // FloatType age_b = 1-std::pow(fading, now-b.time_added);
         
         // do not necessarily need a tie breaker here
-        return observations_a * age_b > observations_b * age_a;
+        return observations_a * b.age > observations_b * a.age;
+        // return observations_a * age_b > observations_b * age_a;
     }
 };
 
@@ -173,14 +202,15 @@ struct SDOcluststream<FloatType>::IteratorAvCompare{
         const Observer& b = *it_b;
         FloatType common_touched = std::max(a.time_touched, b.time_touched);
         
-        FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);
-        FloatType age_a = 1-std::pow(fading, now-a.time_added);
+        FloatType observations_a = real(a.observations[0]) * std::pow(fading, common_touched - a.time_touched);
+        // FloatType age_a = 1-std::pow(fading, now-a.time_added);
         
-        FloatType observations_b = b.observations * std::pow(fading, common_touched - b.time_touched);
-        FloatType age_b = 1-std::pow(fading, now-b.time_added);
+        FloatType observations_b = real(b.observations[0]) * std::pow(fading, common_touched - b.time_touched);
+        // FloatType age_b = 1-std::pow(fading, now-b.time_added);
         
         // do not necessarily need a tie breaker here
-        return observations_a * age_b > observations_b * age_a;
+        return observations_a * b.age > observations_b * a.age;
+        // return observations_a * age_b > observations_b * age_a;
     }
 };
 

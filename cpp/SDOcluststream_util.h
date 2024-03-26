@@ -4,6 +4,34 @@
 #include "SDOcluststream_observer.h"
 
 template<typename FloatType>
+void SDOcluststream<FloatType>::initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score) {
+    now_vector.resize(freq_bins);
+    for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+        FloatType frequency = max_freq * freq_ind / freq_bins;
+        now_vector[freq_ind] = score * exp(imag_unit * (-frequency) * now);
+    }
+}
+
+template<typename FloatType>
+void SDOcluststream<FloatType>::initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector) {
+    now_vector.resize(freq_bins);
+    for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+        FloatType frequency = max_freq * freq_ind / freq_bins;
+        now_vector[freq_ind] = exp(imag_unit * (-frequency) * now);
+    }
+}
+
+template<typename FloatType>
+FloatType SDOcluststream<FloatType>::getActiveObservationsThreshold(int active_threshold) {
+    if (observers.size() > 1) {        
+        return real(std::next(observers.begin(), active_threshold)->observations[0]);
+    } 
+    else {
+        return 0;
+    }
+}
+
+template<typename FloatType>
 bool SDOcluststream<FloatType>::hasEdge(
         FloatType distance, 
         const MapIterator& it) {
@@ -78,24 +106,23 @@ void SDOcluststream<FloatType>::setModelParameters(
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::updateModel(
-        const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores) {
+        const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores) {
     
     for (auto& [key, value_pair] : temporary_scores) {
         const MapIterator& it = indexToIterator[key];
 
         // Access the value pair:
-        FloatType score = value_pair.first;
+        const std::vector<std::complex<FloatType>>& score_vector = value_pair.first;
         FloatType time_touched = value_pair.second;
 
-        auto node = observers.extract(it);    
-
-        Observer& observer = node.value();
-        observer.observations *= std::pow<FloatType>(fading, time_touched-observer.time_touched);
-        observer.observations += score;
+        auto node = observers.extract(it);  
+        Observer& observer = node.value();        
+        observer.updateObservations(freq_bins, std::pow(fading, time_touched - observer.time_touched), score_vector);
         observer.time_touched = time_touched;
         observers.insert(std::move(node));
     }
 }
+
 
 template<typename FloatType>
 bool SDOcluststream<FloatType>::sampleData( 
@@ -125,8 +152,11 @@ void SDOcluststream<FloatType>::replaceObservers(
         const int& current_observer_cnt,
         const int& current_index) {        
     MapIterator obsIt = observers.end();
+    std::vector<std::complex<FloatType>> init_score_vector;
+    FloatType init_score = obs_scaler[current_observer_cnt];
+    initNowVector(now,  init_score_vector, init_score);
     if (observers.size() < observer_cnt) {
-        obsIt = observers.insert(Observer(data, obs_scaler[current_observer_cnt], now, now, current_index, &tree, &treeA)); // to add to the distance matrix
+        obsIt = observers.insert(Observer(data,  init_score_vector, now, init_score, current_index, &tree, &treeA)); // maybe init_score instead of 1
     } else {
         // find worst observer
         obsIt = worst_observers.top();  // Get iterator to the "worst" element         
@@ -138,7 +168,7 @@ void SDOcluststream<FloatType>::replaceObservers(
         // update Observer(s)
         auto node = observers.extract(obsIt);
         Observer& observer = node.value();
-        observer.reset(data, obs_scaler[current_observer_cnt], now, now, current_index, &tree, &treeA);
+        observer.reset(data, init_score_vector, now, init_score, current_index, &tree, &treeA); // maybe init_score instead of 1
         observers.insert(std::move(node));    
     }
     indexToIterator[current_index] = obsIt;

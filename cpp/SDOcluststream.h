@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <boost/container/set.hpp>
 #include <cmath>
+#include <complex>
 #include <functional>
 #include <limits>
 #include <random>
@@ -29,6 +30,7 @@ class SDOcluststream {
     typedef std::function<FloatType(const Vector<FloatType>&, const Vector<FloatType>&)> DistanceFunction;
 
   private:
+    const std::complex<FloatType> imag_unit{0.0, 1.0};
   
     // number of observers we want
     std::size_t observer_cnt;
@@ -45,6 +47,9 @@ class SDOcluststream {
     // number of nearest observers to consider
     std::size_t neighbor_cnt;
     // number of nearest observer relative to active_observers
+    std::size_t freq_bins;    
+	FloatType max_freq;
+
     FloatType k_tanh;
     // tanh(( k_tanh * (outlier_threshold-1)) = 0.5 where outlier_threshold is a factor of h_bar(Observer)
     
@@ -118,6 +123,9 @@ class SDOcluststream {
             FloatType now); // graph
 
     void setObsScaler(); // util
+    void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score); // util
+    void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector); // util
+    FloatType getActiveObservationsThreshold(int active_threshold); // util
 
     void updateH_single(MapIterator it, size_t n);
     void updateH_all(const size_t& chi);
@@ -128,14 +136,14 @@ class SDOcluststream {
     void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it); // sorted or tree
 
     void fit_impl(
-            std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+            std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
             const Vector<FloatType>& point,
             const FloatType& now,           
             const int& current_observer_cnt,
             const int& current_neighbor_cnt,
             const int& observer_index); // tree
     void fit_impl(
-            std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+            std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
             const Vector<FloatType>& point,
             const FloatType& now,           
             const int& current_observer_cnt,
@@ -146,17 +154,15 @@ class SDOcluststream {
             const std::pair<TreeIterator, FloatType>& neighbor);
     void predict_impl(
             int& label,
-            FloatType& score,
             const Vector<FloatType>& point, // could be accessed as with observer_index
             const int& current_neighbor_cnt,
             const int& observer_index); // tree
     void predict_impl(
             int& label,
-            FloatType& score,
             const Vector<FloatType>& point,
             const int& current_neighbor_cnt); // tree
     void updateModel(
-            const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores); // util
+            const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores); // util
 
     bool sampleData( 
         std::unordered_set<int>& sampled,
@@ -208,6 +214,8 @@ public:
         FloatType chi_prop,
         FloatType zeta,
         std::size_t e,
+        std::size_t freq_bins, 
+        FloatType max_freq,
         FloatType outlier_threshold,
         SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclidean, 
         int seed = 0
@@ -218,6 +226,8 @@ public:
         fading(std::exp(-1/T)),
         fading_cluster(FloatType(1)),
         neighbor_cnt(neighbor_cnt),
+        freq_bins(freq_bins),
+        max_freq(max_freq),
         k_tanh( atanh(0.5f) / (outlier_threshold-1) ),
         obs_scaler(observer_cnt+1),
         last_index(0),

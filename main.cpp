@@ -50,6 +50,8 @@ int main() {
             0.15f,
             0.6f, // zeta
             7, // e
+            1, // freq_bins
+            1, // max_freq
             5.0f);
 
     // Measure time taken for fitPredict

@@ -64,44 +64,76 @@ void SDOcluststream<FloatType>::DFS(
     }
 }
 
+// void fit_impl(
+//             std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>& temporary_scores,
+//             const Vector<FloatType>& point,
+//             const FloatType& now,           
+//             const int& current_observer_cnt,
+//             const int& current_neighbor_cnt,
+//             const int& observer_index);
+
 template<typename FloatType>
 void SDOcluststream<FloatType>::fit_impl(
-        std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+        std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
         const Vector<FloatType>& point,
         const FloatType& now,           
         const int& current_observer_cnt,
         const int& current_neighbor_cnt,
         const int& observer_index) {  
     TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt + 1); 
+    std::vector<std::complex<FloatType>> score_vector;
+    initNowVector(now, score_vector, obs_scaler[current_observer_cnt]);
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
         if (idx!=observer_index) {
             if (temporary_scores.count(idx) > 0) {                
                 auto& value_pair = temporary_scores[idx];
-                value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
+                std::vector<std::complex<FloatType>>& observations = value_pair.first;
+                FloatType fading_factor = std::pow<FloatType>(fading, now-value_pair.second);
+                for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+                    observations[freq_ind] *= fading_factor;
+                    observations[freq_ind] += score_vector[freq_ind];
+                }
                 value_pair.second = now;
-                value_pair.first += obs_scaler[current_observer_cnt];
-            } else { temporary_scores[idx] = std::make_pair(obs_scaler[current_observer_cnt], now); }
+            } else { 
+                std::vector<std::complex<FloatType>> observations;
+                for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+                    observations[freq_ind] = score_vector[freq_ind];
+                }
+                temporary_scores[idx] = std::make_pair(observations, now);
+            }
         }            
     }  
 };
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::fit_impl(
-        std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+        std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
         const Vector<FloatType>& point,
         const FloatType& now,           
         const int& current_observer_cnt,
         const int& current_neighbor_cnt) {   
     TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt); // one more cause one point is Observer
+    std::vector<std::complex<FloatType>> score_vector;
+    initNowVector(now, score_vector, obs_scaler[current_observer_cnt]);
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
         if (temporary_scores.count(idx) > 0) {                
             auto& value_pair = temporary_scores[idx];
-            value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
+            std::vector<std::complex<FloatType>>& observations = value_pair.first;
+            FloatType fading_factor = std::pow<FloatType>(fading, now-value_pair.second);
+            for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+                observations[freq_ind] *= fading_factor;
+                observations[freq_ind] += score_vector[freq_ind];
+            }
             value_pair.second = now;
-            value_pair.first += obs_scaler[current_observer_cnt];
-        } else { temporary_scores[idx] = std::make_pair(obs_scaler[current_observer_cnt], now); }
+        } else { 
+            std::vector<std::complex<FloatType>> observations;
+            for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+                observations[freq_ind] = score_vector[freq_ind];
+            }
+            temporary_scores[idx] = std::make_pair(observations, now);
+        }
     }  
 };
 
@@ -127,7 +159,6 @@ void SDOcluststream<FloatType>::determineLabelVector(
 template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
-        FloatType& score,
         const Vector<FloatType>& point, // could be accessed as with observer_index
         const int& current_neighbor_cnt,
         const int& observer_index) {
@@ -159,7 +190,6 @@ void SDOcluststream<FloatType>::predict_impl(
 template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
-        FloatType& score,
         const Vector<FloatType>& point,
         const int& current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
@@ -200,7 +230,7 @@ void SDOcluststream<FloatType>::sampleData(
         for (const auto& neighbor : nearestNeighbors) {
             int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered               
             const MapIterator& it = indexToIterator[idx];
-            observations_nearest_sum += it->observations * std::pow<FloatType>(fading, now-it->time_touched);
+            observations_nearest_sum += real(it->observations[0]) * std::pow<FloatType>(fading, now-it->time_touched);
         }   
         add_as_observer = 
             (rng() - rng.min()) * current_neighbor_cnt * observations_sum * (current_index - last_added_index) < 
@@ -237,7 +267,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     const int first_index(last_index);
     FloatType observations_sum(0);     
     for (auto it = observers.begin(); it != observers.end(); ++it) {
-        observations_sum += it->observations * std::pow<FloatType>(fading, now-it->time_touched);
+        observations_sum += real(it->observations[0]) * std::pow<FloatType>(fading, now-it->time_touched);
     }
     if (observers.empty()) {
         // std::cout << std::endl << "init obs: ";
@@ -329,7 +359,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         false); // true for print
 
     // fit model
-    std::unordered_map<int, std::pair<FloatType, FloatType>> temporary_scores; // index, (score, time_touched)
+    std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>> temporary_scores; // index, (score, time_touched)
     for (size_t i = 0; i < data.size(); ++i) {   
         int current_index = first_index + 1;
         bool is_observer = (sampled.count(current_index) > 0);
@@ -350,18 +380,24 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
                 current_neighbor_cnt); 
         }
     }
-    updateModel(temporary_scores);
+    updateModel(temporary_scores); // 
+    
+    // now is average time of batch
+    now = std::accumulate(time_data.begin(), time_data.end(), 0.0) / time_data.size();
+    FloatType active_observations_thresh = getActiveObservationsThreshold(active_threshold);
+    std::vector<std::complex<FloatType>> now_vector;
+    initNowVector(now, now_vector);
     // update active tree
-    int i = 0;
-    for (MapIterator it = observers.begin(); it != observers.end(); ++it) {            
-        if (i > current_observer_cnt) {
-            it->deactivate(&treeA);
+    for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
+        FloatType fading_factor = std::pow<FloatType>(fading, now-it->time_touched);        
+        FloatType proj_observations = it->getProjObservations(now_vector, freq_bins, fading_factor);      
+        if (proj_observations < active_observations_thresh) {
+            it->deactivate(&treeA);            
         } else {
             it->activate(&treeA);
         }
-        ++i;
     }
-    i = 0;
+    int i = 0;
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
         it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi );
         ++i;
@@ -375,29 +411,24 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         active_threshold,
         e, // current_e,
         chi);
-    std::vector<FloatType> scores(data.size());
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
             int label(0);
-            FloatType score(0);
             int current_index = first_index + i;
             bool is_observer = sampled.count(first_index + i) > 0;
             if (is_observer) {
                 predict_impl(
                     label,
-                    score,
                     data[i],
                     current_neighbor_cnt2,
                     current_index);
             } else {
                 predict_impl(
                     label,
-                    score,
                     data[i],
                     current_neighbor_cnt);
             }
-            labels[i] = label;
-            scores[i] = score;   
+            labels[i] = label; 
         }
     }     
 

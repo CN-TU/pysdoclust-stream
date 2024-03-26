@@ -14,7 +14,6 @@
 template<typename FloatType>
 class SDOcluststream_wrapper {
     int dimension;
-    std::size_t freq_bins;
     SDOcluststream<FloatType> sdoclust; // Use SDOcluststream
 
   public:
@@ -26,7 +25,9 @@ class SDOcluststream_wrapper {
       int chi_min, 
       FloatType chi_prop,
       FloatType zeta, 
-      int e,    
+      int e,      
+      std::size_t freq_bins, 
+      FloatType max_freq,    
       FloatType outlier_threshold,
       Distance_wrapper<FloatType>* distance, 
       int seed);
