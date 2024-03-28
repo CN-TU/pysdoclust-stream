@@ -22,9 +22,10 @@ void SDOcluststream<FloatType>::initNowVector(FloatType now, std::vector<std::co
 }
 
 template<typename FloatType>
-FloatType SDOcluststream<FloatType>::getActiveObservationsThreshold(int active_threshold) {
-    if (observers.size() > 1) {        
-        return real(std::next(observers.begin(), active_threshold)->observations[0]);
+FloatType SDOcluststream<FloatType>::getActiveObservationsThreshold(int active_threshold, FloatType now) {
+    if (observers.size() > 1) {      
+        MapIterator it = std::next(observers.begin(), active_threshold);  
+        return real(it->observations[0]) * std::pow<FloatType>(fading, now-it->time_touched);     ;
     } 
     else {
         return 0;

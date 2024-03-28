@@ -125,7 +125,7 @@ class SDOcluststream {
     void setObsScaler(); // util
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score); // util
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector); // util
-    FloatType getActiveObservationsThreshold(int active_threshold); // util
+    FloatType getActiveObservationsThreshold(int active_threshold, FloatType now); // util
 
     void updateH_single(MapIterator it, size_t n);
     void updateH_all(const size_t& chi);
@@ -194,11 +194,6 @@ class SDOcluststream {
         const std::size_t current_e,
         const std::size_t& chi); // util
 
-    void updateDistanceMatrix(
-        const std::unordered_set<int>& active,
-        const std::unordered_set<int>& activated,
-        const std::unordered_set<int>& deactivated); // sorted
-
     std::vector<int> fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& time_data, 
@@ -252,6 +247,7 @@ public:
         treeA(distance_function)
     {
         setObsScaler();
+        std::cout << "outlier_threshold" << outlier_threshold;
     }
 
     // TO DO
@@ -297,13 +293,14 @@ public:
         Vector<FloatType> getData() { return it->data; }
         int getColor() { return it->color; }
         FloatType getObservations(FloatType now) {
-            return it->observations * std::pow(fading, now - it->time_touched);
+            return real(it->observations[0]) * std::pow(fading, now - it->time_touched);
         }
         FloatType getAvObservations(FloatType now) {
-            return (1-fading) * it->observations * std::pow(fading, now - it->time_touched) /
-                (1-std::pow(fading, now - it->time_added));
+            return real(it->observations[0]) * std::pow(fading, now - it->time_touched) / it->age;
         }
     };
+
+    
 
     class iterator : public MapIterator {
         FloatType fading;
