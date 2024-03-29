@@ -173,8 +173,8 @@ class SDOcluststream32(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, p_outlier, distance, seed):
-        _dSalmon.SDOcluststream32_swiginit(self, _dSalmon.new_SDOcluststream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, p_outlier, distance, seed))
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, distance, seed):
+        _dSalmon.SDOcluststream32_swiginit(self, _dSalmon.new_SDOcluststream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, distance, seed))
 
     def fit(self, data, times):
         return _dSalmon.SDOcluststream32_fit(self, data, times)
@@ -196,8 +196,8 @@ class SDOcluststream64(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, p_outlier, distance, seed):
-        _dSalmon.SDOcluststream64_swiginit(self, _dSalmon.new_SDOcluststream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, p_outlier, distance, seed))
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, distance, seed):
+        _dSalmon.SDOcluststream64_swiginit(self, _dSalmon.new_SDOcluststream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, distance, seed))
 
     def fit(self, data, times):
         return _dSalmon.SDOcluststream64_fit(self, data, times)

@@ -39,19 +39,18 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # if no parameters are provided, the script will be run with these configurations
 DEFAULT_RUNS = '''
 dataS/base/arff results/ base normal
-dataS/base/arff results/ base-r remove
-dataS/base/arff results/ base-p phase
-dataS/moving/arff results/ mov normal
-dataS/moving/arff results/ mov-r remove
-dataS/moving/arff results/ mov-p phase
-dataS/nonstat/arff results/ nonst normal
-dataS/nonstat/arff results/ nonst-r remove
-dataS/nonstat/arff results/ nonst-p phase
-dataS/sequential/arff results/ seq normal
-dataS/sequential/arff results/ seq-r remove
-dataS/sequential/arff results/ seq-p phase
 '''
-
+# dataS/base/arff results/ base-r remove
+# dataS/base/arff results/ base-p phase
+# dataS/moving/arff results/ mov normal
+# dataS/moving/arff results/ mov-r remove
+# dataS/moving/arff results/ mov-p phase
+# dataS/nonstat/arff results/ nonst normal
+# dataS/nonstat/arff results/ nonst-r remove
+# dataS/nonstat/arff results/ nonst-p phase
+# dataS/sequential/arff results/ seq normal
+# dataS/sequential/arff results/ seq-r remove
+# dataS/sequential/arff results/ seq-p phase
 
 if len(sys.argv) < 2:
     print ('No arguments given. Running default configurations.')
