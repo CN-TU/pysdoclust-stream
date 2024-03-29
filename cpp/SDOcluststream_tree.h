@@ -414,11 +414,18 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             bool is_observer = sampled.count(current_index) > 0;
             if (is_observer) { is_observer = indexToIterator[current_index]->active; } // only active observer
             if (is_observer) {
-                predict_impl(
+                if (indexToIterator[current_index]->active) {
+                    predict_impl(
                     label,
                     data[i],
                     current_neighbor_cnt2,
                     current_index);
+                } else {
+                    predict_impl(
+                    label,
+                    data[i],
+                    current_neighbor_cnt2);
+                }                
             } else {
                 predict_impl(
                     label,
