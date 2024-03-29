@@ -127,7 +127,6 @@ void SDOcluststream<FloatType>::determineLabelVector(
 template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
-        FloatType& score,
         const Vector<FloatType>& point, // could be accessed as with observer_index
         const int& current_neighbor_cnt,
         const int& observer_index) {
@@ -159,7 +158,6 @@ void SDOcluststream<FloatType>::predict_impl(
 template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
-        FloatType& score,
         const Vector<FloatType>& point,
         const int& current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
@@ -375,32 +373,31 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         active_threshold,
         e, // current_e,
         chi);
-    std::vector<FloatType> scores(data.size());
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
-            int label(0);
-            FloatType score(0);
             int current_index = first_index + i;
-            bool is_observer = sampled.count(first_index + i) > 0;
+            bool is_observer = sampled.count(current_index) > 0;
             if (is_observer) {
-                predict_impl(
-                    label,
-                    score,
+                if (indexToIterator[current_index]->active) {
+                    predict_impl(
+                        labels[i],
+                        data[i],
+                        current_neighbor_cnt2,
+                        current_index);
+                } else {
+                    predict_impl(
+                    labels[i],
                     data[i],
-                    current_neighbor_cnt2,
-                    current_index);
+                    current_neighbor_cnt2);
+                }
             } else {
                 predict_impl(
-                    label,
-                    score,
+                    labels[i],
                     data[i],
                     current_neighbor_cnt);
             }
-            labels[i] = label;
-            scores[i] = score;   
         }
-    }     
-
+    } 
     return labels;
 };
 

@@ -146,13 +146,11 @@ class SDOcluststream {
             const std::pair<TreeIterator, FloatType>& neighbor);
     void predict_impl(
             int& label,
-            FloatType& score,
             const Vector<FloatType>& point, // could be accessed as with observer_index
             const int& current_neighbor_cnt,
             const int& observer_index); // tree
     void predict_impl(
             int& label,
-            FloatType& score,
             const Vector<FloatType>& point,
             const int& current_neighbor_cnt); // tree
     void updateModel(
@@ -187,11 +185,6 @@ class SDOcluststream {
         const int& active_threshold,
         const std::size_t current_e,
         const std::size_t& chi); // util
-
-    void updateDistanceMatrix(
-        const std::unordered_set<int>& active,
-        const std::unordered_set<int>& activated,
-        const std::unordered_set<int>& deactivated); // sorted
 
     std::vector<int> fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
