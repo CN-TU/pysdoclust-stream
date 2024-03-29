@@ -64,14 +64,6 @@ void SDOcluststream<FloatType>::DFS(
     }
 }
 
-// void fit_impl(
-//             std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>& temporary_scores,
-//             const Vector<FloatType>& point,
-//             const FloatType& now,           
-//             const int& current_observer_cnt,
-//             const int& current_neighbor_cnt,
-//             const int& observer_index);
-
 template<typename FloatType>
 void SDOcluststream<FloatType>::fit_impl(
         std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
@@ -267,12 +259,10 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     size_t chi(0);    
     const int first_index(last_index);
     FloatType observations_sum(0);
-    std::cout << "Before Sample" << std::endl;    
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         observations_sum += real(it->observations[0]) * std::pow<FloatType>(fading, now-it->time_touched);
     }
     if (observers.empty()) {
-        // std::cout << std::endl << "init obs: ";
         bool firstPointSampled(false);
         for (size_t i = 0; i < data.size(); ++i) { 
             if (firstPointSampled) {
@@ -321,7 +311,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         }
     }
 
-    std::cout << "After Sample" << std::endl;
     // Can not replace more observers than max size of model
     if (sampled.size()>observer_cnt) {
         std::vector<typename std::unordered_set<int>::value_type> shuffled_elements(sampled.begin(), sampled.end());
@@ -330,14 +319,12 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         sampled.insert(shuffled_elements.begin(), shuffled_elements.begin() + observer_cnt);
     }
 
-    // std::cout << "Replacement rate: " << static_cast<FloatType>(sampled.size())/data.size() << std::endl;
     // Queue worst observers
     IteratorAvCompare iterator_av_compare(fading, now);
     std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare> worst_observers(iterator_av_compare);
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         worst_observers.push(it);            
     }
-    std::cout << "After Worst Queue" << std::endl;
     std::unordered_set<int> dropped;
     for (size_t i = 0; i < data.size(); ++i) {
         int current_index = first_index + i;
@@ -363,7 +350,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         chi,
         false); // true for print
 
-    std::cout << "After Replace" << std::endl;
     // fit model
     std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>> temporary_scores; // index, (score, time_touched)
     for (size_t i = 0; i < data.size(); ++i) {   
@@ -386,9 +372,8 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
                 current_neighbor_cnt); 
         }
     }
-    std::cout << "After Fit" << std::endl;
     updateModel(temporary_scores); // 
-    std::cout << "After Update" << std::endl;
+
     // now is average time of batch
     now = std::accumulate(time_data.begin(), time_data.end(), 0.0) / time_data.size();
     FloatType active_observations_thresh = getActiveObservationsThreshold(active_threshold, now);
@@ -407,14 +392,14 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             i++;
         }
     }
-    std::cout << active_threshold << ": " << i << " / " << j << std::endl;
+    // std::cout << active_threshold << ": " << i << " / " << j << std::endl;
     
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {  
         if (it->active) { it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi ); } 
     }
-    std::cout << "After Tree Update" << std::endl;
+
     updateH_all();
-    std::cout << "After H Update" << std::endl;
+    
     // update graph
     now = time_data.back(); // last timestamp of batch    
     updateGraph(
@@ -422,12 +407,12 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         active_threshold,
         e, // current_e,
         chi);
-    std::cout << "After Graph Update" << std::endl;
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
             int label(0);
             int current_index = first_index + i;
-            bool is_observer = sampled.count(first_index + i) > 0;
+            bool is_observer = sampled.count(current_index) > 0;
+            if (is_observer) { is_observer = indexToIterator[current_index]->active; } // only active observer
             if (is_observer) {
                 predict_impl(
                     label,
@@ -442,8 +427,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             }
             labels[i] = label; 
         }
-    }     
-    std::cout << "After Predict" << std::endl;
+    }    
     return labels;
 };
 
