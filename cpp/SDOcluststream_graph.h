@@ -3,8 +3,8 @@
 
 #include "SDOcluststream_cluster.h"
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::updateH_all(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::updateH_all(
     const size_t& chi) {        
     std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
     std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
@@ -36,8 +36,8 @@ void SDOcluststream<FloatType>::updateH_all(
     }
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::updateH_all() {        
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::updateH_all() {        
     std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
     std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
     for (auto it = observers.begin(); it != observers.end(); ++it) {    
@@ -68,8 +68,8 @@ void SDOcluststream<FloatType>::updateH_all() {
 }
 
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::DetermineColor(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::DetermineColor(
         ClusterModelMap& clusters, 
         std::unordered_map<int, FloatType>& modelColorDistribution,
         FloatType now) {
@@ -121,8 +121,8 @@ void SDOcluststream<FloatType>::DetermineColor(
 }
 
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::updateGraph(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::updateGraph(
     const FloatType& now,
     const int& active_threshold,
     const std::size_t current_e,
@@ -149,8 +149,9 @@ void SDOcluststream<FloatType>::updateGraph(
         DetermineColor(clusters, modelColorDistribution, now);
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::updateColorDistribution() {
+template<typename FloatType, typename ObservationType>
+template<typename T>
+void SDOcluststream<FloatType,ObservationType>::Observer<T>::updateColorDistribution() {
     // Calculate the sum of all color observations
     FloatType sum = std::accumulate(color_observations.begin(), color_observations.end(), FloatType(0),
         [](FloatType sum, const std::pair<int, FloatType>& entry) {
@@ -162,8 +163,9 @@ void SDOcluststream<FloatType>::Observer::updateColorDistribution() {
     }
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::updateColorObservations(
+template<typename FloatType, typename ObservationType>
+template<typename T>
+void SDOcluststream<FloatType,ObservationType>::Observer<T>::updateColorObservations(
         int colorObs, 
         FloatType now, 
         FloatType fading_cluster) {

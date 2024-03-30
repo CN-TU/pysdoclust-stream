@@ -3,8 +3,8 @@
 
 #include "SDOcluststream_observer.h"
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::printClusters() {
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::printClusters() {
     for (const auto& cluster : clusters) {
         cluster.printColor();
         cluster.printObserverIndices();            
@@ -12,33 +12,8 @@ void SDOcluststream<FloatType>::printClusters() {
     }
 };
 
-// template<typename FloatType>
-// void SDOcluststream<FloatType>::printDistanceMatrix() {
-//     std::cout << std::endl << "Distance Matrix" << std::endl;
-//     for (const auto& entry : distance_matrix) {
-//         std::cout << "[" << entry.first << "]: ";
-//         const DistanceMapType& distance_map = entry.second;
-
-//         for (const auto& item : distance_map.template get<1>()) {
-//             std::cout << "(" << item.index << ", " << item.distance << ") ";
-//         }
-//         std::cout << std::endl;
-//     }
-//     std::cout << std::endl;
-//     for (const auto& entry : distance_matrix) {
-//         std::cout << "[" << entry.first << "]: ";
-//         const DistanceMapType& distance_map = entry.second;
-
-//         for (const auto& item : distance_map.template get<0>()) {
-//             std::cout << "" << item.index << " ";
-//         }
-//         std::cout << std::endl;
-//     }
-//     std::cout << std::endl;
-// };
-
-template<typename FloatType>
-void SDOcluststream<FloatType>::printObservers(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::printObservers(
     FloatType now) {
 
     std::cout << std::endl << "Observers" << std::endl;
@@ -57,8 +32,9 @@ void SDOcluststream<FloatType>::printObservers(
     std::cout << std::endl;
 };
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::printData() const {
+template<typename FloatType, typename ObservationType>
+template<typename T>
+void SDOcluststream<FloatType,ObservationType>::Observer<T>::printData() const {
     std::cout << "[ ";
     for (const auto& value : data) {
         std::cout << value << " ";
@@ -66,8 +42,9 @@ void SDOcluststream<FloatType>::Observer::printData() const {
     std::cout << "]";
 };
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::printColorObservations(
+template<typename FloatType, typename ObservationType>
+template<typename T>
+void SDOcluststream<FloatType,ObservationType>::Observer<T>::printColorObservations(
         FloatType now, 
         FloatType fading_cluster) const {
 
@@ -78,8 +55,9 @@ void SDOcluststream<FloatType>::Observer::printColorObservations(
     std::cout << std::endl;
 };
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::printColorDistribution() const {
+template<typename FloatType, typename ObservationType>
+template<typename T>
+void SDOcluststream<FloatType,ObservationType>::Observer<T>::printColorDistribution() const {
     std::cout << std::endl << "Color Distribution Observer: " << index << ": ";
     FloatType sum(0);
     for (auto& entry : color_distribution) {

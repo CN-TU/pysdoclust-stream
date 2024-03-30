@@ -8,8 +8,8 @@
 #include "SDOcluststream_graph.h"
 #include "SDOcluststream_util.h"
 
-// template<typename FloatType>
-// class SDOcluststream<FloatType>::TreeNodeUpdater {
+// template<typename FloatType, typename ObservationType>
+// class SDOcluststream<FloatType,ObservationType>::TreeNodeUpdater {
 //     Vector<FloatType> new_data;
 //     int new_key;
 //     public:
@@ -24,8 +24,8 @@
 //     }
 // };
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::DFS(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::DFS(
         IndexSetType& cluster, 
         IndexSetType& processed, 
         const MapIterator& it) {
@@ -64,9 +64,9 @@ void SDOcluststream<FloatType>::DFS(
     }
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::fit_impl(
-        std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::fit_impl(
+        std::unordered_map<int, std::pair<ObservationType, FloatType>>& temporary_scores,
         const Vector<FloatType>& point,
         const FloatType& now,           
         const int& current_observer_cnt,
@@ -86,9 +86,9 @@ void SDOcluststream<FloatType>::fit_impl(
     }  
 };
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::fit_impl(
-        std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::fit_impl(
+        std::unordered_map<int, std::pair<ObservationType, FloatType>>& temporary_scores,
         const Vector<FloatType>& point,
         const FloatType& now,           
         const int& current_observer_cnt,
@@ -105,8 +105,8 @@ void SDOcluststream<FloatType>::fit_impl(
     }  
 };
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::determineLabelVector(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::determineLabelVector(
         std::unordered_map<int, FloatType>& label_vector,
         const std::pair<TreeIterator, FloatType>& neighbor) {
     int idx = neighbor.first->second; // second is distance, first->first Vector, Output is ordered
@@ -124,8 +124,8 @@ void SDOcluststream<FloatType>::determineLabelVector(
     label_vector[-1] += outlier_factor; // outlier weight    
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::predict_impl(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::predict_impl(
         int& label,
         const Vector<FloatType>& point, // could be accessed as with observer_index
         const int& current_neighbor_cnt,
@@ -155,8 +155,8 @@ void SDOcluststream<FloatType>::predict_impl(
     }
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::predict_impl(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::predict_impl(
         int& label,
         const Vector<FloatType>& point,
         const int& current_neighbor_cnt) {
@@ -182,8 +182,8 @@ void SDOcluststream<FloatType>::predict_impl(
     }
 };
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::sampleData(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::sampleData(
         std::unordered_set<int>& sampled,
         const Vector<FloatType>& point,
         const FloatType& now,
@@ -215,8 +215,8 @@ void SDOcluststream<FloatType>::sampleData(
     }
 };
 
-template<typename FloatType>
-std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
+template<typename FloatType, typename ObservationType>
+std::vector<int> SDOcluststream<FloatType,ObservationType>::fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& time_data, 
         bool fit_only) {
@@ -327,7 +327,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         false); // true for print
 
     // fit model
-    std::unordered_map<int, std::pair<FloatType, FloatType>> temporary_scores; // index, (score, time_touched)
+    std::unordered_map<int, std::pair<ObservationType, FloatType>> temporary_scores; // index, (score, time_touched)
     for (size_t i = 0; i < data.size(); ++i) {   
         int current_index = first_index + 1;
         bool is_observer = (sampled.count(current_index) > 0);

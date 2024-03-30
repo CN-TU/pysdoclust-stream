@@ -1,10 +1,11 @@
 #ifndef SDOCLUSTSTREAM_OBSERVER_H
 #define SDOCLUSTSTREAM_OBSERVER_H
 
-template<typename FloatType>
-struct SDOcluststream<FloatType>::Observer {
+template<typename FloatType, typename ObservationType>
+template<typename T>
+struct SDOcluststream<FloatType, ObservationType>::Observer {
     Vector<FloatType> data;
-    FloatType observations;
+    T observations;
     FloatType time_touched;        
     FloatType time_added;
     int index;
@@ -23,7 +24,7 @@ struct SDOcluststream<FloatType>::Observer {
     // Constructor for Observer
     Observer(
         Vector<FloatType> data,
-        FloatType observations,
+        T observations,
         FloatType time_touched,
         FloatType time_added,
         int index,
@@ -86,7 +87,7 @@ struct SDOcluststream<FloatType>::Observer {
 
     void reset(
         Vector<FloatType> _data,
-        FloatType _observations,
+        T _observations,
         FloatType _time_touched,
         FloatType _time_added,
         int _index,
@@ -125,14 +126,15 @@ struct SDOcluststream<FloatType>::Observer {
     void printColorDistribution() const;
 };
 
-template<typename FloatType>
-struct SDOcluststream<FloatType>::ObserverCompare{
+template<typename FloatType, typename ObservationType>
+struct SDOcluststream<FloatType,ObservationType>::ObserverCompare{
     FloatType fading;
 
     // ObserverCompare() : fading(1.0) {}
     ObserverCompare(FloatType fading) : fading(fading) {}
 
-    bool operator()(const Observer& a, const Observer& b) const {
+    template<typename T=ObservationType>
+    bool operator()(const Observer<T>& a, const Observer<T>& b) const {
         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
         FloatType observations_a = a.observations
             * std::pow(fading, common_touched - a.time_touched);        
@@ -145,11 +147,13 @@ struct SDOcluststream<FloatType>::ObserverCompare{
     }
 };
 
-template<typename FloatType>
-struct SDOcluststream<FloatType>::ObserverAvCompare{
+template<typename FloatType, typename ObservationType>
+struct SDOcluststream<FloatType,ObservationType>::ObserverAvCompare{
     FloatType fading;
     ObserverAvCompare(FloatType fading) : fading(fading) {}
-    bool operator()(FloatType now, const Observer& a, const Observer& b) {
+
+    template<typename T=ObservationType>
+    bool operator()(FloatType now, const Observer<T>& a, const Observer<T>& b) {
         FloatType common_touched = std::max(a.time_touched, b.time_touched);
         
         FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);
@@ -163,14 +167,15 @@ struct SDOcluststream<FloatType>::ObserverAvCompare{
     }
 };
 
-template<typename FloatType>
-struct SDOcluststream<FloatType>::IteratorAvCompare{
+template<typename FloatType, typename ObservationType>
+struct SDOcluststream<FloatType,ObservationType>::IteratorAvCompare{
     FloatType fading;
     FloatType now;
     IteratorAvCompare(FloatType fading, FloatType now) : fading(fading), now(now) {}
+    template<typename T=ObservationType>
     bool operator()(const MapIterator& it_a, const MapIterator& it_b) {
-        const Observer& a = *it_a;
-        const Observer& b = *it_b;
+        const Observer<T>& a = *it_a;
+        const Observer<T>& b = *it_b;
         FloatType common_touched = std::max(a.time_touched, b.time_touched);
         
         FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);

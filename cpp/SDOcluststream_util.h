@@ -3,15 +3,15 @@
 
 #include "SDOcluststream_observer.h"
 
-template<typename FloatType>
-bool SDOcluststream<FloatType>::hasEdge(
+template<typename FloatType, typename ObservationType>
+bool SDOcluststream<FloatType,ObservationType>::hasEdge(
         FloatType distance, 
         const MapIterator& it) {
     return distance < (zeta * it->h + (1 - zeta) * h);
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::setObsScaler() {
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::setObsScaler() {
     FloatType prob0 = 1.0f;
     for (int i = neighbor_cnt; i > 0; --i) {
         prob0 *= static_cast<FloatType>(i) / (observer_cnt+1 - i);
@@ -36,8 +36,8 @@ void SDOcluststream<FloatType>::setObsScaler() {
     obs_scaler[0] = prob0;
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::setModelParameters(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::setModelParameters(
         int& current_observer_cnt, int&current_observer_cnt2,
         int& active_threshold, int& active_threshold2,
         int& current_neighbor_cnt, int& current_neighbor_cnt2,
@@ -76,20 +76,20 @@ void SDOcluststream<FloatType>::setModelParameters(
     }            
 }
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::updateModel(
-        const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores) {
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::updateModel(
+        const std::unordered_map<int,std::pair<ObservationType, FloatType>>& temporary_scores) {
     
     for (auto& [key, value_pair] : temporary_scores) {
         const MapIterator& it = indexToIterator[key];
 
         // Access the value pair:
-        FloatType score = value_pair.first;
+        ObservationType score = value_pair.first;
         FloatType time_touched = value_pair.second;
 
         auto node = observers.extract(it);    
 
-        Observer& observer = node.value();
+        auto& observer = node.value();
         observer.observations *= std::pow<FloatType>(fading, time_touched-observer.time_touched);
         observer.observations += score;
         observer.time_touched = time_touched;
@@ -97,8 +97,8 @@ void SDOcluststream<FloatType>::updateModel(
     }
 }
 
-template<typename FloatType>
-bool SDOcluststream<FloatType>::sampleData( 
+template<typename FloatType, typename ObservationType>
+bool SDOcluststream<FloatType,ObservationType>::sampleData( 
     std::unordered_set<int>& sampled,
     const FloatType& now,
     const int& batch_size, // actually batch size - 1
@@ -116,8 +116,8 @@ bool SDOcluststream<FloatType>::sampleData(
     return false;
 }      
 
-template<typename FloatType>
-void SDOcluststream<FloatType>::replaceObservers(
+template<typename FloatType, typename ObservationType>
+void SDOcluststream<FloatType,ObservationType>::replaceObservers(
         Vector<FloatType> data,
         std::unordered_set<int>& dropped,
         std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
@@ -137,7 +137,7 @@ void SDOcluststream<FloatType>::replaceObservers(
         indexToIterator.erase(indexToRemove);
         // update Observer(s)
         auto node = observers.extract(obsIt);
-        Observer& observer = node.value();
+        auto& observer = node.value();
         observer.reset(data, obs_scaler[current_observer_cnt], now, now, current_index, &tree, &treeA);
         observers.insert(std::move(node));    
     }

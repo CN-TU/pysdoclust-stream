@@ -23,13 +23,11 @@
 // #include "Gamma.h"
 #include "MTree.h"
 
-template<typename FloatType=double>
+template<typename FloatType=double, typename ObservationType=FloatType>
 class SDOcluststream {
   public:
     typedef std::function<FloatType(const Vector<FloatType>&, const Vector<FloatType>&)> DistanceFunction;
-
-  private:
-  
+  protected:  
     // number of observers we want
     std::size_t observer_cnt;
     // fraction of observers to consider active
@@ -75,13 +73,14 @@ class SDOcluststream {
     struct MyTieBreaker; // tree
 
     // Observer Structures
+    template<typename T=ObservationType>
     struct Observer;
     struct ObserverCompare;
     ObserverCompare observer_compare;    
     struct ObserverAvCompare;
     ObserverAvCompare observer_av_compare;
 
-    typedef boost::container::multiset< Observer, ObserverCompare > MapType;
+    typedef boost::container::multiset<Observer<ObservationType>,ObserverCompare> MapType;
     typedef typename MapType::iterator MapIterator;
     MapType observers;
     struct IteratorAvCompare;
@@ -127,19 +126,21 @@ class SDOcluststream {
     
     void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it); // sorted or tree
 
-    void fit_impl(
-            std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+    virtual void fit_impl(
+            std::unordered_map<int, std::pair<ObservationType, FloatType>>& temporary_scores,
             const Vector<FloatType>& point,
             const FloatType& now,           
             const int& current_observer_cnt,
             const int& current_neighbor_cnt,
             const int& observer_index); // tree
-    void fit_impl(
-            std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
+    virtual void fit_impl(
+            std::unordered_map<int, std::pair<ObservationType, FloatType>>& temporary_scores,
             const Vector<FloatType>& point,
             const FloatType& now,           
             const int& current_observer_cnt,
             const int& current_neighbor_cnt); // tree
+    virtual void updateModel(
+            const std::unordered_map<int,std::pair<ObservationType, FloatType>>& temporary_scores); // util
 
     void determineLabelVector(
             std::unordered_map<int, FloatType>& label_vector,
@@ -153,8 +154,7 @@ class SDOcluststream {
             int& label,
             const Vector<FloatType>& point,
             const int& current_neighbor_cnt); // tree
-    void updateModel(
-            const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores); // util
+    
 
     bool sampleData( 
         std::unordered_set<int>& sampled,
@@ -186,7 +186,7 @@ class SDOcluststream {
         const std::size_t current_e,
         const std::size_t& chi); // util
 
-    std::vector<int> fitPredict_impl(
+    virtual std::vector<int> fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& time_data, 
         bool fit_only); //tree
@@ -202,7 +202,7 @@ public:
         FloatType zeta,
         std::size_t e,
         FloatType outlier_threshold,
-        SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclidean, 
+        SDOcluststream<FloatType,ObservationType>::DistanceFunction distance_function = Vector<FloatType>::euclidean, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
         active_observers(1-idle_observers), 
@@ -228,9 +228,6 @@ public:
         observers(observer_compare),  // Initialize observers container with initial capacity and comparison function
         clusters(),
         modelColorDistribution(),
-        // distance_compare(),
-        // distance_matrix(),
-        // gamma_dist(),
         tree(distance_function),
         treeA(distance_function)
     {

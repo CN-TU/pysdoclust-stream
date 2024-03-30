@@ -1,8 +1,8 @@
 #ifndef SDOCLUSTSTREAM_CLUSTER_H
 #define SDOCLUSTSTREAM_CLUSTER_H
 
-template<typename FloatType>
-struct SDOcluststream<FloatType>::ClusterModel {
+template<typename FloatType, typename ObservationType>
+struct SDOcluststream<FloatType,ObservationType>::ClusterModel {
     int color;
     FloatType color_score; // score of set color
     IndexSetType cluster_observers;
@@ -24,7 +24,7 @@ struct SDOcluststream<FloatType>::ClusterModel {
             auto iIt = indexToIterator.find(id);
             if (iIt != indexToIterator.end()) {
                 const MapIterator& it = iIt->second;   
-                const Observer& observer = *it; // Dereference the iterator to get the Observer
+                const auto& observer = *it; // Dereference the iterator to get the Observer
 
                 // Add color_distribution of the observer to colorDistribution
                 for (const auto& entry : observer.color_distribution) {
@@ -115,8 +115,8 @@ struct SDOcluststream<FloatType>::ClusterModel {
     }
 };
 
-template<typename FloatType>
-struct SDOcluststream<FloatType>::ClusterModelCompare {
+template<typename FloatType, typename ObservationType>
+struct SDOcluststream<FloatType,ObservationType>::ClusterModelCompare {
     bool operator()(const ClusterModel& CM_a, const ClusterModel& CM_b) const {
         return (CM_a.color_score == CM_b.color_score) ? 
             CM_a.cluster_observers.size() > CM_b.cluster_observers.size() :
