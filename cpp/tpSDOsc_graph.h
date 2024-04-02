@@ -9,26 +9,11 @@ void tpSDOsc<FloatType>::DFS(
         IndexSetType& processed, 
         const MapIterator& it) {
     // insert to sets
-    processed.insert(it->index);   
-    cluster.insert(it->index);
-    std::vector<std::pair<TreeIterator,FloatType>>& nearestNeighbors = it->nearestNeighbors;
-    for (const auto& neighbor : nearestNeighbors) {       
-        FloatType distance = neighbor.second;        
-        if (!hasEdge(distance, it)) { break; }
-        int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
-        if (!(processed.count(idx)>0)) {
-            const MapIterator& it1 = indexToIterator[idx];
-            if (hasEdge(distance, it1)) {
-                DFS(cluster, processed, it1);
-            }
-        }
-    }
-    if ((h > it->h) && (zeta < 1.0f)) {
-        // Query search(const KeyType& needle, DistanceType min_radius = 0, DistanceType max_radius = std::numeric_limits<DistanceType>::infinity(), bool reverse = false, BoundEstimator estimator = NopBoundEstimator()) {
-        auto additionalNeighbors = treeA.search(it->getData(), it->h , (zeta * it->h + (1 - zeta) * h));
-        while (!additionalNeighbors.atEnd()) {
-            // Dereference the iterator to get the current element
-            auto neighbor = *additionalNeighbors;
+    if (!(processed.count(it->index)>0)) {
+        processed.insert(it->index);   
+        cluster.insert(it->index);
+        std::vector<std::pair<TreeIterator,FloatType>>& nearestNeighbors = it->nearestNeighbors;
+        for (const auto& neighbor : nearestNeighbors) {       
             FloatType distance = neighbor.second;        
             if (!hasEdge(distance, it)) { break; }
             int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
@@ -38,7 +23,24 @@ void tpSDOsc<FloatType>::DFS(
                     DFS(cluster, processed, it1);
                 }
             }
-            ++additionalNeighbors;
+        }
+        if ((h > it->h) && (zeta < 1.0f)) {
+            // Query search(const KeyType& needle, DistanceType min_radius = 0, DistanceType max_radius = std::numeric_limits<DistanceType>::infinity(), bool reverse = false, BoundEstimator estimator = NopBoundEstimator()) {
+            auto additionalNeighbors = treeA.search(it->getData(), it->h , (zeta * it->h + (1 - zeta) * h));
+            while (!additionalNeighbors.atEnd()) {
+                // Dereference the iterator to get the current element
+                auto neighbor = *additionalNeighbors;
+                FloatType distance = neighbor.second;        
+                if (!hasEdge(distance, it)) { break; }
+                int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
+                if (!(processed.count(idx)>0)) {
+                    const MapIterator& it1 = indexToIterator[idx];
+                    if (hasEdge(distance, it1)) {
+                        DFS(cluster, processed, it1);
+                    }
+                }
+                ++additionalNeighbors;
+            }
         }
     }
 }
@@ -48,20 +50,22 @@ void tpSDOsc<FloatType>::updateH_all() {
     std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
     std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
     for (auto it = observers.begin(); it != observers.end(); ++it) {  
-        // add h to heaps 
-        if (maxHeap.empty() || it->h <= maxHeap.top()) {
-            maxHeap.push(it->h);
-        } else {
-            minHeap.push(it->h);
+        if (it->active) {     
+            // add h to heaps 
+            if (maxHeap.empty() || it->h <= maxHeap.top()) {
+                maxHeap.push(it->h);
+            } else {
+                minHeap.push(it->h);
+            }
+            // Balance the heaps if their sizes differ by more than 1
+            if (maxHeap.size() > (minHeap.size() + 1)) {
+                minHeap.push(maxHeap.top());
+                maxHeap.pop();
+            } else if (minHeap.size() > (maxHeap.size() + 1)) {
+                maxHeap.push(minHeap.top());
+                minHeap.pop();
+            } 
         }
-        // Balance the heaps if their sizes differ by more than 1
-        if (maxHeap.size() > (minHeap.size() + 1)) {
-            minHeap.push(maxHeap.top());
-            maxHeap.pop();
-        } else if (minHeap.size() > (maxHeap.size() + 1)) {
-            maxHeap.push(minHeap.top());
-            minHeap.pop();
-        } 
     }        
     // Calculate the median based on the heap sizes and top elements    
     if (maxHeap.size() == minHeap.size()) {
