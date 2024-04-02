@@ -412,7 +412,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             int label(0);
             int current_index = first_index + i;
             bool is_observer = sampled.count(current_index) > 0;
-            if (is_observer) { is_observer = indexToIterator[current_index]->active; } // only active observer
             if (is_observer) {
                 if (indexToIterator[current_index]->active) {
                     predict_impl(
