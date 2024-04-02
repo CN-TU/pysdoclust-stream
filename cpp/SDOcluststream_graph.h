@@ -174,7 +174,7 @@ void SDOcluststream<FloatType>::Observer::updateColorObservations(
         FloatType fading_cluster) {
     // Apply fading to all entries in color_observations
     for (auto& entry : color_observations) {
-        entry.second *= std::pow(fading_cluster, now - time_cluster_touched);
+        entry.second *= 1; // TO DO
     }
     color_observations[colorObs] += 1;
     // update dominant color
@@ -185,7 +185,7 @@ void SDOcluststream<FloatType>::Observer::updateColorObservations(
     } else {
         color = colorObs; // first Observation
     }
-    time_cluster_touched = now;
+    // time_cluster_touched = now;
     updateColorDistribution();
 };
 

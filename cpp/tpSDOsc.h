@@ -160,8 +160,11 @@ class tpSDOsc {
             int& label,
             const Vector<FloatType>& point,
             const int& current_neighbor_cnt); // tree
-    void updateModel(
-            const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores); // util
+
+    void update_model(
+        const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores);
+    // void updateModel(            
+    //     const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores); // util
 
     bool sampleData( 
         std::unordered_set<int>& sampled,
@@ -211,7 +214,7 @@ public:
         std::size_t freq_bins, 
         FloatType max_freq,
         FloatType outlier_threshold,
-        SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclidean, 
+        tpSDOsc<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclidean, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
         active_observers(1-idle_observers), 
@@ -310,6 +313,6 @@ public:
     iterator end() { return iterator(fading, observers.end()); }
 }; 
 
-#include "tpSDOsc_FitPredict.h"
+#include "tpSDOsc_fitpred.h"
 
 #endif  // TPSDOSC_H

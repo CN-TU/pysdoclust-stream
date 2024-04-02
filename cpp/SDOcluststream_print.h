@@ -73,7 +73,7 @@ void SDOcluststream<FloatType>::Observer::printColorObservations(
 
     std::cout << std::endl << "Color Observations Observer: " << index << ": ";
     for (auto& entry : color_observations) {
-        std::cout << "(" << entry.first << "," << entry.second * std::pow(fading_cluster, now - time_cluster_touched) << ") ";
+        std::cout << "(" << entry.first << "," << entry.second << ") ";
     }
     std::cout << std::endl;
 };

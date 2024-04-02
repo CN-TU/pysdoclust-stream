@@ -215,5 +215,51 @@ class SDOcluststream64(object):
 # Register SDOcluststream64 in _dSalmon:
 _dSalmon.SDOcluststream64_swigregister(SDOcluststream64)
 
+class tpSDOsc32(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, freq_bins, max_freq, distance, seed):
+        _dSalmon.tpSDOsc32_swiginit(self, _dSalmon.new_tpSDOsc32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, freq_bins, max_freq, distance, seed))
+
+    def fit(self, data, times):
+        return _dSalmon.tpSDOsc32_fit(self, data, times)
+
+    def fit_predict(self, data, labels, times):
+        return _dSalmon.tpSDOsc32_fit_predict(self, data, labels, times)
+
+    def observer_count(self):
+        return _dSalmon.tpSDOsc32_observer_count(self)
+
+    def get_observers(self, data, labels, observations, av_observations, time):
+        return _dSalmon.tpSDOsc32_get_observers(self, data, labels, observations, av_observations, time)
+    __swig_destroy__ = _dSalmon.delete_tpSDOsc32
+
+# Register tpSDOsc32 in _dSalmon:
+_dSalmon.tpSDOsc32_swigregister(tpSDOsc32)
+
+class tpSDOsc64(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, freq_bins, max_freq, distance, seed):
+        _dSalmon.tpSDOsc64_swiginit(self, _dSalmon.new_tpSDOsc64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, freq_bins, max_freq, distance, seed))
+
+    def fit(self, data, times):
+        return _dSalmon.tpSDOsc64_fit(self, data, times)
+
+    def fit_predict(self, data, labels, times):
+        return _dSalmon.tpSDOsc64_fit_predict(self, data, labels, times)
+
+    def observer_count(self):
+        return _dSalmon.tpSDOsc64_observer_count(self)
+
+    def get_observers(self, data, labels, observations, av_observations, time):
+        return _dSalmon.tpSDOsc64_get_observers(self, data, labels, observations, av_observations, time)
+    __swig_destroy__ = _dSalmon.delete_tpSDOsc64
+
+# Register tpSDOsc64 in _dSalmon:
+_dSalmon.tpSDOsc64_swigregister(tpSDOsc64)
+
 
 

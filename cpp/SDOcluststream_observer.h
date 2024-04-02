@@ -142,23 +142,23 @@ struct SDOcluststream<FloatType>::ObserverCompare{
     }
 };
 
-template<typename FloatType>
-struct SDOcluststream<FloatType>::ObserverAvCompare{
-    FloatType fading;
-    ObserverAvCompare(FloatType fading) : fading(fading) {}
-    bool operator()(FloatType now, const Observer& a, const Observer& b) {
-        FloatType common_touched = std::max(a.time_touched, b.time_touched);
+// template<typename FloatType>
+// struct SDOcluststream<FloatType>::ObserverAvCompare{
+//     FloatType fading;
+//     ObserverAvCompare(FloatType fading) : fading(fading) {}
+//     bool operator()(FloatType now, const Observer& a, const Observer& b) {
+//         FloatType common_touched = std::max(a.time_touched, b.time_touched);
         
-        FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);
-        FloatType age_a = 1-std::pow(fading, now-a.time_added);
+//         FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);
+//         FloatType age_a = 1-std::pow(fading, now-a.time_added);
         
-        FloatType observations_b = b.observations * std::pow(fading, common_touched - b.time_touched);
-        FloatType age_b = 1-std::pow(fading, now-b.time_added);
+//         FloatType observations_b = b.observations * std::pow(fading, common_touched - b.time_touched);
+//         FloatType age_b = 1-std::pow(fading, now-b.time_added);
         
-        // do not necessarily need a tie breaker here
-        return observations_a * age_b > observations_b * age_a;
-    }
-};
+//         // do not necessarily need a tie breaker here
+//         return observations_a * age_b > observations_b * age_a;
+//     }
+// };
 
 template<typename FloatType>
 struct SDOcluststream<FloatType>::IteratorAvCompare{

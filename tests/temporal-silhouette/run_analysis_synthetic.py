@@ -126,10 +126,12 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
     den = DenStream(eps=0.2, lambd=0.1, beta=0.2, mu=11)
     bir = Birch(n_clusters=k, threshold=0.5)
     dsa = clustering.SDOcluststream(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=10.0)
+    tps = clustering.tpSDOsc(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=10.0)
+    tps = clustering.tpSDOsc(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=10.0, freq_bins=10, max_freq=1000)
     grt = []
     # algorithms = (("SDOstreamc", dsa),("CluStream", cls),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
     # algorithms = (("SDOstreamc", dsa),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
-    algorithms = (("SDOstreamc", dsa),("DenStream", den),("GT", grt))
+    algorithms = (("SDOstreamc", dsa),("tpSDOsc", tps),("DenStream", den),("GT", grt))
 
 
     old_clusters = []
@@ -167,7 +169,7 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
                 y[i:(i+blocksize)] = ub.get_label(chunk,clusters)
                 old_clusters = clusters
                 
-            elif alg_name == 'SDOstreamc':
+            elif alg_name == 'SDOstreamc' or alg_name == 'tpSDOsc':
                 y[i:(i+blocksize)] = alg.fit_predict(chunk)
                 # print(y[i:(i+blocksize)])
 
@@ -181,12 +183,12 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
         
         end_time = time.time()
 
-        if alg_name == 'SDOstreamc' or alg_name == 'DenStream':
+        if alg_name == 'SDOstreamc' or alg_name == 'DenStream' or alg_name == 'tpSDOsc':
             print("0-labels: " + str(np.mean(y == -1)))
         if alg_name == 'GT':
             print("0-labels: " + str(np.mean(y == 0)))
 
-        if alg_name == 'SDOstreamc':
+        if alg_name == 'SDOstreamc' or alg_name == 'tpSDOsc':
             label_encoder = LabelEncoder()
             y = label_encoder.fit_transform(y)
 

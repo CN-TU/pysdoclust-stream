@@ -78,4 +78,4 @@ void SDOcluststream<FloatType>::predict_impl(
     }
 };
 
-#endif  // SDOCLUSTSTREAM_TREE_H
+#endif  // SDOCLUSTSTREAM_PREDICT_H

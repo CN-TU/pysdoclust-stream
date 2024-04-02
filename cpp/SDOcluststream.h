@@ -78,8 +78,8 @@ class SDOcluststream {
     struct Observer;
     struct ObserverCompare;
     ObserverCompare observer_compare;    
-    struct ObserverAvCompare;
-    ObserverAvCompare observer_av_compare;
+    // struct ObserverAvCompare;
+    // ObserverAvCompare observer_av_compare;
 
     typedef boost::container::multiset< Observer, ObserverCompare > MapType;
     typedef typename MapType::iterator MapIterator;
@@ -224,7 +224,7 @@ public:
         e(e),
         last_color(0),
         observer_compare(fading),        
-        observer_av_compare(fading),
+        // observer_av_compare(fading),
         observers(observer_compare),  // Initialize observers container with initial capacity and comparison function
         clusters(),
         modelColorDistribution(),
@@ -303,6 +303,6 @@ public:
     iterator end() { return iterator(fading, observers.end()); }
 }; 
 
-#include "SDOcluststream_tree.h"
+#include "SDOcluststream_fitpred.h"
 
 #endif  // SDOCLUSTSTREAM_H

@@ -6,6 +6,7 @@
 #define DSALMON_CLUSTERING_WRAPPER_H
 
 #include "SDOcluststream.h"
+#include "tpSDOsc.h"
 // #include "histogram.h"
 
 #include "array_types.h"
@@ -37,12 +38,42 @@ class SDOcluststream_wrapper {
     int observer_count();
     void get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time);
 
-  // private:
-  //   void fit_predict_batch(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times);
-  //   void fit_predict_single(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times);
 };
 
 // Instantiate the class for different floating-point types
 DEFINE_FLOATINSTANTIATIONS(SDOcluststream)
+
+template<typename FloatType>
+class tpSDOsc_wrapper {
+    int dimension;
+    std::size_t freq_bins;
+    tpSDOsc<FloatType> sdoclust; // Use SDOcluststream
+
+  public:
+    tpSDOsc_wrapper(
+      int observer_cnt, 
+      FloatType T, 
+      FloatType idle_observers, 
+      int neighbour_cnt, 
+      int chi_min, 
+      FloatType chi_prop,
+      FloatType zeta, 
+      int e,    
+      FloatType outlier_threshold,
+      int freq_bins,
+      FloatType max_freq,
+      Distance_wrapper<FloatType>* distance, 
+      int seed);
+
+    void fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times);
+    void fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int>  labels, const NumpyArray1<FloatType> times);
+    // void fit_predict_with_sampling(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times, NumpyArray1<int> sampled);
+    int observer_count();
+    void get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time);
+
+};
+
+// Instantiate the class for different floating-point types
+DEFINE_FLOATINSTANTIATIONS(tpSDOsc)
 
 #endif
