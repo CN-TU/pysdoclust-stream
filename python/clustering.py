@@ -230,3 +230,161 @@ class SDOcluststream(Clustering):
         labels = np.empty(observer_cnt, dtype=np.int32)
         self.model.get_observers(data, labels, observations, av_observations, self.params['float_type'](time))
         return data, labels, observations, av_observations
+
+
+class tpSDOsc(Clustering):
+    """
+    Streaming clustering based on Sparse Data Observers :cite:p:`Hartl2019`.
+
+    Parameters
+    ----------
+    k: int
+        Number of observers to use.
+
+    T: int
+        Characteristic time for the model.
+        Increasing T makes the model adjust slower, decreasing T
+        makes it adjust quicker.
+
+    qv: float, optional (default=0.3)
+        Ratio of unused observers due to model cleaning.
+
+    x: int (default=6)
+        Number of nearest observers to consider for clustering.
+
+    metric: string
+        Which distance metric to use. Currently supported metrics
+        include 'chebyshev', 'cityblock', 'euclidean', and 'minkowsi'.
+
+    metric_params: dict
+        Parameters passed to the metric. Minkowsi distance requires
+        setting an integer `p` parameter.
+
+    float_type: np.float32 or np.float64
+        The floating point type to use for internal processing.
+
+    seed: int (default=0)
+        Random seed to use.
+
+    zeta: float, optional (default=0.6)
+        A new parameter.
+
+    chi_min: int, optional (default=8)
+        A new parameter.
+
+    chi_prop: float, optional (default=0.05)
+        A new parameter.
+
+    e: int, optional (default=3)
+        A new parameter.
+
+    outlier_threshold: float, optional (default=5.0)
+        A new parameter.
+
+    freq_bins: int, optional (default 1)
+        A new parameter.
+
+    max_freq: float, optional (default=1.0)
+    """
+    
+    def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
+                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, outlier_threshold=5.0, freq_bins=1, max_freq=1.0):
+        self.params = {k: v for k, v in locals().items() if k != 'self'}
+        self._init_model(self.params)
+
+    def _init_model(self, p):
+        assert p['float_type'] in [np.float32, np.float64]
+        assert 0 <= p['qv'] < 1, 'qv must be in [0,1)'
+        assert p['x'] > 0, 'x must be > 0'
+        assert p['k'] > 0, 'k must be > 0'
+        assert p['T'] > 0, 'T must be > 0'
+        assert 0 <= p['zeta'] < 1, 'zeta must be in [0,1)'
+        assert p['chi_min'] > 0, 'chi_min must be > 0'
+        assert 0 <= p['chi_prop'] < 1, 'chi_prop must be in [0,1)'
+        assert p['e'] > 0, 'e must be > 0'
+        assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
+        assert 1 <= p['freq_bins'], 'freq_bins must be in (1,inf)'
+        assert 0 < p['max_freq'], 'max_freq must be in (0, inf)'
+
+        # Map the Python metric name to the C++ distance function
+        distance_function = lookupDistance(p['metric'], p['float_type'], **(p['metric_params'] or {}))
+        
+        # Create an instance of the C++ SDOcluststream class
+        cpp_obj = {
+            np.float32: dSalmon_cpp.tpSDOsc32,
+            np.float64: dSalmon_cpp.tpSDOsc64
+        }[p['float_type']]
+        
+        self.model = cpp_obj(
+            p['k'], p['T'], p['qv'], p['x'], p['chi_min'], p['chi_prop'], p['zeta'],
+            p['e'], p['outlier_threshold'], p['freq_bins'], p['max_freq'],distance_function, p['seed']
+        )
+        
+        self.last_time = 0
+        self.dimension = -1
+
+    def fit_predict(self, X, times=None):
+        """
+        Process next chunk of data.
+        
+        Parameters
+        ----------
+        X: ndarray, shape (n_samples, n_features)
+            The input data.
+            
+        times: ndarray, shape (n_samples,), optional
+            Timestamps for input data. If None,
+            timestamps are linearly increased for
+            each sample. 
+        
+        Returns    
+        -------
+        y: ndarray, shape (n_samples,)
+            Labels for provided input data.
+        """
+        X = self._process_data(X)
+        times = self._process_times(X, times)        
+        labels = np.empty(X.shape[0], dtype=np.int32)
+        if self.params['return_sampling']:
+            sampling = np.empty(X.shape[0], dtype=np.int32)
+            self.model.fit_predict_with_sampling(X, labels, times, sampling)
+            return labels, sampling
+        else:
+            self.model.fit_predict(X, labels, times)
+            # self.model.fit_predict_batch(X, labels, times)
+            return labels
+
+    def observer_count(self):
+        """Return the current number of observers."""
+        return self.model.observer_count()
+        
+    def get_observers(self, time=None):
+        """
+        Return observer data.
+        
+        Returns    
+        -------
+        data: ndarray, shape (n_observers, n_features)
+            Sample used as observer.
+            
+        observations: ndarray, shape (n_observers,)
+            Exponential moving average of observations.
+            
+        av_observations: ndarray, shape (n_observers,)
+            Exponential moving average of observations
+            normalized according to the theoretical maximum.
+
+        labels: ndarray, shape (n_observers,)
+            Labels / colors of observer.
+        """
+        if time is None:
+            time = self.last_time
+        observer_cnt = self.model.observer_count()
+        if observer_cnt == 0:
+            return np.zeros([0], dtype=self.params['float_type']), np.zeros([0], dtype=np.int32), np.zeros([0], dtype=self.params['float_type']), np.zeros([0], dtype=self.params['float_type'])
+        data = np.empty([observer_cnt, self.dimension], dtype=self.params['float_type'])
+        observations = np.empty(observer_cnt, dtype=self.params['float_type'])
+        av_observations = np.empty(observer_cnt, dtype=self.params['float_type'])
+        labels = np.empty(observer_cnt, dtype=np.int32)
+        self.model.get_observers(data, labels, observations, av_observations, self.params['float_type'](time))
+        return data, labels, observations, av_observations
