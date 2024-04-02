@@ -4,35 +4,42 @@
 #include "SDOcluststream_cluster.h"
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::updateH_all(
-    const size_t& chi) {        
-    std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
-    std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
-    for (auto it = observers.begin(); it != observers.end(); ++it) {    
-        if (!(it->active)) { break; }      
-        updateH_single(it, chi); 
-        // add h to heaps 
-        if (maxHeap.empty() || it->h <= maxHeap.top()) {
-            maxHeap.push(it->h);
-        } else {
-            minHeap.push(it->h);
+void SDOcluststream<FloatType>::DFS(
+        IndexSetType& cluster, 
+        IndexSetType& processed, 
+        const MapIterator& it) {
+    // insert to sets
+    processed.insert(it->index);   
+    cluster.insert(it->index);
+    std::vector<std::pair<TreeIterator,FloatType>>& nearestNeighbors = it->nearestNeighbors;
+    for (const auto& neighbor : nearestNeighbors) {       
+        FloatType distance = neighbor.second;        
+        if (!hasEdge(distance, it)) { break; }
+        int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
+        if (!(processed.count(idx)>0)) {
+            const MapIterator& it1 = indexToIterator[idx];
+            if (hasEdge(distance, it1)) {
+                DFS(cluster, processed, it1);
+            }
         }
-        // Balance the heaps if their sizes differ by more than 1
-        if (maxHeap.size() > (minHeap.size() + 1)) {
-            minHeap.push(maxHeap.top());
-            maxHeap.pop();
-        } else if (minHeap.size() > (maxHeap.size() + 1)) {
-            maxHeap.push(minHeap.top());
-            minHeap.pop();
-        } 
-    }        
-    // Calculate the median based on the heap sizes and top elements    
-    if (maxHeap.size() == minHeap.size()) {
-        h = (maxHeap.top() + minHeap.top()) / 2.0f;
-    } else if (maxHeap.size() > minHeap.size()) {
-        h = maxHeap.top();
-    } else {
-        h = minHeap.top();
+    }
+    if ((h > it->h) && (zeta < 1.0f)) {
+        // Query search(const KeyType& needle, DistanceType min_radius = 0, DistanceType max_radius = std::numeric_limits<DistanceType>::infinity(), bool reverse = false, BoundEstimator estimator = NopBoundEstimator()) {
+        auto additionalNeighbors = treeA.search(it->getData(), it->h , (zeta * it->h + (1 - zeta) * h));
+        while (!additionalNeighbors.atEnd()) {
+            // Dereference the iterator to get the current element
+            auto neighbor = *additionalNeighbors;
+            FloatType distance = neighbor.second;        
+            if (!hasEdge(distance, it)) { break; }
+            int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
+            if (!(processed.count(idx)>0)) {
+                const MapIterator& it1 = indexToIterator[idx];
+                if (hasEdge(distance, it1)) {
+                    DFS(cluster, processed, it1);
+                }
+            }
+            ++additionalNeighbors;
+        }
     }
 }
 
@@ -112,8 +119,6 @@ void SDOcluststream<FloatType>::DetermineColor(
         for (const int& id : cluster_observers) {
             const MapIterator& it1 = indexToIterator[id];
             it1->updateColorObservations(color, now, fading_cluster);
-            // it1->printColorDistribution();
-            // it1->printColorObservations(now, fading_cluster);
         }
 
         ++it; // Increment the iterator to move to the next cluster

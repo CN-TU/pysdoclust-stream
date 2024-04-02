@@ -79,16 +79,12 @@ void SDOcluststream<FloatType>::setModelParameters(
 template<typename FloatType>
 void SDOcluststream<FloatType>::updateModel(
         const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores) {
-    
     for (auto& [key, value_pair] : temporary_scores) {
         const MapIterator& it = indexToIterator[key];
-
         // Access the value pair:
         FloatType score = value_pair.first;
         FloatType time_touched = value_pair.second;
-
         auto node = observers.extract(it);    
-
         Observer& observer = node.value();
         observer.observations *= std::pow<FloatType>(fading, time_touched-observer.time_touched);
         observer.observations += score;
