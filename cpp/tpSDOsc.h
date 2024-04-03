@@ -82,8 +82,8 @@ class tpSDOsc {
     struct Observer;
     struct ObserverCompare;
     ObserverCompare observer_compare;    
-    struct ObserverAvCompare;
-    ObserverAvCompare observer_av_compare;
+    // struct ObserverAvCompare;
+    // ObserverAvCompare observer_av_compare;
 
     typedef boost::container::multiset<Observer,ObserverCompare> MapType;
     typedef typename MapType::iterator MapIterator;
@@ -238,7 +238,7 @@ public:
         e(e),
         last_color(0),
         observer_compare(fading),        
-        observer_av_compare(fading),
+        // observer_av_compare(fading),
         observers(observer_compare),  // Initialize observers container with initial capacity and comparison function
         clusters(),
         modelColorDistribution(),
@@ -288,13 +288,13 @@ public:
             it(it)
         { }
         // int getIndex() {return it->index};
-        Vector<FloatType> getData() { return it->data; }
+        Vector<FloatType> getData() { return it->getData(); }
         int getColor() { return it->color; }
         FloatType getObservations(FloatType now) {
-            return real(it->observations[0]) * std::pow(fading, now - it->time_touched);
+            return it->getObservations() * std::pow(fading, now - it->time_touched);
         }
         FloatType getAvObservations(FloatType now) {
-            return real(it->observations[0]) * std::pow(fading, now - it->time_touched) / it->age;
+            return (1-fading) * it->getObservations() * std::pow(fading, now - it->time_touched) / it->age;
         }
     };
 

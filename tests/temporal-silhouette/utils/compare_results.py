@@ -87,7 +87,7 @@ r=1 if best == 'gt' else 0
 # gs = gridspec.GridSpec(1, 5, width_ratios=[1, 1, 1, 1, 1], wspace=0.11, hspace=0.0, top=0.90, bottom=0.15, left=0.03, right=0.99) 
 
 fig = plt.figure(figsize=(10,5))
-gs = gridspec.GridSpec(1, 2, width_ratios=[1, 1], wspace=0.11, hspace=0.0, top=0.90, bottom=0.15, left=0.03, right=0.99) 
+gs = gridspec.GridSpec(1, 3, width_ratios=[1, 1, 1], wspace=0.11, hspace=0.0, top=0.90, bottom=0.15, left=0.03, right=0.99) 
 plt.suptitle(f"Valuation Index: {valind}", fontsize=18, y=1)
 
 # valinds = ['AMI', 'Sil', 'CH', 'DB', 'iXB', 'iPS', 'irCIP', 'TS']

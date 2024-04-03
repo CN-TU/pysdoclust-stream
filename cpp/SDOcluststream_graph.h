@@ -7,28 +7,13 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::DFS(
         IndexSetType& cluster, 
         IndexSetType& processed, 
-        const MapIterator& it) {
-    // insert to sets
-    processed.insert(it->index);   
-    cluster.insert(it->index);
-    std::vector<std::pair<TreeIterator,FloatType>>& nearestNeighbors = it->nearestNeighbors;
-    for (const auto& neighbor : nearestNeighbors) {       
-        FloatType distance = neighbor.second;        
-        if (!hasEdge(distance, it)) { break; }
-        int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
-        if (!(processed.count(idx)>0)) {
-            const MapIterator& it1 = indexToIterator[idx];
-            if (hasEdge(distance, it1)) {
-                DFS(cluster, processed, it1);
-            }
-        }
-    }
-    if ((h > it->h) && (zeta < 1.0f)) {
-        // Query search(const KeyType& needle, DistanceType min_radius = 0, DistanceType max_radius = std::numeric_limits<DistanceType>::infinity(), bool reverse = false, BoundEstimator estimator = NopBoundEstimator()) {
-        auto additionalNeighbors = treeA.search(it->getData(), it->h , (zeta * it->h + (1 - zeta) * h));
-        while (!additionalNeighbors.atEnd()) {
-            // Dereference the iterator to get the current element
-            auto neighbor = *additionalNeighbors;
+        const MapIterator& it) {    
+    if (!(processed.count(it->index)>0)) {
+        // insert to sets
+        processed.insert(it->index);   
+        cluster.insert(it->index);
+        std::vector<std::pair<TreeIterator,FloatType>>& nearestNeighbors = it->nearestNeighbors;
+        for (const auto& neighbor : nearestNeighbors) {       
             FloatType distance = neighbor.second;        
             if (!hasEdge(distance, it)) { break; }
             int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
@@ -38,7 +23,24 @@ void SDOcluststream<FloatType>::DFS(
                     DFS(cluster, processed, it1);
                 }
             }
-            ++additionalNeighbors;
+        }
+        if ((h > it->h) && (zeta < 1.0f)) {
+            // Query search(const KeyType& needle, DistanceType min_radius = 0, DistanceType max_radius = std::numeric_limits<DistanceType>::infinity(), bool reverse = false, BoundEstimator estimator = NopBoundEstimator()) {
+            auto additionalNeighbors = treeA.search(it->getData(), it->h , (zeta * it->h + (1 - zeta) * h));
+            while (!additionalNeighbors.atEnd()) {
+                // Dereference the iterator to get the current element
+                auto neighbor = *additionalNeighbors;
+                FloatType distance = neighbor.second;        
+                if (!hasEdge(distance, it)) { break; }
+                int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
+                if (!(processed.count(idx)>0)) {
+                    const MapIterator& it1 = indexToIterator[idx];
+                    if (hasEdge(distance, it1)) {
+                        DFS(cluster, processed, it1);
+                    }
+                }
+                ++additionalNeighbors;
+            }
         }
     }
 }
@@ -74,55 +76,43 @@ void SDOcluststream<FloatType>::updateH_all() {
     }
 }
 
-
 template<typename FloatType>
 void SDOcluststream<FloatType>::DetermineColor(
         ClusterModelMap& clusters, 
         std::unordered_map<int, FloatType>& modelColorDistribution,
         FloatType now) {
-
     std::unordered_set<int> takenColors;
-
     auto it = clusters.begin();
     while (it != clusters.end()) {
-        auto& color_distribution = it->color_distribution;
-        
+        auto& color_distribution = it->color_distribution;        
         for (const auto& pair: color_distribution) {
             modelColorDistribution[pair.first] += pair.second;
         }
-
         int color;
         if (it->color_score > 0) {
-            color = it->color;
-        
+            color = it->color;        
             takenColors.insert(color);
-
             auto nextIt = it;
             ++nextIt;  // Create a temporary iterator pointing to the next element
-
             while (nextIt != clusters.end() && takenColors.find(nextIt->color) != takenColors.end()) {                
                 auto node = clusters.extract(nextIt);            
                 ClusterModel& cluster = node.value();
                 cluster.setColor(takenColors);
                 clusters.insert(std::move(node));
-
                 nextIt = it;
                 ++nextIt;
             }
-
         } else {
             color = ++last_color;
             it->setColor(color);
-        }
-        
+        }        
         const IndexSetType& cluster_observers = it->cluster_observers;
         for (const int& id : cluster_observers) {
             const MapIterator& it1 = indexToIterator[id];
             it1->updateColorObservations(color, now, fading_cluster);
         }
-
         ++it; // Increment the iterator to move to the next cluster
-        }
+    }
 }
 
 
@@ -132,8 +122,6 @@ void SDOcluststream<FloatType>::updateGraph(
     const int& active_threshold,
     const std::size_t current_e,
     const std::size_t& chi) {
-        // updateH_all(chi);
-        // std::cout << std::endl << "global h: " << h << std::endl;
         clusters.clear();
         IndexSetType processed;
         for (auto it = observers.begin(); it != observers.end(); ++it) {
@@ -145,9 +133,6 @@ void SDOcluststream<FloatType>::updateGraph(
             if (!(cluster.size() < current_e)) {  
                 ClusterModel clusterM(cluster, indexToIterator);
                 clusters.insert(clusterM); 
-                // clusterM.printObserverIndices();
-                // clusterM.printDistribution();
-                // clusterM.printColor();
             }
         }
         modelColorDistribution.clear();

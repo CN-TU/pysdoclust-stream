@@ -6,7 +6,8 @@ struct SDOcluststream<FloatType>::Observer {
     Vector<FloatType> data;
     FloatType observations;
     FloatType time_touched;        
-    FloatType time_added;
+    // FloatType time_added;
+    FloatType age;
     int index;
     TreeIterator treeIt;
     bool active;
@@ -24,14 +25,13 @@ struct SDOcluststream<FloatType>::Observer {
         Vector<FloatType> data,
         FloatType observations,
         FloatType time_touched,
-        FloatType time_added,
         int index,
         Tree* tree,
         Tree* treeA // should contain index and data soon
     ) : data(data),
         observations(observations),
         time_touched(time_touched),
-        time_added(time_added),
+        age(observations),
         index(index),
         treeIt(tree->end()),
         active(false),
@@ -44,12 +44,22 @@ struct SDOcluststream<FloatType>::Observer {
             treeIt = tree->insert(tree->end(), std::make_pair(data, index)); 
         }
     
-    int getIndex() const {
-        return index;
+    int getIndex() const { return index; }
+    Vector<FloatType> getData() const { return data; }
+    FloatType getObservations() const { return observations; }
+    FloatType getH() const { return h; }
+
+    void updateAge(FloatType age_factor, FloatType score = 1) {
+        age *= age_factor;
+        age += score;
     }
 
-    Vector<FloatType> getData() {
-        return data;
+    void updateObservations(
+            FloatType fading_factor,
+            FloatType score = 1) {        
+        observations *= fading_factor;
+        observations += score;
+        updateAge(fading_factor, score);
     }
 
     bool activate(Tree* treeA) {
@@ -60,7 +70,6 @@ struct SDOcluststream<FloatType>::Observer {
         }
         return false;
     }
-
     bool deactivate(Tree* treeA) {
         if (active) {
             treeA->erase(treeItA);
@@ -75,7 +84,6 @@ struct SDOcluststream<FloatType>::Observer {
         nearestNeighbors = treeA->knnSearch(data, chi+1, true, 0, std::numeric_limits<FloatType>::infinity(), false, true); // one more cause one point is Observer
         h = nearestNeighbors[chi].second;
     }
-
     // n>=chi is necessary
     void setH(Tree* treeA, int chi, int n) {
         nearestNeighbors = treeA->knnSearch(data, n+1, true, 0, std::numeric_limits<FloatType>::infinity(), false, true); // one more cause one point is Observer
@@ -86,7 +94,6 @@ struct SDOcluststream<FloatType>::Observer {
         Vector<FloatType> _data,
         FloatType _observations,
         FloatType _time_touched,
-        FloatType _time_added,
         int _index,
         Tree* tree,
         Tree* treeA
@@ -94,7 +101,7 @@ struct SDOcluststream<FloatType>::Observer {
         data = _data;
         observations = _observations;
         time_touched = _time_touched;
-        time_added = _time_added;
+        age = _observations;
         index = _index;        
         color_observations.clear();
         color_distribution.clear();
@@ -105,8 +112,7 @@ struct SDOcluststream<FloatType>::Observer {
         // tree->modify(treeIt, updater);
         tree->erase(treeIt);
         treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));         
-
-        if (active) treeA->erase(treeItA);
+        if (active) { treeA->erase(treeItA); }
         active = false;
         treeItA = treeA->end();
     }
@@ -125,15 +131,12 @@ struct SDOcluststream<FloatType>::Observer {
 template<typename FloatType>
 struct SDOcluststream<FloatType>::ObserverCompare{
     FloatType fading;
-
-    // ObserverCompare() : fading(1.0) {}
     ObserverCompare(FloatType fading) : fading(fading) {}
-
     bool operator()(const Observer& a, const Observer& b) const {
         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
-        FloatType observations_a = a.observations
+        FloatType observations_a = a.getObservations()
             * std::pow(fading, common_touched - a.time_touched);        
-        FloatType observations_b = b.observations
+        FloatType observations_b = b.getObservations()
             * std::pow(fading, common_touched - b.time_touched);        
         // tie breaker for reproducibility
         if (observations_a == observations_b)
@@ -141,24 +144,6 @@ struct SDOcluststream<FloatType>::ObserverCompare{
         return observations_a > observations_b;
     }
 };
-
-// template<typename FloatType>
-// struct SDOcluststream<FloatType>::ObserverAvCompare{
-//     FloatType fading;
-//     ObserverAvCompare(FloatType fading) : fading(fading) {}
-//     bool operator()(FloatType now, const Observer& a, const Observer& b) {
-//         FloatType common_touched = std::max(a.time_touched, b.time_touched);
-        
-//         FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);
-//         FloatType age_a = 1-std::pow(fading, now-a.time_added);
-        
-//         FloatType observations_b = b.observations * std::pow(fading, common_touched - b.time_touched);
-//         FloatType age_b = 1-std::pow(fading, now-b.time_added);
-        
-//         // do not necessarily need a tie breaker here
-//         return observations_a * age_b > observations_b * age_a;
-//     }
-// };
 
 template<typename FloatType>
 struct SDOcluststream<FloatType>::IteratorAvCompare{
@@ -168,16 +153,14 @@ struct SDOcluststream<FloatType>::IteratorAvCompare{
     bool operator()(const MapIterator& it_a, const MapIterator& it_b) {
         const Observer& a = *it_a;
         const Observer& b = *it_b;
-        FloatType common_touched = std::max(a.time_touched, b.time_touched);
-        
-        FloatType observations_a = a.observations * std::pow(fading, common_touched - a.time_touched);
-        FloatType age_a = 1-std::pow(fading, now-a.time_added);
-        
-        FloatType observations_b = b.observations * std::pow(fading, common_touched - b.time_touched);
-        FloatType age_b = 1-std::pow(fading, now-b.time_added);
-        
+        FloatType common_touched = std::max(a.time_touched, b.time_touched);        
+        FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);        
+        // FloatType age_a = 1-std::pow(fading, now-a.time_added);  
+        FloatType observations_b = b.getObservations() * std::pow(fading, common_touched - b.time_touched);
+        // FloatType age_b = 1-std::pow(fading, now-b.time_added);        
         // do not necessarily need a tie breaker here
-        return observations_a * age_b > observations_b * age_a;
+        return observations_a * b.age > observations_b * a.age;
+        // return observations_a * age_b > observations_b * age_a;
     }
 };
 

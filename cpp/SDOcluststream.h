@@ -280,11 +280,11 @@ public:
         Vector<FloatType> getData() { return it->data; }
         int getColor() { return it->color; }
         FloatType getObservations(FloatType now) {
-            return it->observations * std::pow(fading, now - it->time_touched);
+            return it->getObservations() * std::pow(fading, now - it->time_touched);
         }
         FloatType getAvObservations(FloatType now) {
-            return (1-fading) * it->observations * std::pow(fading, now - it->time_touched) /
-                (1-std::pow(fading, now - it->time_added));
+            return (1-fading) * it->getObservations() * std::pow(fading, now - it->time_touched) / it->age;
+                // (1-std::pow(fading, now - it->time_added));
         }
     };
 

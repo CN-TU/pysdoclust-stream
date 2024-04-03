@@ -47,7 +47,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         observations_sum += it->observations * std::pow<FloatType>(fading, now-it->time_touched);
     }
     if (observers.empty()) {
-        // std::cout << std::endl << "init obs: ";
         bool firstPointSampled(false);
         for (size_t i = 0; i < data.size(); ++i) { 
             if (firstPointSampled) {

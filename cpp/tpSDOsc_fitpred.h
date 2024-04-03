@@ -160,7 +160,7 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
             i++;
         }
     }
-    std::cout << active_threshold << ": " << i << " / " << j << std::endl;
+    // std::cout << active_threshold << ": " << i << " / " << j << std::endl;
     
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {  
         if (it->active) { it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi ); } 

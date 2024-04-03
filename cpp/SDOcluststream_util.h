@@ -16,12 +16,9 @@ void SDOcluststream<FloatType>::setObsScaler() {
     for (int i = neighbor_cnt; i > 0; --i) {
         prob0 *= static_cast<FloatType>(i) / (observer_cnt+1 - i);
     }
-
     obs_scaler[observer_cnt] = 1.0f;
     FloatType prob = prob0;
-
-    int current_neighbor_cnt = neighbor_cnt;
-    
+    int current_neighbor_cnt = neighbor_cnt;    
     for (int i = observer_cnt - 1; i > 0; --i) {
         prob *= static_cast<FloatType>(i+1) / static_cast<FloatType>((i+1)-current_neighbor_cnt);
 

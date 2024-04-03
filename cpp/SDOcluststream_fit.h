@@ -52,8 +52,9 @@ void SDOcluststream<FloatType>::updateModel(
         FloatType time_touched = value_pair.second;
         auto node = observers.extract(it);    
         Observer& observer = node.value();
-        observer.observations *= std::pow<FloatType>(fading, time_touched-observer.time_touched);
-        observer.observations += score;
+        observer.updateObservations(std::pow(fading, time_touched - observer.time_touched), score);
+        // observer.observations *= std::pow<FloatType>(fading, time_touched-observer.time_touched);
+        // observer.observations += score;
         observer.time_touched = time_touched;
         observers.insert(std::move(node));
     }

@@ -68,7 +68,7 @@ void tpSDOsc<FloatType>::replaceObservers(
     FloatType init_score = obs_scaler[current_observer_cnt];
     initNowVector(now,  init_score_vector, init_score);
     if (observers.size() < observer_cnt) {
-        obsIt = observers.insert(Observer(data,  init_score_vector, now, init_score, current_index, &tree, &treeA)); // maybe init_score instead of 1
+        obsIt = observers.insert(Observer(data, init_score_vector, now, init_score, current_index, &tree, &treeA)); // maybe init_score instead of 1
     } else {
         // find worst observer
         obsIt = worst_observers.top();  // Get iterator to the "worst" element         

@@ -56,15 +56,14 @@ struct tpSDOsc<FloatType>::Observer {
         return proj_observations;
     }
 
-    FloatType getObservations() {
-        return real(observations[0]);
-    }
+    FloatType getObservations() const { return real(observations[0]); }
+    int getIndex() const { return index; }
+    Vector<FloatType> getData() const { return data; }
 
     void updateAge(FloatType age_factor, FloatType score = 1) {
         age *= age_factor;
         age += score;
     }
-
     void updateObservations(
             std::size_t freq_bins, 
             FloatType fading_factor,
@@ -74,14 +73,6 @@ struct tpSDOsc<FloatType>::Observer {
             observations[freq_ind] += score_vector[freq_ind];
         }
         updateAge(fading_factor, real(score_vector[0]));
-    }
-    
-    int getIndex() const {
-        return index;
-    }
-
-    Vector<FloatType> getData() {
-        return data;
     }
 
     bool activate(Tree* treeA) {
@@ -157,15 +148,12 @@ struct tpSDOsc<FloatType>::Observer {
 template<typename FloatType>
 struct tpSDOsc<FloatType>::ObserverCompare{
     FloatType fading;
-
-    // ObserverCompare() : fading(1.0) {}
     ObserverCompare(FloatType fading) : fading(fading) {}
-
     bool operator()(const Observer& a, const Observer& b) const {
         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
-        FloatType observations_a = real(a.observations[0])
+        FloatType observations_a = a.getObservations()
             * std::pow(fading, common_touched - a.time_touched);        
-        FloatType observations_b = real(b.observations[0])
+        FloatType observations_b = b.getObservations()
             * std::pow(fading, common_touched - b.time_touched);        
         // tie breaker for reproducibility
         if (observations_a == observations_b)
@@ -174,24 +162,21 @@ struct tpSDOsc<FloatType>::ObserverCompare{
     }
 };
 
-template<typename FloatType>
-struct tpSDOsc<FloatType>::ObserverAvCompare{
-    FloatType fading;
-    ObserverAvCompare(FloatType fading) : fading(fading) {}
-    bool operator()(FloatType now, const Observer& a, const Observer& b) {
-        FloatType common_touched = std::max(a.time_touched, b.time_touched);
-        
-        FloatType observations_a = real(a.observations[0]) * std::pow(fading, common_touched - a.time_touched);
-        // FloatType age_a = 1-std::pow(fading, now-a.time_added);
-        
-        FloatType observations_b = real(b.observations[0]) * std::pow(fading, common_touched - b.time_touched);
-        // FloatType age_b = 1-std::pow(fading, now-b.time_added);
-        
-        // do not necessarily need a tie breaker here
-        return observations_a * b.age > observations_b * a.age;
-        // return observations_a * age_b > observations_b * age_a;
-    }
-};
+// template<typename FloatType>
+// struct tpSDOsc<FloatType>::ObserverAvCompare{
+//     FloatType fading;
+//     ObserverAvCompare(FloatType fading) : fading(fading) {}
+//     bool operator()(FloatType now, const Observer& a, const Observer& b) {
+//         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
+//         FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);
+//         // FloatType age_a = 1-std::pow(fading, now-a.time_added);        
+//         FloatType observations_b = b.getObservations() * std::pow(fading, common_touched - b.time_touched);
+//         // FloatType age_b = 1-std::pow(fading, now-b.time_added);        
+//         // do not necessarily need a tie breaker here
+//         return observations_a * b.age > observations_b * a.age;
+//         // return observations_a * age_b > observations_b * age_a;
+//     }
+// };
 
 template<typename FloatType>
 struct tpSDOsc<FloatType>::IteratorAvCompare{
@@ -201,14 +186,11 @@ struct tpSDOsc<FloatType>::IteratorAvCompare{
     bool operator()(const MapIterator& it_a, const MapIterator& it_b) {
         const Observer& a = *it_a;
         const Observer& b = *it_b;
-        FloatType common_touched = std::max(a.time_touched, b.time_touched);
-        
-        FloatType observations_a = real(a.observations[0]) * std::pow(fading, common_touched - a.time_touched);
-        // FloatType age_a = 1-std::pow(fading, now-a.time_added);
-        
-        FloatType observations_b = real(b.observations[0]) * std::pow(fading, common_touched - b.time_touched);
-        // FloatType age_b = 1-std::pow(fading, now-b.time_added);
-        
+        FloatType common_touched = std::max(a.time_touched, b.time_touched);        
+        FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);        
+        // FloatType age_a = 1-std::pow(fading, now-a.time_added);  
+        FloatType observations_b = b.getObservations() * std::pow(fading, common_touched - b.time_touched);
+        // FloatType age_b = 1-std::pow(fading, now-b.time_added);        
         // do not necessarily need a tie breaker here
         return observations_a * b.age > observations_b * a.age;
         // return observations_a * age_b > observations_b * age_a;
