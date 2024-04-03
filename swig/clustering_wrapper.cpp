@@ -85,9 +85,9 @@ template class SDOcluststream_wrapper<float>;
 // tpSDO
 
 template<typename FloatType>
-tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, FloatType outlier_threshold, int freq_bins, FloatType max_freq, Distance_wrapper<FloatType>* distance, int seed) :
+tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, int freq_bins, FloatType max_freq, FloatType outlier_threshold, Distance_wrapper<FloatType>* distance, int seed) :
     dimension(-1),
-    sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, freq_bins, max_freq, distance->getFunction(), seed)
+    sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, distance->getFunction(), seed)
 {
 }
 

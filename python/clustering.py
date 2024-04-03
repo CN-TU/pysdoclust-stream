@@ -317,7 +317,7 @@ class tpSDOsc(Clustering):
         
         self.model = cpp_obj(
             p['k'], p['T'], p['qv'], p['x'], p['chi_min'], p['chi_prop'], p['zeta'],
-            p['e'], p['outlier_threshold'], p['freq_bins'], p['max_freq'],distance_function, p['seed']
+            p['e'], p['freq_bins'], p['max_freq'], p['outlier_threshold'],distance_function, p['seed']
         )
         
         self.last_time = 0

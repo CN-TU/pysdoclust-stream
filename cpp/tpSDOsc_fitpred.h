@@ -13,7 +13,6 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& time_data, 
         bool fit_only) {
-    
     // Check for equal lengths:
     if (data.size() != time_data.size()) {
         throw std::invalid_argument("data and now must have the same length");
@@ -166,9 +165,8 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {  
         if (it->active) { it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi ); } 
     }
-
-    updateH_all();
     
+    updateH_all();
     // update graph
     now = time_data.back(); // last timestamp of batch    
     updateGraph(
@@ -176,6 +174,7 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
         active_threshold,
         e, // current_e,
         chi);
+
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
             int current_index = first_index + i;

@@ -25,7 +25,7 @@ template<typename FloatType>
 FloatType tpSDOsc<FloatType>::getActiveObservationsThreshold(int active_threshold, FloatType now) {
     if (observers.size() > 1) {      
         MapIterator it = std::next(observers.begin(), active_threshold);  
-        return real(it->observations[0]) * std::pow<FloatType>(fading, now-it->time_touched);     ;
+        return it->getObservations() * std::pow<FloatType>(fading, now-it->time_touched);
     } 
     else {
         return 0;

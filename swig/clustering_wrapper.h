@@ -58,10 +58,10 @@ class tpSDOsc_wrapper {
       int chi_min, 
       FloatType chi_prop,
       FloatType zeta, 
-      int e,    
-      FloatType outlier_threshold,
+      int e,
       int freq_bins,
-      FloatType max_freq,
+      FloatType max_freq,    
+      FloatType outlier_threshold,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 
