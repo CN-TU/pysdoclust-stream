@@ -26,7 +26,7 @@ void SDOcluststream<FloatType>::DFS(
         }
         if ((h > it->h) && (zeta < 1.0f)) {
             // Query search(const KeyType& needle, DistanceType min_radius = 0, DistanceType max_radius = std::numeric_limits<DistanceType>::infinity(), bool reverse = false, BoundEstimator estimator = NopBoundEstimator()) {
-            auto additionalNeighbors = treeA.search(it->getData(), it->h , (zeta * it->h + (1 - zeta) * h));
+            auto additionalNeighbors = treeA.search(it->data, it->h , (zeta * it->h + (1 - zeta) * h));
             while (!additionalNeighbors.atEnd()) {
                 // Dereference the iterator to get the current element
                 auto neighbor = *additionalNeighbors;

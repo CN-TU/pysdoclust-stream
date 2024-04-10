@@ -8,6 +8,22 @@
 #include "tpSDOsc_fit.h"
 #include "tpSDOsc_predict.h"
 
+// template<typename FloatType>
+// class tpSDOsc<FloatType>::TreeNodeUpdater {
+//     Vector<FloatType> new_data;
+//     int new_key;
+//     public:
+//     TreeNodeUpdater(Vector<FloatType> new_data, int new_key) : new_data(new_data), new_key(new_key) {}
+//     void operator() (Vector<FloatType>& vector, int& key) {
+//         int i = 0;
+//         for (FloatType& element : vector) {
+//             element = new_data[i];
+//             i++;
+//         }
+//         key = new_key;
+//     }
+// };
+
 template<typename FloatType>
 std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
@@ -78,7 +94,6 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
                 last_index++);                
         }
     }
-
     // Can not replace more observers than max size of model
     if (sampled.size()>observer_cnt) {
         std::vector<typename std::unordered_set<int>::value_type> shuffled_elements(sampled.begin(), sampled.end());
@@ -141,27 +156,28 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
         }
     }
     update_model(temporary_scores); // 
-
     // now is average time of batch
     now = std::accumulate(time_data.begin(), time_data.end(), 0.0) / time_data.size();
     FloatType active_observations_thresh = getActiveObservationsThreshold(active_threshold, now);
     std::vector<std::complex<FloatType>> now_vector;
     initNowVector(now, now_vector);
     // update active tree
-    int i(0); int j(0);
+    // int i(0); int j(0);
+    // std::cout << "active threshold: " << active_observations_thresh << "; ";
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
-        FloatType fading_factor = std::pow<FloatType>(fading, now-it->time_touched);        
+        FloatType fading_factor = std::pow<FloatType>(fading, now-it->time_touched);  
+        // std::cout << it->getObservations(fading_factor) << " ";
         FloatType proj_observations = it->getProjObservations(now_vector, freq_bins, fading_factor);      
         if (proj_observations < active_observations_thresh) {
-            it->deactivate(&treeA);    
-            j++;        
+            it->deactivate(&treeA); 
+            // i++; 
         } else {
             it->activate(&treeA);
-            i++;
+            // j++;
         }
     }
-    // std::cout << active_threshold << ": " << i << " / " << j << std::endl;
-    
+    // std::cout <<std::endl << "active: " << j << ", inactive: " << i << std::endl;
+
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {  
         if (it->active) { it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi ); } 
     }
@@ -174,7 +190,6 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
         active_threshold,
         e, // current_e,
         chi);
-
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
             int current_index = first_index + i;
@@ -203,4 +218,4 @@ std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
     return labels;
 };
 
-#endif  // TPSDOSC_H
+#endif  // TPSDOSC_FITPRED_H

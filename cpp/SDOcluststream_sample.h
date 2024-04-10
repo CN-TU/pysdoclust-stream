@@ -23,7 +23,7 @@ bool SDOcluststream<FloatType>::sampleData(
 template<typename FloatType>
 void SDOcluststream<FloatType>::sampleData(
         std::unordered_set<int>& sampled,
-        const Vector<FloatType>& point,
+        const Point& point,
         const FloatType& now,
         FloatType observations_sum,
         const int& current_observer_cnt,
@@ -55,7 +55,7 @@ void SDOcluststream<FloatType>::sampleData(
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::replaceObservers(
-        Vector<FloatType> data,
+        Point data,
         std::unordered_set<int>& dropped,
         std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
         const FloatType& now,

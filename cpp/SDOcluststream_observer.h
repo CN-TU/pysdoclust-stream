@@ -3,7 +3,7 @@
 
 template<typename FloatType>
 struct SDOcluststream<FloatType>::Observer {
-    Vector<FloatType> data;
+    Point data;
     FloatType observations;
     FloatType time_touched;        
     // FloatType time_added;
@@ -22,7 +22,7 @@ struct SDOcluststream<FloatType>::Observer {
 
     // Constructor for Observer
     Observer(
-        Vector<FloatType> data,
+        Point data,
         FloatType observations,
         FloatType time_touched,
         int index,
@@ -45,7 +45,7 @@ struct SDOcluststream<FloatType>::Observer {
         }
     
     int getIndex() const { return index; }
-    Vector<FloatType> getData() const { return data; }
+    Vector<FloatType> getData() const { return data.first; } // without Epsilon
     FloatType getObservations() const { return observations; }
     FloatType getH() const { return h; }
 
@@ -91,7 +91,7 @@ struct SDOcluststream<FloatType>::Observer {
     }
 
     void reset(
-        Vector<FloatType> _data,
+        Point _data,
         FloatType _observations,
         FloatType _time_touched,
         int _index,

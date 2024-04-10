@@ -4,7 +4,7 @@
 template<typename FloatType>
 void SDOcluststream<FloatType>::fit_impl(
         std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
-        const Vector<FloatType>& point,
+        const Point& point,
         const FloatType& now,           
         const int& current_observer_cnt,
         const int& current_neighbor_cnt,
@@ -26,7 +26,7 @@ void SDOcluststream<FloatType>::fit_impl(
 template<typename FloatType>
 void SDOcluststream<FloatType>::fit_impl(
         std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
-        const Vector<FloatType>& point,
+        const Point& point,
         const FloatType& now,           
         const int& current_observer_cnt,
         const int& current_neighbor_cnt) {   
@@ -53,8 +53,6 @@ void SDOcluststream<FloatType>::updateModel(
         auto node = observers.extract(it);    
         Observer& observer = node.value();
         observer.updateObservations(std::pow(fading, time_touched - observer.time_touched), score);
-        // observer.observations *= std::pow<FloatType>(fading, time_touched-observer.time_touched);
-        // observer.observations += score;
         observer.time_touched = time_touched;
         observers.insert(std::move(node));
     }

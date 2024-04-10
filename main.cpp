@@ -42,37 +42,37 @@ int main() {
     // std::mt19937 gen(rd());
 
     // initialise algorithm
-    // SDOcluststream<double> sdoclust(
-    //         500, 
-    //         2000, 
-    //         0.3f, 
-    //         6, // x
-    //         7, // chi
-    //         0.15f,
-    //         0.6f, // zeta
-    //         7, // e
-    //         5.0f);
+    SDOcluststream<double> sdoclust(
+            500, 
+            2000, 
+            0.3f, 
+            6, // x
+            7, // chi
+            0.15f,
+            0.6f, // zeta
+            7, // e
+            5.0f);
 
-    // // Measure time taken for fitPredict
-    // auto start0 = std::chrono::steady_clock::now();
-    // for (int i = 0; i < m; ++i) {
-    //     std::vector<Vector<double>> data = generateRandomVectors(n, k);
+    // Measure time taken for fitPredict
+    auto start0 = std::chrono::steady_clock::now();
+    for (int i = 0; i < m; ++i) {
+        std::vector<Vector<double>> data = generateRandomVectors(n, k);
 
-    //     // Generate time_data for this batch
-    //     std::vector<double> time_data(n);  // Create a vector of size n
-    //     std::iota(time_data.begin(), time_data.end(), i * n);  // Fill with values starting from i * n, incrementing by 1
+        // Generate time_data for this batch
+        std::vector<double> time_data(n);  // Create a vector of size n
+        std::iota(time_data.begin(), time_data.end(), i * n);  // Fill with values starting from i * n, incrementing by 1
 
-    //     // Measure time taken for fitPredict
-    //     auto start = std::chrono::steady_clock::now();
-    //     sdoclust.fitPredict(data, time_data);
-    //     auto end = std::chrono::steady_clock::now();
-    //     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    //     std::cout << "Time taken for fitPredict: " << duration.count() << " milliseconds" << std::endl;
-    // }
+        // Measure time taken for fitPredict
+        auto start = std::chrono::steady_clock::now();
+        sdoclust.fitPredict(data, time_data);
+        auto end = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        std::cout << "Time taken for fitPredict: " << duration.count() << " milliseconds" << std::endl;
+    }
 
-    // auto end0 = std::chrono::steady_clock::now();
-    // auto duration0 = std::chrono::duration_cast<std::chrono::milliseconds>(end0 - start0);
-    // std::cout << "Time taken for fitPredict: " << duration0.count() << " milliseconds" << std::endl;
+    auto end0 = std::chrono::steady_clock::now();
+    auto duration0 = std::chrono::duration_cast<std::chrono::milliseconds>(end0 - start0);
+    std::cout << "Time taken for fitPredict: " << duration0.count() << " milliseconds" << std::endl;
 
     tpSDOsc<double> tpsdoclust(
             500, 
@@ -83,12 +83,13 @@ int main() {
             0.15f,
             0.6f, // zeta
             7, // e
-            5.0f,
-            10,
-            200.0f);
+            1, // freq_bins
+            10000.0f, // max_freq
+            5.0f // outlier threshold            
+            );
 
     // Measure time taken for fitPredict
-    auto start0 = std::chrono::steady_clock::now();
+    auto start1 = std::chrono::steady_clock::now();
     for (int i = 0; i < m; ++i) {
         std::vector<Vector<double>> data = generateRandomVectors(n, k);
 
@@ -104,9 +105,9 @@ int main() {
         std::cout << "Time taken for fitPredict: " << duration.count() << " milliseconds" << std::endl;
     }
 
-    auto end0 = std::chrono::steady_clock::now();
-    auto duration0 = std::chrono::duration_cast<std::chrono::milliseconds>(end0 - start0);
-    std::cout << "Time taken for fitPredict: " << duration0.count() << " milliseconds" << std::endl;
+    auto end1 = std::chrono::steady_clock::now();
+    auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1);
+    std::cout << "Time taken for fitPredict: " << duration1.count() << " milliseconds" << std::endl;
 
     return 0;
 }

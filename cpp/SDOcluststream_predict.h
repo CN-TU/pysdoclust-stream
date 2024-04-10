@@ -23,7 +23,6 @@ void SDOcluststream<FloatType>::determineLabelVector(
 template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
-        const Vector<FloatType>& point, // could be accessed as with observer_index
         const int& current_neighbor_cnt,
         const int& observer_index) {
     std::unordered_map<int, FloatType> label_vector;
@@ -54,15 +53,12 @@ void SDOcluststream<FloatType>::predict_impl(
 template<typename FloatType>
 void SDOcluststream<FloatType>::predict_impl(
         int& label,
-        const Vector<FloatType>& point,
+        const Point& point,
         const int& current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
     TreeNeighbors nearestNeighbors = treeA.knnSearch(point, current_neighbor_cnt, true, 0, std::numeric_limits<FloatType>::infinity(), false, false);
-    int i = 0;
     for (const auto& neighbor : nearestNeighbors) {
         determineLabelVector(label_vector, neighbor);  
-        ++i;
-        if (i > current_neighbor_cnt) { break; }
     }  
     // set label
     label = -1;

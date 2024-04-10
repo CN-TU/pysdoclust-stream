@@ -27,6 +27,7 @@
 template<typename FloatType>
 std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         const std::vector<Vector<FloatType>>& data, 
+        const std::vector<FloatType>& epsilon,
         const std::vector<FloatType>& time_data, 
         bool fit_only) {
     // Check for equal lengths:
@@ -52,7 +53,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
             if (firstPointSampled) {
                 sampleData(
                     sampled,
-                    data[i],                    
+                    std::make_pair(data[i], epsilon[i]),                    
                     time_data[i],
                     observations_sum * std::pow<FloatType>(fading, time_data[i]-now), // 0
                     current_observer_cnt,
@@ -86,7 +87,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         for (size_t i = 0; i < data.size(); ++i) {                
             sampleData(
                 sampled,
-                data[i],                    
+                std::make_pair(data[i], epsilon[i]),                    
                 time_data[i],
                 observations_sum * std::pow<FloatType>(fading, time_data[i]-now),
                 current_observer_cnt,
@@ -102,7 +103,6 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         sampled.insert(shuffled_elements.begin(), shuffled_elements.begin() + observer_cnt);
     }
 
-    // std::cout << "Replacement rate: " << static_cast<FloatType>(sampled.size())/data.size() << std::endl;
     // Queue worst observers
     IteratorAvCompare iterator_av_compare(fading, now);
     std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare> worst_observers(iterator_av_compare);
@@ -115,7 +115,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         bool is_observer = (sampled.count(current_index) > 0);     
         if (is_observer) {            
             replaceObservers(
-                data[i],
+                std::make_pair(data[i], epsilon[i]),
                 dropped,
                 worst_observers,
                 now,
@@ -142,7 +142,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         if (is_observer) {
             fit_impl(
                 temporary_scores,
-                data[i],
+                std::make_pair(data[i], epsilon[i]),
                 time_data[i],
                 current_observer_cnt2,
                 current_neighbor_cnt2,
@@ -150,7 +150,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
         } else {
             fit_impl(
                 temporary_scores,
-                data[i],
+                std::make_pair(data[i], epsilon[i]),
                 time_data[i],
                 current_observer_cnt,
                 current_neighbor_cnt); 
@@ -160,7 +160,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     // update active tree
     int i = 0;
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {            
-        if (i > current_observer_cnt) {
+        if (i > active_threshold) {
             it->deactivate(&treeA);
         } else {
             it->activate(&treeA);
@@ -171,7 +171,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
         it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi );
         ++i;
-        if (i > current_observer_cnt) { break; }
+        if (i > active_threshold) { break; }
     }
     updateH_all();
     // update graph
@@ -179,7 +179,7 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     updateGraph(
         now,
         active_threshold,
-        e, // current_e,
+        e, // current_e or e
         chi);
     if (!fit_only) {
         for (size_t i = 0; i < data.size(); ++i) {
@@ -189,19 +189,18 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
                 if (indexToIterator[current_index]->active) {
                     predict_impl(
                         labels[i],
-                        data[i],
                         current_neighbor_cnt2,
                         current_index);
                 } else {
                     predict_impl(
-                    labels[i],
-                    data[i],
-                    current_neighbor_cnt2);
+                        labels[i],
+                        std::make_pair(data[i], epsilon[i]),
+                        current_neighbor_cnt2);
                 }
             } else {
                 predict_impl(
                     labels[i],
-                    data[i],
+                    std::make_pair(data[i], epsilon[i]),
                     current_neighbor_cnt);
             }
         }

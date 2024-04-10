@@ -61,6 +61,15 @@ class Vector : public std::vector<Value>
         }
         return distance;
     }
+
+    static Value chebyshevE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b) {
+        Value distance = chebyshev(a.first, b.first);
+        if (distance == 0) {
+            // If distance is zero, calculate distance between epsilons
+            distance = std::abs(a.second - b.second);
+        }
+        return distance;
+    }
     
     static Value euclidean(const Vector& a, const Vector& b) {
         Value distance = 0;
@@ -76,12 +85,30 @@ class Vector : public std::vector<Value>
         return std::sqrt(distance);
     }
 
+    static Value euclideanE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b) {
+        Value distance = euclidean(a.first, b.first);
+        if (distance == 0) {
+            // If distance is zero, calculate distance between epsilons
+            distance = std::abs(a.second - b.second);
+        }
+        return distance;
+    }
+
     static Value manhattan(const Vector& a, const Vector& b) {
         Value distance = 0;
         assert(a.size() == b.size());
         for (std::size_t i = 0; i < a.size(); i++) {
             Value diff = a[i] - b[i];
             distance += std::abs(diff);
+        }
+        return distance;
+    }
+
+    static Value manhattanE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b) {
+        Value distance = manhattan(a.first, b.first);
+        if (distance == 0) {
+            // If distance is zero, calculate distance between epsilons
+            distance = std::abs(a.second - b.second);
         }
         return distance;
     }
@@ -94,6 +121,15 @@ class Vector : public std::vector<Value>
             distance += std::pow(std::abs(diff), p);
         }
         return std::pow(distance, 1/p);
+    }
+
+    static Value lpE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b, const Value p) {
+        Value distance = lp(a.first, b.first, p);
+        if (distance == 0) {
+            // If distance is zero, calculate distance between epsilons
+            distance = std::abs(a.second - b.second);
+        }
+        return distance;
     }
 
     void unserialize(std::istream& in) {

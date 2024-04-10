@@ -57,6 +57,7 @@ struct tpSDOsc<FloatType>::Observer {
     }
 
     FloatType getObservations() const { return real(observations[0]); }
+    FloatType getObservations(FloatType fading_factor) { return this->getObservations() * fading_factor; }
     int getIndex() const { return index; }
     Vector<FloatType> getData() const { return data; }
 
