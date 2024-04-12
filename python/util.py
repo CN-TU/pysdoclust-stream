@@ -47,3 +47,20 @@ def lookupDistance(name, float_type, **kwargs):
         return swig.__dict__['MinkowskiDist' + suffix](kwargs['p'])
     else:
         raise TypeError('Unknown metric')
+    
+# def lookupDistanceE(name, float_type, **kwargs):
+#     wrappers = {
+#         'chebyshev': 'ChebyshevEDist',
+#         'cityblock': 'ManhattanEDist',
+#         'euclidean': 'EuclideanEDist',
+#     }
+#     suffix = {np.float32: '32', np.float64: '64'}[float_type]
+
+#     if name in wrappers:
+#         return swig.__dict__[wrappers[name] + suffix]()
+#     elif name == 'minkowski':
+#         if not 'p' in kwargs:
+#             raise TypeError('p is required for Minkowski distance')
+#         return swig.__dict__['MinkowskiEDist' + suffix](kwargs['p'])
+#     else:
+#         raise TypeError('Unknown metric')

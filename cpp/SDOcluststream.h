@@ -39,8 +39,6 @@ class SDOcluststream {
     FloatType active_observers;
     // factor for deciding if a sample should be sampled as observer
     FloatType sampling_prefactor;
-    // factor for deciding if a sample should be sampled as observer if model is empty
-    FloatType sampling_first;
     // factor for exponential moving average
     FloatType fading;
     // factor for exponential moving average for cluster observations
@@ -58,6 +56,8 @@ class SDOcluststream {
     int last_index;
     // counter index when we sampled the last time
     int last_added_index;
+    // time when last processed
+    FloatType last_time;
     // time when we last sampled
     FloatType last_added_time;
 
@@ -100,7 +100,7 @@ class SDOcluststream {
     struct ClusterModelCompare;
     typedef boost::container::multiset<ClusterModel,ClusterModelCompare> ClusterModelMap;    
     ClusterModelMap clusters;
-    std::unordered_map<int, FloatType> modelColorDistribution;
+    // std::unordered_map<int, FloatType> modelColorDistribution;
 
     Tree tree;
     Tree treeA; 
@@ -109,6 +109,7 @@ class SDOcluststream {
     void printDistanceMatrix(); // print
     void printObservers(FloatType now); // print
 
+    // util
     void setModelParameters(
             int& current_observer_cnt, int&current_observer_cnt2,
             int& active_threshold, int& active_threshold2,
@@ -116,85 +117,109 @@ class SDOcluststream {
             std::size_t& current_e,
             std::size_t& chi,
             bool print); // util
-    void DetermineColor(
-            ClusterModelMap& clusters, 
-            std::unordered_map<int, FloatType>& modelColorDistribution,
-            FloatType now); // graph
-
+    
+    bool hasEdge(FloatType distance, const MapIterator& it); // util
+    FloatType calcBatchAge(const std::vector<FloatType>& time_data, FloatType score = 1);
     void setObsScaler(); // util
 
     void updateH_single(MapIterator it, size_t n);
-    void updateH_all(const size_t& chi);
-    void updateH_all();
-    
-    bool hasEdge(FloatType distance, const MapIterator& it); // util
-    
-    void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it); // sorted or tree
 
+    // fit
     void fit_impl(
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon,
+            const std::vector<FloatType>& time_data,
+            const std::unordered_set<int>& sampled,
+            int first_index);
+    void fit_point(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
             const Point& point,
             const FloatType& now,           
             const int& current_observer_cnt,
             const int& current_neighbor_cnt,
-            const int& observer_index); // tree
-    void fit_impl(
+            const int& observer_index);
+    void fit_point(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
             const Point& point,
             const FloatType& now,           
             const int& current_observer_cnt,
-            const int& current_neighbor_cnt); // tree
+            const int& current_neighbor_cnt);
+    void updateModel(
+            const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores);
 
+    // predict
+    void predict_impl(
+            std::vector<int>& labels,
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon,
+            const std::unordered_set<int>& sampled,
+            int first_index);
     void determineLabelVector(
             std::unordered_map<int, FloatType>& label_vector,
             const std::pair<TreeIterator, FloatType>& neighbor);
-    void predict_impl(
+    void setLabel(
+            int& label,
+            const std::unordered_map<int, FloatType>& label_vector,
+            int current_neighbor_cnt);
+    void predict_point(
             int& label,
             const int& current_neighbor_cnt,
-            const int& observer_index); // tree
-    void predict_impl(
+            const int& observer_index); 
+    void predict_point(
             int& label,
             const Point& point,
-            const int& current_neighbor_cnt); // tree
-    void updateModel(
-            const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores); // util
-
-    bool sampleData( 
-        std::unordered_set<int>& sampled,
-        const FloatType& now,
-        const int& batch_size, // actually batch size - 1
-        const FloatType& batch_time,
-        const int& current_index); // util
-
-    void sampleData(
+            const int& current_neighbor_cnt);
+    
+    // sample
+    void sample(
+            std::unordered_set<int>& sampled,
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon,
+            const std::vector<FloatType>& time_data,
+            int first_index);
+    bool sample_point( 
+            std::unordered_set<int>& sampled,
+            FloatType now,
+            int batch_size,
+            FloatType batch_time,
+            int current_index);
+    void sample_point(
             std::unordered_set<int>& sampled,
             const Point& point,
             const FloatType& now,
             FloatType observations_sum,
             const int& current_observer_cnt,
             const int& current_neighbor_cnt,
-            const int& current_index); // util
-
-    // const?
+            const int& current_index);
     void replaceObservers(
             Point data,
-            std::unordered_set<int>& dropped,
             std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
             const FloatType& now,
             const int& current_observer_cnt,
-            const int& current_index); // util
+            const int& current_index);
 
+    // graph
+    void update(
+            const std::vector<FloatType>& time_data,
+            const std::unordered_set<int>& sampled);
     void updateGraph(
-        const FloatType& now,
-        const int& active_threshold,
-        const std::size_t current_e,
-        const std::size_t& chi); // util
+            const std::size_t current_e,
+            FloatType age_factor,
+            FloatType score); 
+    void update(const std::unordered_set<int>& sampled);
+    void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it);
+    // void updateH_all(const size_t& chi);
+    void updateH_all();
+    void DetermineColor(
+            ClusterModelMap& clusters,
+            FloatType age_factor, 
+            FloatType score);
 
     std::vector<int> fitPredict_impl(
-        const std::vector<Vector<FloatType>>& data,
-        const std::vector<FloatType>& epsilon,
-        const std::vector<FloatType>& time_data, 
-        bool fit_only); //tree
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon,
+            const std::vector<FloatType>& time_data, 
+            bool fit_only); //tree
 
 public:
     SDOcluststream(
@@ -212,8 +237,8 @@ public:
         int seed = 0
     ) : observer_cnt(observer_cnt), 
         active_observers(1-idle_observers), 
-        sampling_prefactor(observer_cnt * observer_cnt / neighbor_cnt / T),
-        sampling_first(observer_cnt / T),
+        // sampling_prefactor(observer_cnt * observer_cnt / neighbor_cnt / T),
+        sampling_prefactor(observer_cnt / T),
         fading(std::exp(-1/T)),
         fading_cluster(FloatType(1)),
         neighbor_cnt(neighbor_cnt),
@@ -222,6 +247,8 @@ public:
         obs_scaler(observer_cnt+1),
         last_index(0),
         last_added_index(0),
+        last_time(0),
+        last_added_time(0),
         distance_function(distance_function),
         rng(seed),
         chi_min(chi_min),
@@ -234,7 +261,7 @@ public:
         // observer_av_compare(fading),
         observers(observer_compare),  // Initialize observers container with initial capacity and comparison function
         clusters(),
-        modelColorDistribution(),
+        // modelColorDistribution(),
         // distance_compare(),
         // distance_matrix(),
         // gamma_dist(),
@@ -248,7 +275,7 @@ public:
     void fit(const std::vector<Vector<FloatType>>& data, const std::vector<FloatType>& time_data) {
         std::vector<FloatType> epsilon(data.size(), 0.0);
         if (perturb > 0) {
-            std::normal_distribution<FloatType> distribution(0.0, perturb);
+            std::uniform_real_distribution<FloatType> distribution(-perturb, perturb);
             std::generate(epsilon.begin(), epsilon.end(), [&distribution, this] () {
                 return distribution(rng);
             });
@@ -261,7 +288,7 @@ public:
             const std::vector<FloatType>& time_data) {
         std::vector<FloatType> epsilon(data.size(), 0.0);
         if (perturb > 0) {
-            std::normal_distribution<FloatType> distribution(0.0, perturb);
+            std::uniform_real_distribution<FloatType> distribution(-perturb, perturb);
             std::generate(epsilon.begin(), epsilon.end(), [&distribution, this] () {
                 return distribution(rng);
             });

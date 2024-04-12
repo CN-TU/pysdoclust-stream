@@ -5,12 +5,12 @@ template<typename FloatType>
 struct SDOcluststream<FloatType>::Observer {
     Point data;
     FloatType observations;
-    FloatType time_touched;        
-    // FloatType time_added;
+    FloatType time_touched;    
     FloatType age;
     int index;
-    TreeIterator treeIt;
+
     bool active;
+    TreeIterator treeIt;
     TreeIterator treeItA;
 
     int color;
@@ -31,10 +31,10 @@ struct SDOcluststream<FloatType>::Observer {
     ) : data(data),
         observations(observations),
         time_touched(time_touched),
-        age(observations),
+        age(0),
         index(index),
-        treeIt(tree->end()),
         active(false),
+        treeIt(tree->end()),
         treeItA(treeA->end()),
         color(0),
         color_observations(),
@@ -49,7 +49,7 @@ struct SDOcluststream<FloatType>::Observer {
     FloatType getObservations() const { return observations; }
     FloatType getH() const { return h; }
 
-    void updateAge(FloatType age_factor, FloatType score = 1) {
+    void updateAge(FloatType age_factor, FloatType score) {
         age *= age_factor;
         age += score;
     }
@@ -59,7 +59,6 @@ struct SDOcluststream<FloatType>::Observer {
             FloatType score = 1) {        
         observations *= fading_factor;
         observations += score;
-        updateAge(fading_factor, score);
     }
 
     bool activate(Tree* treeA) {
@@ -101,7 +100,7 @@ struct SDOcluststream<FloatType>::Observer {
         data = _data;
         observations = _observations;
         time_touched = _time_touched;
-        age = _observations;
+        age = 0;
         index = _index;        
         color_observations.clear();
         color_distribution.clear();
@@ -113,16 +112,17 @@ struct SDOcluststream<FloatType>::Observer {
         tree->erase(treeIt);
         treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));         
         if (active) { treeA->erase(treeItA); }
-        active = false;
         treeItA = treeA->end();
+        active = false;
     }
 
-    void updateColorDistribution(); // graph
+    // graph
+    void updateColorDistribution(); 
     void updateColorObservations(
-            int colorObs, 
-            FloatType now, 
-            FloatType fading_cluster); // graph
-
+            int colorObs,
+            FloatType age_factor,
+            FloatType score);
+    //PRINT
     void printColorObservations(FloatType now, FloatType fading_cluster) const;
     void printData() const;
     void printColorDistribution() const;
@@ -148,19 +148,14 @@ struct SDOcluststream<FloatType>::ObserverCompare{
 template<typename FloatType>
 struct SDOcluststream<FloatType>::IteratorAvCompare{
     FloatType fading;
-    FloatType now;
-    IteratorAvCompare(FloatType fading, FloatType now) : fading(fading), now(now) {}
+    IteratorAvCompare(FloatType fading) : fading(fading) {}
     bool operator()(const MapIterator& it_a, const MapIterator& it_b) {
         const Observer& a = *it_a;
         const Observer& b = *it_b;
         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
-        FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);        
-        // FloatType age_a = 1-std::pow(fading, now-a.time_added);  
+        FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);  
         FloatType observations_b = b.getObservations() * std::pow(fading, common_touched - b.time_touched);
-        // FloatType age_b = 1-std::pow(fading, now-b.time_added);        
-        // do not necessarily need a tie breaker here
         return observations_a * b.age > observations_b * a.age;
-        // return observations_a * age_b > observations_b * age_a;
     }
 };
 

@@ -33,9 +33,33 @@ static void fit_predict_ensemble(unsigned ensemble_size, int n_jobs, std::functi
 }
 
 template<typename FloatType>
-SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, FloatType outlier_threshold, Distance_wrapper<FloatType>* distance, int seed) :
+SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
+        int observer_cnt, 
+        FloatType T, 
+        FloatType idle_observers, 
+        int neighbour_cnt, 
+        int chi_min, 
+        FloatType chi_prop, 
+        FloatType zeta, 
+        int e, 
+        FloatType outlier_threshold, 
+        FloatType perturb, 
+        Distance_wrapper<FloatType>* distance, 
+        int seed) :
     dimension(-1),
-    sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, outlier_threshold, distance->getFunction(), seed)
+    sdoclust(
+        observer_cnt, 
+        T, 
+        idle_observers, 
+        neighbour_cnt, 
+        chi_min, 
+        chi_prop, 
+        zeta, 
+        e, 
+        outlier_threshold, 
+        perturb, 
+        distance->getFunction(), 
+        seed)
 {
 }
 
@@ -84,53 +108,53 @@ template class SDOcluststream_wrapper<float>;
 
 // tpSDO
 
-template<typename FloatType>
-tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, int freq_bins, FloatType max_freq, FloatType outlier_threshold, Distance_wrapper<FloatType>* distance, int seed) :
-    dimension(-1),
-    sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, distance->getFunction(), seed)
-{
-}
+// template<typename FloatType>
+// tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, int freq_bins, FloatType max_freq, FloatType outlier_threshold, Distance_wrapper<FloatType>* distance, int seed) :
+//     dimension(-1),
+//     sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, distance->getFunction(), seed)
+// {
+// }
 
-template<typename FloatType>
-void tpSDOsc_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times) {
-    std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
-    std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
-    for (int i = 0; i < data.dim1; i++) {
-        vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
-    }
-    sdoclust.fitPredict(vec_data, vec_times);  
-}
+// template<typename FloatType>
+// void tpSDOsc_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times) {
+//     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
+//     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
+//     for (int i = 0; i < data.dim1; i++) {
+//         vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
+//     }
+//     sdoclust.fitPredict(vec_data, vec_times);  
+// }
 
-template<typename FloatType>
-void tpSDOsc_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times) {
-    std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
-    std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
-    for (int i = 0; i < data.dim1; i++) {
-        vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
-    }
-    std::vector<int> vec_label = sdoclust.fitPredict(vec_data, vec_times);  
-    std::copy(vec_label.begin(), vec_label.end(), &labels.data[0]);  
-}
+// template<typename FloatType>
+// void tpSDOsc_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times) {
+//     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
+//     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
+//     for (int i = 0; i < data.dim1; i++) {
+//         vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
+//     }
+//     std::vector<int> vec_label = sdoclust.fitPredict(vec_data, vec_times);  
+//     std::copy(vec_label.begin(), vec_label.end(), &labels.data[0]);  
+// }
 
-template<typename FloatType>
-int tpSDOsc_wrapper<FloatType>::observer_count() {
-    return sdoclust.observerCount();
-}
+// template<typename FloatType>
+// int tpSDOsc_wrapper<FloatType>::observer_count() {
+//     return sdoclust.observerCount();
+// }
 
-template<typename FloatType>
-void tpSDOsc_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time) {
-    // TODO: check dimensions
-    int i = 0;
-    for (auto observer : sdoclust) {
-        Vector<FloatType> vec_data = observer.getData();
-        std::copy(vec_data.begin(), vec_data.end(), &data.data[i * data.dim2]);
-        observations.data[i] = observer.getObservations(time);
-        av_observations.data[i] = observer.getAvObservations(time);
-        labels.data[i] = observer.getColor();
-        i++;
-    }
-}
+// template<typename FloatType>
+// void tpSDOsc_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time) {
+//     // TODO: check dimensions
+//     int i = 0;
+//     for (auto observer : sdoclust) {
+//         Vector<FloatType> vec_data = observer.getData();
+//         std::copy(vec_data.begin(), vec_data.end(), &data.data[i * data.dim2]);
+//         observations.data[i] = observer.getObservations(time);
+//         av_observations.data[i] = observer.getAvObservations(time);
+//         labels.data[i] = observer.getColor();
+//         i++;
+//     }
+// }
 
-template class tpSDOsc_wrapper<double>;
-template class tpSDOsc_wrapper<float>;
+// template class tpSDOsc_wrapper<double>;
+// template class tpSDOsc_wrapper<float>;
 

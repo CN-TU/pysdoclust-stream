@@ -11,6 +11,18 @@ bool SDOcluststream<FloatType>::hasEdge(
 };
 
 template<typename FloatType>
+FloatType SDOcluststream<FloatType>::calcBatchAge(const std::vector<FloatType>& time_data, FloatType score) {
+    FloatType age(0);
+    for (std::size_t i = 0; i < time_data.size(); ++i) {
+        if (i > 0) {
+            age *= std::pow(fading, time_data[i] - time_data[i - 1]);
+        }
+        age += score;
+    }
+    return age;
+}
+
+template<typename FloatType>
 void SDOcluststream<FloatType>::setObsScaler() {
     FloatType prob0 = 1.0f;
     for (int i = neighbor_cnt; i > 0; --i) {

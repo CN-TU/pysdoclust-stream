@@ -4,6 +4,56 @@
 #include "SDOcluststream_cluster.h"
 
 template<typename FloatType>
+void SDOcluststream<FloatType>::update(
+        const std::vector<FloatType>& time_data,
+        const std::unordered_set<int>& sampled) {
+    int active_threshold(0), active_threshold2(0);
+    int current_neighbor_cnt(0), current_neighbor_cnt2(0);
+    int current_observer_cnt(0), current_observer_cnt2(0);
+    size_t current_e(0);
+    size_t chi(0);    
+    setModelParameters(
+        current_observer_cnt, current_observer_cnt2,
+        active_threshold, active_threshold2,
+        current_neighbor_cnt, current_neighbor_cnt2,
+        current_e,
+        chi,
+        false); // true for print
+    // update active tree
+    int i = 0;
+    for (MapIterator it = observers.begin(); it != observers.end(); ++it) {            
+        if (i > active_threshold) {
+            it->deactivate(&treeA);
+        } else {
+            it->activate(&treeA);
+        }
+        ++i;
+    }
+    i = 0;
+    for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
+        it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi );
+        ++i;
+        if (i > active_threshold) { break; }
+    }
+    updateH_all();
+    // update graph
+    FloatType batch_age = calcBatchAge(time_data);
+    FloatType age_factor = std::pow(fading, time_data.back() - last_time);
+    for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
+        if (sampled.count(it->index) > 0) {
+            it->updateAge(age_factor, obs_scaler[current_observer_cnt2] * batch_age);
+        } else {
+            it->updateAge(age_factor, obs_scaler[current_observer_cnt] * batch_age);
+        }
+    }
+    updateGraph(
+        e, // current_e or e
+        age_factor,
+        batch_age); // score
+    last_time = time_data.back(); 
+}
+
+template<typename FloatType>
 void SDOcluststream<FloatType>::DFS(
         IndexSetType& cluster, 
         IndexSetType& processed, 
@@ -78,16 +128,16 @@ void SDOcluststream<FloatType>::updateH_all() {
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::DetermineColor(
-        ClusterModelMap& clusters, 
-        std::unordered_map<int, FloatType>& modelColorDistribution,
-        FloatType now) {
+        ClusterModelMap& clusters,
+        FloatType age_factor, 
+        FloatType score) {
     std::unordered_set<int> takenColors;
     auto it = clusters.begin();
     while (it != clusters.end()) {
-        auto& color_distribution = it->color_distribution;        
-        for (const auto& pair: color_distribution) {
-            modelColorDistribution[pair.first] += pair.second;
-        }
+        // auto& color_distribution = it->color_distribution;        
+        // for (const auto& pair: color_distribution) {
+        //     modelColorDistribution[pair.first] += pair.second;
+        // }
         int color;
         if (it->color_score > 0) {
             color = it->color;        
@@ -109,7 +159,7 @@ void SDOcluststream<FloatType>::DetermineColor(
         const IndexSetType& cluster_observers = it->cluster_observers;
         for (const int& id : cluster_observers) {
             const MapIterator& it1 = indexToIterator[id];
-            it1->updateColorObservations(color, now, fading_cluster);
+            it1->updateColorObservations(color, age_factor, score);
         }
         ++it; // Increment the iterator to move to the next cluster
     }
@@ -118,10 +168,9 @@ void SDOcluststream<FloatType>::DetermineColor(
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::updateGraph(
-    const FloatType& now,
-    const int& active_threshold,
     const std::size_t current_e,
-    const std::size_t& chi) {
+    FloatType age_factor,
+    FloatType score) {
         clusters.clear();
         IndexSetType processed;
         for (auto it = observers.begin(); it != observers.end(); ++it) {
@@ -135,8 +184,8 @@ void SDOcluststream<FloatType>::updateGraph(
                 clusters.insert(clusterM); 
             }
         }
-        modelColorDistribution.clear();
-        DetermineColor(clusters, modelColorDistribution, now);
+        // modelColorDistribution.clear();
+        DetermineColor(clusters, age_factor, score);
 }
 
 template<typename FloatType>
@@ -154,14 +203,14 @@ void SDOcluststream<FloatType>::Observer::updateColorDistribution() {
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::Observer::updateColorObservations(
-        int colorObs, 
-        FloatType now, 
-        FloatType fading_cluster) {
+        int colorObs,
+        FloatType age_factor,
+        FloatType score) {
     // Apply fading to all entries in color_observations
     for (auto& entry : color_observations) {
-        entry.second *= 1; // TO DO
+        entry.second *= age_factor; // fade of whole batch
     }
-    color_observations[colorObs] += 1;
+    color_observations[colorObs] += score; // age of batch
     // update dominant color
     if (color > 0) {
         if (color_observations[colorObs] > color_observations[color]) {

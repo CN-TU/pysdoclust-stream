@@ -1,16 +1,111 @@
 #ifndef SDOCLUSTSTREAM_SAMPLE_H
 #define SDOCLUSTSTREAM_SAMPLE_H
 
+
 template<typename FloatType>
-bool SDOcluststream<FloatType>::sampleData( 
+void SDOcluststream<FloatType>::sample(
+        std::unordered_set<int>& sampled,
+        const std::vector<Vector<FloatType>>& data,
+        const std::vector<FloatType>& epsilon,
+        const std::vector<FloatType>& time_data,
+        int first_index) {  
+    int active_threshold(0), active_threshold2(0);
+    int current_neighbor_cnt(0), current_neighbor_cnt2(0);
+    int current_observer_cnt(0), current_observer_cnt2(0);
+    size_t current_e(0); // unused 
+    size_t chi(0); 
+    setModelParameters(
+        current_observer_cnt, current_observer_cnt2,
+        active_threshold, active_threshold2,
+        current_neighbor_cnt, current_neighbor_cnt2,
+        current_e,
+        chi,
+        false); // true for print 
+    bool only_random(true);
+    FloatType observations_sum(0);   
+    if (!only_random) { // only in use if           
+        for (auto it = observers.begin(); it != observers.end(); ++it) {
+            observations_sum += it->observations * std::pow<FloatType>(fading, last_time- it->time_touched);
+        }
+    }
+    if (observers.empty()) {
+        bool firstPointSampled(false);
+        for (size_t i = 0; i < data.size(); ++i) { 
+            if (sample_point(
+                    sampled,
+                    time_data[i],
+                    data.size(),
+                    time_data.back() - time_data.front(),
+                    last_index++)
+                ) { firstPointSampled = true; }
+        }
+        if (!firstPointSampled) {
+            std::uniform_int_distribution<int> dist(0, data.size() - 1);
+            int indexToSample = dist(rng);
+            sampled.insert(indexToSample);
+            last_added_index = indexToSample;            
+        }
+    } else {
+        for (size_t i = 0; i < data.size(); ++i) {     
+            if (!only_random) {
+                sample_point(
+                    sampled,
+                    std::make_pair(data[i], epsilon[i]),                    
+                    time_data[i],
+                    observations_sum * std::pow<FloatType>(fading, time_data[i] - last_time),
+                    current_observer_cnt,
+                    current_neighbor_cnt,
+                    last_index++);      
+            } else {
+                sample_point(
+                    sampled,
+                    time_data[i],
+                    data.size(),
+                    time_data.back() - last_time,
+                    last_index++);
+            }       
+        }
+    }
+    // Can not replace more observers than max size of model
+    if (sampled.size()>observer_cnt) {
+        std::vector<typename std::unordered_set<int>::value_type> shuffled_elements(sampled.begin(), sampled.end());
+        std::shuffle(shuffled_elements.begin(), shuffled_elements.end(), rng);
+        sampled.clear();
+        sampled.insert(shuffled_elements.begin(), shuffled_elements.begin() + observer_cnt);
+    }
+
+    // Queue worst observers
+    IteratorAvCompare iterator_av_compare(fading);
+    std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare> worst_observers(iterator_av_compare);
+    for (auto it = observers.begin(); it != observers.end(); ++it) {
+        worst_observers.push(it);            
+    }
+    for (size_t i = 0; i < data.size(); ++i) {
+        int current_index = first_index + i;
+        bool is_observer = (sampled.count(current_index) > 0);     
+        if (is_observer) {            
+            replaceObservers(
+                std::make_pair(data[i], epsilon[i]),
+                worst_observers,
+                time_data[i],
+                current_observer_cnt,
+                current_index
+            );
+            last_added_index = current_index;
+            last_added_time = time_data[i];
+        }
+    }   
+}
+
+template<typename FloatType>
+bool SDOcluststream<FloatType>::sample_point( 
     std::unordered_set<int>& sampled,
-    const FloatType& now,
-    const int& batch_size, // actually batch size - 1
-    const FloatType& batch_time,
-    const int& current_index) {
+    FloatType now,
+    int batch_size,
+    FloatType batch_time,
+    int current_index) {
     bool add_as_observer = 
-        batch_size == 0 ||
-        (rng() - rng.min()) * batch_size < sampling_first * (rng.max() - rng.min()) * batch_time;
+        (rng() - rng.min()) * batch_size < sampling_prefactor * (rng.max() - rng.min()) * batch_time; // observer_cnt / T
     if (add_as_observer) {            
         sampled.insert(current_index);   
         last_added_index = current_index;
@@ -21,7 +116,7 @@ bool SDOcluststream<FloatType>::sampleData(
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::sampleData(
+void SDOcluststream<FloatType>::sample_point(
         std::unordered_set<int>& sampled,
         const Point& point,
         const FloatType& now,
@@ -40,12 +135,8 @@ void SDOcluststream<FloatType>::sampleData(
         }   
         add_as_observer = 
             (rng() - rng.min()) * current_neighbor_cnt * observations_sum * (current_index - last_added_index) < 
-                sampling_first * (rng.max() - rng.min()) * current_observer_cnt * observations_nearest_sum * (now - last_added_time);
-    } else {
-        add_as_observer = 
-        (rng() - rng.min()) * (current_index - last_added_index) < 
-            sampling_first * (rng.max() - rng.min()) * (now - last_added_time);
-    }        
+                sampling_prefactor * (rng.max() - rng.min()) * current_observer_cnt * observations_nearest_sum * (now - last_added_time);
+    }   
     if (add_as_observer) {            
         sampled.insert(current_index);   
         last_added_index = current_index;
@@ -56,7 +147,6 @@ void SDOcluststream<FloatType>::sampleData(
 template<typename FloatType>
 void SDOcluststream<FloatType>::replaceObservers(
         Point data,
-        std::unordered_set<int>& dropped,
         std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
         const FloatType& now,
         const int& current_observer_cnt,
@@ -69,8 +159,7 @@ void SDOcluststream<FloatType>::replaceObservers(
         obsIt = worst_observers.top();  // Get iterator to the "worst" element         
         worst_observers.pop(); 
         int indexToRemove = obsIt->getIndex();
-        // do index handling
-        dropped.insert(indexToRemove);            
+        // do index handling          
         indexToIterator.erase(indexToRemove);
         // update Observer(s)
         auto node = observers.extract(obsIt);

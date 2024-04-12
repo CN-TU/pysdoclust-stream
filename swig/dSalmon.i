@@ -8,6 +8,7 @@
 #define SWIG_FILE_WITH_INIT
 #define SWIG_PYTHON_STRICT_BYTE_CHAR
 
+// #include "distance_wrappers.h"
 #include "distance_wrappers.h"
 #include "clustering_wrapper.h"
 
@@ -219,5 +220,6 @@ import_array();
 %enddef
 
 
+// %include "distance_wrappers.h"
 %include "distance_wrappers.h"
 %include "clustering_wrapper.h"
