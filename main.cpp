@@ -1,6 +1,6 @@
-#include <iostream>
-#include <random>
-#include <algorithm>
+// #include <iostream>
+// #include <random>
+// #include <algorithm>
 #include <chrono>
 
 #include "cpp/Vector.h"
@@ -83,7 +83,7 @@ int main() {
             0.15f,
             0.6f, // zeta
             7, // e
-            1, // freq_bins
+            2, // freq_bins
             10000.0f, // max_freq
             5.0f // outlier threshold            
             );

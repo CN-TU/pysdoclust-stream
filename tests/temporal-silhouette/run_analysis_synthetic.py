@@ -39,17 +39,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # if no parameters are provided, the script will be run with these configurations
 DEFAULT_RUNS = '''
 dataS/base/arff results/ base normal
-dataS/base/arff results/ base-r remove
-dataS/base/arff results/ base-p phase
-dataS/moving/arff results/ mov normal
-dataS/moving/arff results/ mov-r remove
-dataS/moving/arff results/ mov-p phase
-dataS/nonstat/arff results/ nonst normal
-dataS/nonstat/arff results/ nonst-r remove
-dataS/nonstat/arff results/ nonst-p phase
-dataS/sequential/arff results/ seq normal
-dataS/sequential/arff results/ seq-r remove
-dataS/sequential/arff results/ seq-p phase
 '''
 # dataS/base/arff results/ base-r remove
 # dataS/base/arff results/ base-p phase
@@ -138,11 +127,11 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
     bir = Birch(n_clusters=k, threshold=0.5)
     dsa = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_threshold=10.0)
     # tps = clustering.tpSDOsc(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=10.0)
-    # tps = clustering.tpSDOsc(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=10.0, freq_bins=1, max_freq=1)
+    tps = clustering.tpSDOsc(k=500, T=2000, e=7, chi_prop=0.1, outlier_threshold=10.0, freq_bins=10, max_freq=500)
     grt = []
     # algorithms = (("SDOstreamc", dsa),("CluStream", cls),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
     # algorithms = (("SDOstreamc", dsa),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
-    algorithms = (("SDOstreamc", dsa),("DenStream", den),("GT", grt))
+    algorithms = (("SDOstreamc", dsa),("tpSDOsc", tps),("DenStream", den),("GT", grt))
 
 
     old_clusters = []

@@ -1,6 +1,8 @@
 #ifndef SDOCLUSTSTREAM_OBSERVER_H
 #define SDOCLUSTSTREAM_OBSERVER_H
 
+#include<limits>
+
 template<typename FloatType>
 struct SDOcluststream<FloatType>::Observer {
     Point data;

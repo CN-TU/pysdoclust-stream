@@ -292,17 +292,21 @@ class tpSDOsc(Clustering):
     e: int, optional (default=3)
         A new parameter.
 
-    outlier_threshold: float, optional (default=5.0)
-        A new parameter.
-
     freq_bins: int, optional (default 1)
         A new parameter.
 
     max_freq: float, optional (default=1.0)
+        A new parameter.
+    
+    outlier_threshold: float, optional (default=5.0)
+        A new parameter.
+
+    perturb: float, optional (default=0.0)
+        A new parameter.
     """
     
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
-                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, outlier_threshold=5.0, freq_bins=1, max_freq=1.0):
+                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, outlier_threshold=5.0, perturb=0.0, freq_bins=1, max_freq=1.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
 
@@ -316,9 +320,11 @@ class tpSDOsc(Clustering):
         assert p['chi_min'] > 0, 'chi_min must be > 0'
         assert 0 <= p['chi_prop'] < 1, 'chi_prop must be in [0,1)'
         assert p['e'] > 0, 'e must be > 0'
-        assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
         assert 1 <= p['freq_bins'], 'freq_bins must be in (1,inf)'
         assert 0 < p['max_freq'], 'max_freq must be in (0, inf)'
+        assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
+        assert 0 <= p['perturb'], 'perturb shall be small, so 1e-7 or something'
+
 
         # Map the Python metric name to the C++ distance function
         distance_function = lookupDistance(p['metric'], p['float_type'], **(p['metric_params'] or {}))
@@ -331,7 +337,7 @@ class tpSDOsc(Clustering):
         
         self.model = cpp_obj(
             p['k'], p['T'], p['qv'], p['x'], p['chi_min'], p['chi_prop'], p['zeta'],
-            p['e'], p['freq_bins'], p['max_freq'], p['outlier_threshold'],distance_function, p['seed']
+            p['e'], p['freq_bins'], p['max_freq'], p['outlier_threshold'], p['perturb'], distance_function, p['seed']
         )
         
         self.last_time = 0

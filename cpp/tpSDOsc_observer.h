@@ -1,16 +1,18 @@
 #ifndef TPSDOSC_OBSERVER_H
 #define TPSDOSC_OBSERVER_H
 
+#include<limits>
+
 template<typename FloatType>
 struct tpSDOsc<FloatType>::Observer {
-    Vector<FloatType> data;
+    Point data;
     std::vector<std::complex<FloatType>> observations;
     FloatType time_touched;       
 	FloatType age;    
-    // FloatType time_added;
     int index;
-    TreeIterator treeIt;
+
     bool active;
+    TreeIterator treeIt;
     TreeIterator treeItA;
 
     int color;
@@ -22,20 +24,19 @@ struct tpSDOsc<FloatType>::Observer {
 
     // Constructor for Observer
     Observer(
-        Vector<FloatType> data,
+        Point data,
         std::vector<std::complex<FloatType>> observations,
         FloatType time_touched,
-        FloatType age,
         int index,
         Tree* tree,
         Tree* treeA // should contain index and data soon
     ) : data(data),
         observations(observations),
         time_touched(time_touched),
-        age(age),
+        age(0),
         index(index),
-        treeIt(tree->end()),
         active(false),
+        treeIt(tree->end()),
         treeItA(treeA->end()),
         color(0),
         color_observations(),
@@ -47,33 +48,42 @@ struct tpSDOsc<FloatType>::Observer {
 
     FloatType getProjObservations(
             const std::vector<std::complex<FloatType>>& now_vector, 
-            std::size_t freq_bins, 
             FloatType fading_factor) const {
         FloatType proj_observations(0);
-        for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
-            proj_observations += real(observations[freq_ind] * conj(now_vector[freq_ind])) * fading_factor;
+        // for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+        //     proj_observations += real(observations[freq_ind] * conj(now_vector[freq_ind])) * fading_factor;
+        // }
+        int freq_ind = 0;
+        for (const auto& now : now_vector) {
+            proj_observations += real(observations[freq_ind] * conj(now)) * fading_factor;
+            freq_ind++;
         }
         return proj_observations;
     }
 
-    FloatType getObservations() const { return real(observations[0]); }
-    FloatType getObservations(FloatType fading_factor) { return this->getObservations() * fading_factor; }
     int getIndex() const { return index; }
-    Vector<FloatType> getData() const { return data; }
+    Vector<FloatType> getData() const { return data.first; } // without Epsilon
+    FloatType getObservations() const { return real(observations[0]); }
+    FloatType getH() const { return h; }
 
-    void updateAge(FloatType age_factor, FloatType score = 1) {
+    void updateAge(FloatType age_factor, FloatType score) {
         age *= age_factor;
         age += score;
     }
+
     void updateObservations(
-            std::size_t freq_bins, 
             FloatType fading_factor,
             const std::vector<std::complex<FloatType>>& score_vector) {
-        for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+        // for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
+        //     observations[freq_ind] *= fading_factor;
+        //     observations[freq_ind] += score_vector[freq_ind];
+        // }
+        int freq_ind = 0;
+        for (const auto& score : score_vector) {
             observations[freq_ind] *= fading_factor;
             observations[freq_ind] += score_vector[freq_ind];
+            freq_ind++;
         }
-        updateAge(fading_factor, real(score_vector[0]));
     }
 
     bool activate(Tree* treeA) {
@@ -84,7 +94,6 @@ struct tpSDOsc<FloatType>::Observer {
         }
         return false;
     }
-
     bool deactivate(Tree* treeA) {
         if (active) {
             treeA->erase(treeItA);
@@ -99,7 +108,6 @@ struct tpSDOsc<FloatType>::Observer {
         nearestNeighbors = treeA->knnSearch(data, chi+1, true, 0, std::numeric_limits<FloatType>::infinity(), false, true); // one more cause one point is Observer
         h = nearestNeighbors[chi].second;
     }
-
     // n>=chi is necessary
     void setH(Tree* treeA, int chi, int n) {
         nearestNeighbors = treeA->knnSearch(data, n+1, true, 0, std::numeric_limits<FloatType>::infinity(), false, true); // one more cause one point is Observer
@@ -107,10 +115,9 @@ struct tpSDOsc<FloatType>::Observer {
     }
 
     void reset(
-        Vector<FloatType> _data,
+        Point _data,
         std::vector<std::complex<FloatType>> _observations,
         FloatType _time_touched,
-        FloatType _age, 
         int _index,
         Tree* tree,
         Tree* treeA
@@ -118,7 +125,7 @@ struct tpSDOsc<FloatType>::Observer {
         data = _data;
         observations = _observations;
         time_touched = _time_touched;
-        age = _age;
+        age = 0;
         index = _index;        
         color_observations.clear();
         color_distribution.clear();
@@ -128,19 +135,19 @@ struct tpSDOsc<FloatType>::Observer {
         // TreeNodeUpdater updater(_data, _index);
         // tree->modify(treeIt, updater);
         tree->erase(treeIt);
-        treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));         
-
+        treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));    
         if (active) treeA->erase(treeItA);
-        active = false;
         treeItA = treeA->end();
+        active = false;
     }
 
-    void updateColorDistribution(); // graph
+    // graph
+    void updateColorDistribution(); 
     void updateColorObservations(
-            int colorObs, 
-            FloatType now, 
-            FloatType fading_cluster); // graph
-
+            int colorObs,
+            FloatType age_factor,
+            FloatType score);
+    //PRINT
     void printColorObservations(FloatType now, FloatType fading_cluster) const;
     void printData() const;
     void printColorDistribution() const;
@@ -163,38 +170,17 @@ struct tpSDOsc<FloatType>::ObserverCompare{
     }
 };
 
-// template<typename FloatType>
-// struct tpSDOsc<FloatType>::ObserverAvCompare{
-//     FloatType fading;
-//     ObserverAvCompare(FloatType fading) : fading(fading) {}
-//     bool operator()(FloatType now, const Observer& a, const Observer& b) {
-//         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
-//         FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);
-//         // FloatType age_a = 1-std::pow(fading, now-a.time_added);        
-//         FloatType observations_b = b.getObservations() * std::pow(fading, common_touched - b.time_touched);
-//         // FloatType age_b = 1-std::pow(fading, now-b.time_added);        
-//         // do not necessarily need a tie breaker here
-//         return observations_a * b.age > observations_b * a.age;
-//         // return observations_a * age_b > observations_b * age_a;
-//     }
-// };
-
 template<typename FloatType>
 struct tpSDOsc<FloatType>::IteratorAvCompare{
     FloatType fading;
-    FloatType now;
-    IteratorAvCompare(FloatType fading, FloatType now) : fading(fading), now(now) {}
+    IteratorAvCompare(FloatType fading) : fading(fading) {}
     bool operator()(const MapIterator& it_a, const MapIterator& it_b) {
         const Observer& a = *it_a;
         const Observer& b = *it_b;
         FloatType common_touched = std::max(a.time_touched, b.time_touched);        
-        FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);        
-        // FloatType age_a = 1-std::pow(fading, now-a.time_added);  
+        FloatType observations_a = a.getObservations() * std::pow(fading, common_touched - a.time_touched);  
         FloatType observations_b = b.getObservations() * std::pow(fading, common_touched - b.time_touched);
-        // FloatType age_b = 1-std::pow(fading, now-b.time_added);        
-        // do not necessarily need a tie breaker here
         return observations_a * b.age > observations_b * a.age;
-        // return observations_a * age_b > observations_b * age_a;
     }
 };
 

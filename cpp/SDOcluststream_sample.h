@@ -25,7 +25,7 @@ void SDOcluststream<FloatType>::sample(
     FloatType observations_sum(0);   
     if (!only_random) { // only in use if           
         for (auto it = observers.begin(); it != observers.end(); ++it) {
-            observations_sum += it->observations * std::pow<FloatType>(fading, last_time- it->time_touched);
+            observations_sum += it->getObservations() * std::pow<FloatType>(fading, last_time- it->time_touched);
         }
     }
     if (observers.empty()) {

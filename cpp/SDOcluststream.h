@@ -5,22 +5,13 @@
 #include <boost/container/set.hpp>
 #include <cmath>
 #include <functional>
-#include <limits>
 #include <random>
-#include <set>
-#include <map>
 #include <unordered_set>
 #include <unordered_map>
 #include <iostream>
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/hashed_index.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/member.hpp>
-#include <boost/multi_index/identity.hpp>
 #include <queue>
 
 #include "Vector.h"
-// #include "Gamma.h"
 #include "MTree.h"
 
 template<typename FloatType=double>
@@ -41,8 +32,6 @@ class SDOcluststream {
     FloatType sampling_prefactor;
     // factor for exponential moving average
     FloatType fading;
-    // factor for exponential moving average for cluster observations
-    FloatType fading_cluster; // for now set to 1
     // number of nearest observers to consider
     std::size_t neighbor_cnt;
     // number of nearest observer relative to active_observers
@@ -67,7 +56,7 @@ class SDOcluststream {
     std::size_t chi_min;
     FloatType chi_prop;
     FloatType zeta;
-    FloatType h; // global h (median of all h)
+    FloatType h; // global h (mean of all active h)
     std::size_t e; // unused by now
 
     int last_color;
@@ -75,15 +64,11 @@ class SDOcluststream {
     typedef MTree< Point, int, FloatType, MTreeDescendantCounter<Point,int> > Tree;
     typedef typename Tree::iterator TreeIterator;
     typedef std::vector<std::pair<TreeIterator, FloatType>> TreeNeighbors;
-    // class TreeNodeUpdater; // tree
-    struct MyTieBreaker; // tree
 
     // Observer Structures
     struct Observer;
     struct ObserverCompare;
     ObserverCompare observer_compare;    
-    // struct ObserverAvCompare;
-    // ObserverAvCompare observer_av_compare;
 
     typedef boost::container::multiset< Observer, ObserverCompare > MapType;
     typedef typename MapType::iterator MapIterator;
@@ -100,29 +85,26 @@ class SDOcluststream {
     struct ClusterModelCompare;
     typedef boost::container::multiset<ClusterModel,ClusterModelCompare> ClusterModelMap;    
     ClusterModelMap clusters;
-    // std::unordered_map<int, FloatType> modelColorDistribution;
 
     Tree tree;
     Tree treeA; 
-    
-    void printClusters(); // print
-    void printDistanceMatrix(); // print
-    void printObservers(FloatType now); // print
+
+    // print
+    void printClusters(); 
+    void printDistanceMatrix();
+    void printObservers(FloatType now);
 
     // util
+    bool hasEdge(FloatType distance, const MapIterator& it);
+    FloatType calcBatchAge(const std::vector<FloatType>& time_data, FloatType score = 1);
+    void setObsScaler();
     void setModelParameters(
             int& current_observer_cnt, int&current_observer_cnt2,
             int& active_threshold, int& active_threshold2,
             int& current_neighbor_cnt, int& current_neighbor_cnt2,
             std::size_t& current_e,
             std::size_t& chi,
-            bool print); // util
-    
-    bool hasEdge(FloatType distance, const MapIterator& it); // util
-    FloatType calcBatchAge(const std::vector<FloatType>& time_data, FloatType score = 1);
-    void setObsScaler(); // util
-
-    void updateH_single(MapIterator it, size_t n);
+            bool print); 
 
     // fit
     void fit_impl(
@@ -144,7 +126,7 @@ class SDOcluststream {
             const FloatType& now,           
             const int& current_observer_cnt,
             const int& current_neighbor_cnt);
-    void updateModel(
+    void update_model(
             const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores);
 
     // predict
@@ -205,21 +187,20 @@ class SDOcluststream {
     void updateGraph(
             const std::size_t current_e,
             FloatType age_factor,
-            FloatType score); 
-    void update(const std::unordered_set<int>& sampled);
+            FloatType score);
     void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it);
-    // void updateH_all(const size_t& chi);
-    void updateH_all();
+    void updateH_all(bool use_median = false);
     void DetermineColor(
             ClusterModelMap& clusters,
             FloatType age_factor, 
             FloatType score);
 
+    // fitpredict
     std::vector<int> fitPredict_impl(
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
             const std::vector<FloatType>& time_data, 
-            bool fit_only); //tree
+            bool fit_only); 
 
 public:
     SDOcluststream(
@@ -240,7 +221,7 @@ public:
         // sampling_prefactor(observer_cnt * observer_cnt / neighbor_cnt / T),
         sampling_prefactor(observer_cnt / T),
         fading(std::exp(-1/T)),
-        fading_cluster(FloatType(1)),
+        // fading_cluster(FloatType(1)),
         neighbor_cnt(neighbor_cnt),
         k_tanh( atanh(0.5f) / (outlier_threshold-1) ),
         perturb(perturb),
@@ -257,21 +238,15 @@ public:
         h(FloatType(0)),
         e(e),
         last_color(0),
-        observer_compare(fading),        
-        // observer_av_compare(fading),
+        observer_compare(fading),   
         observers(observer_compare),  // Initialize observers container with initial capacity and comparison function
         clusters(),
-        // modelColorDistribution(),
-        // distance_compare(),
-        // distance_matrix(),
-        // gamma_dist(),
         tree(distance_function),
         treeA(distance_function)
     {
         setObsScaler();
     }
 
-    // TO DO
     void fit(const std::vector<Vector<FloatType>>& data, const std::vector<FloatType>& time_data) {
         std::vector<FloatType> epsilon(data.size(), 0.0);
         if (perturb > 0) {

@@ -41,7 +41,7 @@ void SDOcluststream<FloatType>::fit_impl(
                 current_neighbor_cnt); 
         }
     }
-    updateModel(temporary_scores);
+    update_model(temporary_scores);
 }
 
 template<typename FloatType>
@@ -86,7 +86,7 @@ void SDOcluststream<FloatType>::fit_point(
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::updateModel(
+void SDOcluststream<FloatType>::update_model(
         const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores) {
     for (auto& [key, value_pair] : temporary_scores) {
         const MapIterator& it = indexToIterator[key];
