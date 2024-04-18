@@ -37,9 +37,9 @@ std::vector<int> SDOcluststream<FloatType>::fitPredict_impl(
     std::vector<int> labels(data.size());
     int first_index = last_index;
     // sample data
-    std::unordered_set<int> sampled;    
+    std::unordered_set<int> sampled;   
     sample(sampled, data, epsilon, time_data, first_index);
-    // fit model
+    // fit model 
     fit_impl(data, epsilon, time_data, sampled, first_index);    
     // update graph
     update(time_data, sampled);

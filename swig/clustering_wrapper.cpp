@@ -11,7 +11,6 @@
 
 #include "clustering_wrapper.h"
 
-
 template<typename FloatType>
 static void fit_predict_ensemble(unsigned ensemble_size, int n_jobs, std::function<void(int)> worker) {
     std::atomic<unsigned> global_i(0);
@@ -42,8 +41,12 @@ SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
         FloatType chi_prop, 
         FloatType zeta, 
         int e, 
+        int freq_bins,
+        FloatType max_freq, 
         FloatType outlier_threshold, 
+        bool outlier_handling,
         FloatType perturb, 
+        bool random_sampling,
         Distance_wrapper<FloatType>* distance, 
         int seed) :
     dimension(-1),
@@ -57,7 +60,9 @@ SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
         zeta, 
         e, 
         outlier_threshold, 
+        outlier_handling,
         perturb, 
+        random_sampling,
         distance->getFunction(), 
         seed)
 {
@@ -109,9 +114,41 @@ template class SDOcluststream_wrapper<float>;
 // tpSDO
 
 template<typename FloatType>
-tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(int observer_cnt, FloatType T, FloatType idle_observers, int neighbour_cnt, int chi_min, FloatType chi_prop, FloatType zeta, int e, int freq_bins, FloatType max_freq, FloatType outlier_threshold, FloatType perturb, Distance_wrapper<FloatType>* distance, int seed) :
+tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(
+        int observer_cnt, 
+        FloatType T, 
+        FloatType idle_observers, 
+        int neighbour_cnt, 
+        int chi_min, 
+        FloatType chi_prop, 
+        FloatType zeta, 
+        int e, 
+        int freq_bins, 
+        FloatType max_freq, 
+        FloatType outlier_threshold,  
+        bool outlier_handling,  
+        FloatType perturb,
+        bool random_sampling,
+        Distance_wrapper<FloatType>* distance, 
+        int seed) :
     dimension(-1),
-    sdoclust(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, perturb, distance->getFunction(), seed)
+    sdoclust(
+        observer_cnt, 
+        T, 
+        idle_observers, 
+        neighbour_cnt, 
+        chi_min, 
+        chi_prop, 
+        zeta, 
+        e, 
+        freq_bins, 
+        max_freq, 
+        outlier_threshold, 
+        outlier_handling,
+        perturb, 
+        random_sampling,
+        distance->getFunction(), 
+        seed)
 {
 }
 

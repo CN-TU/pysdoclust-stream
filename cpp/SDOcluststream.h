@@ -37,9 +37,15 @@ class SDOcluststream {
     // number of nearest observer relative to active_observers
     FloatType k_tanh;
     // tanh(( k_tanh * (outlier_threshold-1)) = 0.5 where outlier_threshold is a factor of h_bar(Observer)
+    bool outlier_handling;
+    // flag for outlier handling
     FloatType perturb;
+    // Random Sampling 
+    bool random_sampling;
     
-    std::vector<FloatType> obs_scaler;
+    // std::vector<FloatType> obs_scaler;
+    class BinomialCalculator;
+    BinomialCalculator binomial;
 
     // counter of processed samples
     int last_index;
@@ -97,7 +103,7 @@ class SDOcluststream {
     // util
     bool hasEdge(FloatType distance, const MapIterator& it);
     FloatType calcBatchAge(const std::vector<FloatType>& time_data, FloatType score = 1);
-    void setObsScaler();
+    // void setObsScaler();
     void setModelParameters(
             int& current_observer_cnt, int&current_observer_cnt2,
             int& active_threshold, int& active_threshold2,
@@ -116,16 +122,16 @@ class SDOcluststream {
     void fit_point(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
             const Point& point,
-            const FloatType& now,           
-            const int& current_observer_cnt,
-            const int& current_neighbor_cnt,
-            const int& observer_index);
+            FloatType now,           
+            int current_observer_cnt,
+            int current_neighbor_cnt,
+            int observer_index);
     void fit_point(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
             const Point& point,
-            const FloatType& now,           
-            const int& current_observer_cnt,
-            const int& current_neighbor_cnt);
+            FloatType now,           
+            int current_observer_cnt,
+            int current_neighbor_cnt);
     void update_model(
             const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores);
 
@@ -145,12 +151,12 @@ class SDOcluststream {
             int current_neighbor_cnt);
     void predict_point(
             int& label,
-            const int& current_neighbor_cnt,
-            const int& observer_index); 
+            int current_neighbor_cnt,
+            int observer_index); 
     void predict_point(
             int& label,
             const Point& point,
-            const int& current_neighbor_cnt);
+            int current_neighbor_cnt);
     
     // sample
     void sample(
@@ -168,24 +174,25 @@ class SDOcluststream {
     void sample_point(
             std::unordered_set<int>& sampled,
             const Point& point,
-            const FloatType& now,
+            FloatType now,
             FloatType observations_sum,
-            const int& current_observer_cnt,
-            const int& current_neighbor_cnt,
-            const int& current_index);
+            int current_observer_cnt,
+            int current_neighbor_cnt,
+            int current_index);
     void replaceObservers(
             Point data,
             std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
-            const FloatType& now,
-            const int& current_observer_cnt,
-            const int& current_index);
+            FloatType now,
+            int current_observer_cnt,
+            int current_neighbor_cnt,
+            int current_index);
 
     // graph
     void update(
             const std::vector<FloatType>& time_data,
             const std::unordered_set<int>& sampled);
     void updateGraph(
-            const std::size_t current_e,
+            std::size_t current_e,
             FloatType age_factor,
             FloatType score);
     void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it);
@@ -213,19 +220,22 @@ public:
         FloatType zeta,
         std::size_t e,
         FloatType outlier_threshold,
+        bool outlier_handling = false,
         FloatType perturb = 0,
+        bool random_sampling = true,
         SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
         active_observers(1-idle_observers), 
-        // sampling_prefactor(observer_cnt * observer_cnt / neighbor_cnt / T),
         sampling_prefactor(observer_cnt / T),
         fading(std::exp(-1/T)),
-        // fading_cluster(FloatType(1)),
         neighbor_cnt(neighbor_cnt),
-        k_tanh( atanh(0.5f) / (outlier_threshold-1) ),
+        k_tanh( (outlier_handling) ? 0 : atanh(0.5f) / (outlier_threshold-1) ),
+        outlier_handling(outlier_handling),
         perturb(perturb),
-        obs_scaler(observer_cnt+1),
+        random_sampling(random_sampling),        
+        // obs_scaler(observer_cnt+1),
+        binomial(observer_cnt,neighbor_cnt),
         last_index(0),
         last_added_index(0),
         last_time(0),
@@ -244,7 +254,21 @@ public:
         tree(distance_function),
         treeA(distance_function)
     {
-        setObsScaler();
+        // Print out the input parameters
+        // std::cout << "Input parameters:\n"
+        //           << "observer_cnt: " << observer_cnt << "\n"
+        //           << "T: " << T << "\n"
+        //           << "idle_observers: " << idle_observers << "\n"
+        //           << "neighbor_cnt: " << neighbor_cnt << "\n"
+        //           << "chi_min: " << chi_min << "\n"
+        //           << "chi_prop: " << chi_prop << "\n"
+        //           << "zeta: " << zeta << "\n"
+        //           << "e: " << e << "\n"
+        //           << "outlier_threshold: " << outlier_threshold << "\n"
+        //           << "outlier_handling: " << outlier_handling << "\n"
+        //           << "perturb: " << perturb << "\n"
+        //           << "random_sampling: " << random_sampling << "\n"
+        //           << "seed: " << seed << std::endl;
     }
 
     void fit(const std::vector<Vector<FloatType>>& data, const std::vector<FloatType>& time_data) {

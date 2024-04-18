@@ -40,13 +40,21 @@ class tpSDOsc {
     std::size_t neighbor_cnt;
     // number of nearest observer relative to active_observers
     std::size_t freq_bins;    
+    // number of bin
     FloatType max_freq;
+    // frequency
 
     FloatType k_tanh;
     // tanh(( k_tanh * (outlier_threshold-1)) = 0.5 where outlier_threshold is a factor of h_bar(Observer)
+    bool outlier_handling;
+    // flag for outlier handling
     FloatType perturb;
 
-    std::vector<FloatType> obs_scaler;
+    bool random_sampling;
+    
+    // std::vector<FloatType> obs_scaler;
+    class BinomialCalculator;
+    BinomialCalculator binomial;
 
     // counter of processed samples
     int last_index;
@@ -104,7 +112,7 @@ class tpSDOsc {
      // util
     bool hasEdge(FloatType distance, const MapIterator& it);
     FloatType calcBatchAge(const std::vector<FloatType>& time_data, FloatType score = 1);
-    void setObsScaler();
+//     void setObsScaler();
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score); 
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector);
     FloatType getActiveObservationsThreshold(int active_threshold, FloatType now);
@@ -126,16 +134,16 @@ class tpSDOsc {
     void fit_point(
             std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
             const Point& point,
-            const FloatType& now,           
-            const int& current_observer_cnt,
-            const int& current_neighbor_cnt,
-            const int& observer_index);
+            FloatType now,           
+            int current_observer_cnt,
+            int current_neighbor_cnt,
+            int observer_index);
     void fit_point(
             std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
             const Point& point,
-            const FloatType& now,           
-            const int& current_observer_cnt,
-            const int& current_neighbor_cnt);
+            FloatType now,           
+            int current_observer_cnt,
+            int current_neighbor_cnt);
     void update_model(
             const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores);
 
@@ -155,12 +163,12 @@ class tpSDOsc {
             int current_neighbor_cnt);
     void predict_point(
             int& label,
-            const int& current_neighbor_cnt,
-            const int& observer_index); 
+            int current_neighbor_cnt,
+            int observer_index); 
     void predict_point(
             int& label,
             const Point& point,
-            const int& current_neighbor_cnt);
+            int current_neighbor_cnt);
 
     // sample
     void sample(
@@ -178,24 +186,25 @@ class tpSDOsc {
     void sample_point(
             std::unordered_set<int>& sampled,
             const Point& point,
-            const FloatType& now,
+            FloatType now,
             FloatType observations_sum,
-            const int& current_observer_cnt,
-            const int& current_neighbor_cnt,
-            const int& current_index);
+            int current_observer_cnt,
+            int current_neighbor_cnt,
+            int current_index);
     void replaceObservers(
             Point data,
             std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
-            const FloatType& now,
-            const int& current_observer_cnt,
-            const int& current_index);
+            FloatType now,
+            int current_observer_cnt,
+            int current_neigbor_cnt,
+            int current_index);
 
     // graph
     void update(
             const std::vector<FloatType>& time_data,
             const std::unordered_set<int>& sampled);
     void updateGraph(
-            const std::size_t current_e,
+            std::size_t current_e,
             FloatType age_factor,
             FloatType score);
     void DFS(IndexSetType& cluster, IndexSetType& processed, const MapIterator& it);
@@ -225,21 +234,24 @@ public:
         std::size_t freq_bins, 
         FloatType max_freq,
         FloatType outlier_threshold,
+        bool outlier_handling = false,
         FloatType perturb = 0,
+        bool random_sampling = true,
         tpSDOsc<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
         active_observers(1-idle_observers), 
-        // sampling_prefactor(observer_cnt * observer_cnt / neighbor_cnt / T),
         sampling_prefactor(observer_cnt / T),
         fading(std::exp(-1/T)),
-        // fading_cluster(FloatType(1)),
         neighbor_cnt(neighbor_cnt),
         freq_bins(freq_bins),
         max_freq(max_freq),
-        k_tanh( atanh(0.5f) / (outlier_threshold-1) ),
+        k_tanh( (outlier_handling) ? 0 : atanh(0.5f) / (outlier_threshold-1) ),
+        outlier_handling(outlier_handling),
         perturb(perturb),
-        obs_scaler(observer_cnt+1),
+        random_sampling(random_sampling),        
+        // obs_scaler(observer_cnt+1),
+        binomial(observer_cnt,neighbor_cnt),
         last_index(0),
         last_added_index(0),
         last_time(0),
@@ -258,7 +270,23 @@ public:
         tree(distance_function),
         treeA(distance_function)
     {
-        setObsScaler();
+        // Print out the input parameters
+        // std::cout << "Input parameters:\n"
+        //           << "observer_cnt: " << observer_cnt << "\n"
+        //           << "T: " << T << "\n"
+        //           << "idle_observers: " << idle_observers << "\n"
+        //           << "neighbor_cnt: " << neighbor_cnt << "\n"
+        //           << "chi_min: " << chi_min << "\n"
+        //           << "chi_prop: " << chi_prop << "\n"
+        //           << "zeta: " << zeta << "\n"
+        //           << "e: " << e << "\n"
+        //           << "freq_bins: " << freq_bins << "\n"
+        //           << "max_freq: " << max_freq << "\n"
+        //           << "outlier_threshold: " << outlier_threshold << "\n"
+        //           << "outlier_handling: " << outlier_handling << "\n"
+        //           << "perturb: " << perturb << "\n"
+        //           << "random_sampling: " << random_sampling << "\n"
+        //           << "seed: " << seed << std::endl;
     }
 
     void fit(const std::vector<Vector<FloatType>>& data, const std::vector<FloatType>& time_data) {

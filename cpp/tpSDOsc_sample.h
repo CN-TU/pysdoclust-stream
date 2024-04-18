@@ -22,7 +22,7 @@ void tpSDOsc<FloatType>::sample(
         false); // true for print 
     bool only_random(true);
     FloatType observations_sum(0);   
-    if (!only_random) { // only in use if           
+    if (!random_sampling) { // only in use if           
         for (auto it = observers.begin(); it != observers.end(); ++it) {
             observations_sum += it->getObservations() * std::pow<FloatType>(fading, last_time- it->time_touched);
         }
@@ -46,7 +46,7 @@ void tpSDOsc<FloatType>::sample(
         }
     } else {
         for (size_t i = 0; i < data.size(); ++i) {     
-            if (!only_random) {
+            if (!random_sampling) {
                 sample_point(
                     sampled,
                     std::make_pair(data[i], epsilon[i]),                    
@@ -88,6 +88,7 @@ void tpSDOsc<FloatType>::sample(
                 worst_observers,
                 time_data[i],
                 current_observer_cnt,
+                current_neighbor_cnt,
                 current_index
             );
             last_added_index = current_index;
@@ -118,11 +119,11 @@ template<typename FloatType>
 void tpSDOsc<FloatType>::sample_point(
         std::unordered_set<int>& sampled,
         const Point& point,
-        const FloatType& now,
+        FloatType now,
         FloatType observations_sum,
-        const int& current_observer_cnt,
-        const int& current_neighbor_cnt,
-        const int& current_index) {        
+        int current_observer_cnt,
+        int current_neighbor_cnt,
+        int current_index) {        
     bool add_as_observer;
     if (!observers.empty()) {            
         auto nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt);
@@ -147,13 +148,14 @@ template<typename FloatType>
 void tpSDOsc<FloatType>::replaceObservers(
         Point data,
         std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
-        const FloatType& now,
-        const int& current_observer_cnt,
-        const int& current_index) {        
+        FloatType now,
+        int current_observer_cnt,
+        int current_neighbor_cnt,
+        int current_index) {        
     MapIterator obsIt = observers.end();
     std::vector<std::complex<FloatType>> init_score_vector;
-    FloatType init_score = obs_scaler[current_observer_cnt];
-    initNowVector(now, init_score_vector, init_score);
+    FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);
+    initNowVector(now, init_score_vector, score);
     if (observers.size() < observer_cnt) {
         obsIt = observers.insert(Observer(data, init_score_vector, now, current_index, &tree, &treeA)); // maybe init_score instead of 1
     } else {

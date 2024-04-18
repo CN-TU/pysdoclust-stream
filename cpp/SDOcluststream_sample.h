@@ -21,9 +21,8 @@ void SDOcluststream<FloatType>::sample(
         current_e,
         chi,
         false); // true for print 
-    bool only_random(true);
     FloatType observations_sum(0);   
-    if (!only_random) { // only in use if           
+    if (!random_sampling) { // only in use if           
         for (auto it = observers.begin(); it != observers.end(); ++it) {
             observations_sum += it->getObservations() * std::pow<FloatType>(fading, last_time- it->time_touched);
         }
@@ -47,7 +46,7 @@ void SDOcluststream<FloatType>::sample(
         }
     } else {
         for (size_t i = 0; i < data.size(); ++i) {     
-            if (!only_random) {
+            if (!random_sampling) {
                 sample_point(
                     sampled,
                     std::make_pair(data[i], epsilon[i]),                    
@@ -89,6 +88,7 @@ void SDOcluststream<FloatType>::sample(
                 worst_observers,
                 time_data[i],
                 current_observer_cnt,
+                current_neighbor_cnt,
                 current_index
             );
             last_added_index = current_index;
@@ -119,11 +119,11 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::sample_point(
         std::unordered_set<int>& sampled,
         const Point& point,
-        const FloatType& now,
+        FloatType now,
         FloatType observations_sum,
-        const int& current_observer_cnt,
-        const int& current_neighbor_cnt,
-        const int& current_index) {        
+        int current_observer_cnt,
+        int current_neighbor_cnt,
+        int current_index) {        
     bool add_as_observer;
     if (!observers.empty()) {            
         auto nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt);
@@ -148,12 +148,14 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::replaceObservers(
         Point data,
         std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
-        const FloatType& now,
-        const int& current_observer_cnt,
-        const int& current_index) {        
+        FloatType now,
+        int current_observer_cnt,
+        int current_neighbor_cnt,
+        int current_index) {        
     MapIterator obsIt = observers.end();
+    FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);
     if (observers.size() < observer_cnt) {
-        obsIt = observers.insert(Observer(data, obs_scaler[current_observer_cnt], now, current_index, &tree, &treeA)); // to add to the distance matrix
+        obsIt = observers.insert(Observer(data, score, now, current_index, &tree, &treeA)); // to add to the distance matrix
     } else {
         // find worst observer
         obsIt = worst_observers.top();  // Get iterator to the "worst" element         
@@ -164,7 +166,7 @@ void SDOcluststream<FloatType>::replaceObservers(
         // update Observer(s)
         auto node = observers.extract(obsIt);
         Observer& observer = node.value();
-        observer.reset(data, obs_scaler[current_observer_cnt], now, current_index, &tree, &treeA);
+        observer.reset(data, score, now, current_index, &tree, &treeA);
         observers.insert(std::move(node));    
     }
     indexToIterator[current_index] = obsIt;

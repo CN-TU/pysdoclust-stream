@@ -40,14 +40,17 @@ void SDOcluststream<FloatType>::update(
     FloatType batch_age = calcBatchAge(time_data);
     FloatType age_factor = std::pow(fading, time_data.back() - last_time);
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
+        FloatType score(0);
         if (sampled.count(it->index) > 0) {
-            it->updateAge(age_factor, obs_scaler[current_observer_cnt2] * batch_age);
+            score = binomial.calc(current_observer_cnt2, current_neighbor_cnt2) / binomial.calc(observer_cnt, neighbor_cnt);
+            it->updateAge(age_factor, score * batch_age);
         } else {
-            it->updateAge(age_factor, obs_scaler[current_observer_cnt] * batch_age);
+            score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt) / binomial.calc(observer_cnt, neighbor_cnt);
+            it->updateAge(age_factor, score * batch_age);
         }
     }
     updateGraph(
-        e, // current_e or e
+        current_e, // current_e or e
         age_factor,
         batch_age); // score
     last_time = time_data.back(); 
@@ -179,7 +182,7 @@ void SDOcluststream<FloatType>::DetermineColor(
 
 template<typename FloatType>
 void SDOcluststream<FloatType>::updateGraph(
-    const std::size_t current_e,
+    std::size_t current_e,
     FloatType age_factor,
     FloatType score) {
         clusters.clear();

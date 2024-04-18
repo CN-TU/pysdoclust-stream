@@ -53,14 +53,16 @@ void tpSDOsc<FloatType>::determineLabelVector(
     const auto& color_distribution = it->color_distribution;
     FloatType distance = neighbor.second;
     FloatType outlier_factor = FloatType(0);
-    if (!hasEdge(distance, it)) {   
-        FloatType h_bar = (zeta * it->h + (1 - zeta) * h);   
-        outlier_factor = tanh( k_tanh * (distance - h_bar) / h_bar );
-    }
+    if (outlier_handling) {
+        if (!hasEdge(distance, it)) {   
+            FloatType h_bar = (zeta * it->h + (1 - zeta) * h);   
+            outlier_factor = tanh( k_tanh * (distance - h_bar) / h_bar );
+        }
+        label_vector[-1] += outlier_factor;
+    }    
     for (const auto& pair : color_distribution) {
         label_vector[pair.first] += (1-outlier_factor) * pair.second;
-    }
-    label_vector[-1] += outlier_factor; // outlier weight    
+    }    
 }
 
 template<typename FloatType>
@@ -69,7 +71,7 @@ void tpSDOsc<FloatType>::setLabel(
         const std::unordered_map<int, FloatType>& label_vector,
         int current_neighbor_cnt) {
     FloatType maxColorScore(0);
-    if (label_vector.find(-1) != label_vector.end()) {
+    if (outlier_handling && (label_vector.find(-1) != label_vector.end())) {
         if ( label_vector.at(-1)<(current_neighbor_cnt*0.5) ) {
             for (const auto& pair : label_vector) {            
                 if (pair.first<0) { continue; }
@@ -78,6 +80,13 @@ void tpSDOsc<FloatType>::setLabel(
                     maxColorScore = pair.second;
                 }
             }
+        } else { label = -1; }
+    } else {
+        for (const auto& pair : label_vector) {   
+            if (pair.second > maxColorScore || (pair.second == maxColorScore && pair.first < label) ) {
+                label = pair.first;
+                maxColorScore = pair.second;
+            }
         }
     }
 }
@@ -85,8 +94,8 @@ void tpSDOsc<FloatType>::setLabel(
 template<typename FloatType>
 void tpSDOsc<FloatType>::predict_point(
         int& label,
-        const int& current_neighbor_cnt,
-        const int& observer_index) {
+        int current_neighbor_cnt,
+        int observer_index) {
     std::unordered_map<int, FloatType> label_vector;
     const MapIterator& it0 = indexToIterator[observer_index];
     TreeNeighbors& nearestNeighbors = it0->nearestNeighbors;
@@ -99,7 +108,7 @@ void tpSDOsc<FloatType>::predict_point(
         }
     }  
     // set label
-    label = -1;
+    label = 0;
     setLabel(label, label_vector, current_neighbor_cnt);
 }
 
@@ -107,14 +116,14 @@ template<typename FloatType>
 void tpSDOsc<FloatType>::predict_point(
         int& label,
         const Point& point,
-        const int& current_neighbor_cnt) {
+        int current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
     TreeNeighbors nearestNeighbors = treeA.knnSearch(point, current_neighbor_cnt, true, 0, std::numeric_limits<FloatType>::infinity(), false, false);
     for (const auto& neighbor : nearestNeighbors) {
         determineLabelVector(label_vector, neighbor);  
     }      
     // set label
-    label = -1;
+    label = 0;
     setLabel(label, label_vector, current_neighbor_cnt);
 };
 

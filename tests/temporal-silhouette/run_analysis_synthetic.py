@@ -127,7 +127,7 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
     bir = Birch(n_clusters=k, threshold=0.5)
     dsa = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_threshold=10.0)
     # tps = clustering.tpSDOsc(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=10.0)
-    tps = clustering.tpSDOsc(k=500, T=2000, e=7, chi_prop=0.1, outlier_threshold=10.0, freq_bins=10, max_freq=500)
+    tps = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_threshold=10.0, freq_bins=10, max_freq=500)
     grt = []
     # algorithms = (("SDOstreamc", dsa),("CluStream", cls),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
     # algorithms = (("SDOstreamc", dsa),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))

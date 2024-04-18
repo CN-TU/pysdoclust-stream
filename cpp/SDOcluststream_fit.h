@@ -48,20 +48,22 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::fit_point(
         std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
         const Point& point,
-        const FloatType& now,           
-        const int& current_observer_cnt,
-        const int& current_neighbor_cnt,
-        const int& observer_index) {  
+        FloatType now,           
+        int current_observer_cnt,
+        int current_neighbor_cnt,
+        int observer_index) {  
     TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt + 1); 
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
         if (idx!=observer_index) {
+            FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);
             if (temporary_scores.count(idx) > 0) {                
                 auto& value_pair = temporary_scores[idx];
                 value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
                 value_pair.second = now;
-                value_pair.first += obs_scaler[current_observer_cnt];
-            } else { temporary_scores[idx] = std::make_pair(obs_scaler[current_observer_cnt], now); }
+                // value_pair.first += obs_scaler[current_observer_cnt];
+                value_pair.first += score;
+            } else { temporary_scores[idx] = std::make_pair(score, now); }
         }            
     }  
 };
@@ -70,18 +72,20 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::fit_point(
         std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
         const Point& point,
-        const FloatType& now,           
-        const int& current_observer_cnt,
-        const int& current_neighbor_cnt) {   
+        FloatType now,           
+        int current_observer_cnt,
+        int current_neighbor_cnt) {   
     TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt); // one more cause one point is Observer
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
+        FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);  
         if (temporary_scores.count(idx) > 0) {                
             auto& value_pair = temporary_scores[idx];
             value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
             value_pair.second = now;
-            value_pair.first += obs_scaler[current_observer_cnt];
-        } else { temporary_scores[idx] = std::make_pair(obs_scaler[current_observer_cnt], now); }
+            // value_pair.first += obs_scaler[current_observer_cnt];
+            value_pair.first += score;
+        } else { temporary_scores[idx] = std::make_pair(score, now); }
     }  
 };
 

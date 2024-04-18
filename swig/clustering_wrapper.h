@@ -27,9 +27,13 @@ class SDOcluststream_wrapper {
       int chi_min, 
       FloatType chi_prop,
       FloatType zeta, 
-      int e,    
-      FloatType outlier_threshold,
+      int e, 
+      int freq_bins,
+      FloatType max_freq, 
+      FloatType outlier_threshold, 
+      bool outlier_handling,  
       FloatType perturb,
+      bool random_sampling,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 
@@ -62,8 +66,10 @@ class tpSDOsc_wrapper {
       int e,
       int freq_bins,
       FloatType max_freq,    
-      FloatType outlier_threshold,
+      FloatType outlier_threshold, 
+      bool outlier_handling,  
       FloatType perturb,
+      bool random_sampling,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 

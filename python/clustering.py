@@ -112,32 +112,47 @@ class SDOcluststream(Clustering):
     float_type: np.float32 or np.float64
         The floating point type to use for internal processing.
 
-    seed: int (default=0)
-        Random seed to use.
-
     zeta: float, optional (default=0.6)
-        A new parameter.
+        Determines ratio between local h and global h that determines h for each Observer.
 
     chi_min: int, optional (default=8)
-        A new parameter.
+        Minimum amount of Observers that determine h (closeness parameter) for each Observer.
 
     chi_prop: float, optional (default=0.05)
-        A new parameter.
+        Parameter to determine closeness parameter of an Observer. The chi_prop * Modelsize Observers of an Observers are "close".
 
     e: int, optional (default=3)
-        A new parameter.
+        Minimum size of a cluster (number of Observers spanning / representing it)
+
+    freq_bins: int, optional (default 1)
+        Number of bins when using temporal SDO model. If 1 "normal" SDO model is used.
+
+    max_freq: float, optional (default=1.0)
+        Temportal frequency when using temporal SDO model
+
+    outlier_handling (default=False)
+        Outlier handling activation flag.
 
     outlier_threshold: float, optional (default=5.0)
-        A new parameter.
+        Threshold for outlier handling. 
+        If point has distance = outlier_threshold * h_bar to a (closest) Observer probability of being an outlier wrt to this Observer is 0.5 
+        If distance is <= h_bar then probability is 0. Calibrated on an activation function (tangens hyperbolicus).
 
     perturb: float, optional (default=0.0)
-        A new parameter.
+        Perturbation parameter to differentiate between equal points.
+
+    random_sampling: float, optional (default=True)
+        Flag do decide if Random Sampling is used.
+
+    seed: int (default=0)
+        Random seed to use.
     """
-    
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
-                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, outlier_threshold=5.0, perturb=0):
+                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
+                 chi_prop=0.05, e=3, outlier_threshold=5.0, outlier_handling=False, perturb=0.0, random_sampling=True, 
+                 freq_bins=1, max_freq=1.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
-        self._init_model(self.params)
+        self._init_model(self.params)    
 
     def _init_model(self, p):
         assert p['float_type'] in [np.float32, np.float64]
@@ -149,18 +164,28 @@ class SDOcluststream(Clustering):
         assert p['chi_min'] > 0, 'chi_min must be > 0'
         assert 0 <= p['chi_prop'] < 1, 'chi_prop must be in [0,1)'
         assert p['e'] > 0, 'e must be > 0'
+        assert 1 <= p['freq_bins'], 'freq_bins must be in (1,inf)'
+        assert 0 < p['max_freq'], 'max_freq must be in (0, inf)'     
+        assert p['outlier_handling'] in [True, False]
         assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
         assert 0 <= p['perturb'], 'perturb shall be small, so 1e-7 or something'
+        assert p['random_sampling'] in [True, False]
 
         # Map the Python metric name to the C++ distance function
         distance_function = lookupDistance(p['metric'], p['float_type'], **(p['metric_params'] or {}))
         
         # Create an instance of the C++ SDOcluststream class
-        cpp_obj = {
-            np.float32: dSalmon_cpp.SDOcluststream32,
-            np.float64: dSalmon_cpp.SDOcluststream64
-        }[p['float_type']]
-        
+        if p['freq_bins']>1:
+            cpp_obj = {
+                np.float32: dSalmon_cpp.tpSDOsc32,
+                np.float64: dSalmon_cpp.tpSDOsc64
+            }[p['float_type']]
+        else:
+            cpp_obj = {
+                np.float32: dSalmon_cpp.SDOcluststream32,
+                np.float64: dSalmon_cpp.SDOcluststream64
+            }[p['float_type']]
+
         self.model = cpp_obj(
             p['k'], 
             p['T'], 
@@ -170,12 +195,16 @@ class SDOcluststream(Clustering):
             p['chi_prop'], 
             p['zeta'],
             p['e'], 
+            p['freq_bins'], 
+            p['max_freq'], 
             p['outlier_threshold'], 
+            p['outlier_handling'],
             p['perturb'], 
+            p['random_sampling'],
             distance_function, 
             p['seed']
         )
-        
+
         self.last_time = 0
         self.dimension = -1
 
@@ -298,15 +327,23 @@ class tpSDOsc(Clustering):
     max_freq: float, optional (default=1.0)
         A new parameter.
     
+    outlier_handling (default=False)
+        A new paramter.
+
     outlier_threshold: float, optional (default=5.0)
         A new parameter.
 
     perturb: float, optional (default=0.0)
         A new parameter.
+
+    random_sampling: float, optional (default=True)
+        A new parameter.
     """
     
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
-                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, chi_prop=0.05, e=3, outlier_threshold=5.0, perturb=0.0, freq_bins=1, max_freq=1.0):
+                 float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
+                 chi_prop=0.05, e=3, outlier_threshold=5.0, outlier_handling=False, perturb=0.0, random_sampling=True, 
+                 freq_bins=1, max_freq=1.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
 
@@ -321,10 +358,11 @@ class tpSDOsc(Clustering):
         assert 0 <= p['chi_prop'] < 1, 'chi_prop must be in [0,1)'
         assert p['e'] > 0, 'e must be > 0'
         assert 1 <= p['freq_bins'], 'freq_bins must be in (1,inf)'
-        assert 0 < p['max_freq'], 'max_freq must be in (0, inf)'
+        assert 0 < p['max_freq'], 'max_freq must be in (0, inf)'        
+        assert p['outlier_handling'] in [True, False]
         assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
         assert 0 <= p['perturb'], 'perturb shall be small, so 1e-7 or something'
-
+        assert p['random_sampling'] in [True, False]
 
         # Map the Python metric name to the C++ distance function
         distance_function = lookupDistance(p['metric'], p['float_type'], **(p['metric_params'] or {}))
@@ -336,8 +374,22 @@ class tpSDOsc(Clustering):
         }[p['float_type']]
         
         self.model = cpp_obj(
-            p['k'], p['T'], p['qv'], p['x'], p['chi_min'], p['chi_prop'], p['zeta'],
-            p['e'], p['freq_bins'], p['max_freq'], p['outlier_threshold'], p['perturb'], distance_function, p['seed']
+            p['k'], 
+            p['T'], 
+            p['qv'], 
+            p['x'], 
+            p['chi_min'], 
+            p['chi_prop'], 
+            p['zeta'],
+            p['e'], 
+            p['freq_bins'], 
+            p['max_freq'], 
+            p['outlier_threshold'], 
+            p['outlier_handling'],
+            p['perturb'], 
+            p['random_sampling'],
+            distance_function, 
+            p['seed']
         )
         
         self.last_time = 0

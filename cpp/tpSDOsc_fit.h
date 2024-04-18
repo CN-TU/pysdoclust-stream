@@ -48,16 +48,17 @@ template<typename FloatType>
 void tpSDOsc<FloatType>::fit_point(
         std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
         const Point& point,
-        const FloatType& now,           
-        const int& current_observer_cnt,
-        const int& current_neighbor_cnt,
-        const int& observer_index) {  
-    TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt + 1); 
-    std::vector<std::complex<FloatType>> score_vector;
-    initNowVector(now, score_vector, obs_scaler[current_observer_cnt]);
+        FloatType now,           
+        int current_observer_cnt,
+        int current_neighbor_cnt,
+        int observer_index) {  
+    TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt + 1);     
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
         if (idx!=observer_index) {
+            FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);
+            std::vector<std::complex<FloatType>> score_vector;
+            initNowVector(now, score_vector, score);
             if (temporary_scores.count(idx) > 0) {                
                 auto& value_pair = temporary_scores[idx];
                 std::vector<std::complex<FloatType>>& observations = value_pair.first;
@@ -83,14 +84,15 @@ template<typename FloatType>
 void tpSDOsc<FloatType>::fit_point(
         std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
         const Point& point,
-        const FloatType& now,           
-        const int& current_observer_cnt,
-        const int& current_neighbor_cnt) {   
+        FloatType now,           
+        int current_observer_cnt,
+        int current_neighbor_cnt) {   
     TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt); // one more cause one point is Observer
-    std::vector<std::complex<FloatType>> score_vector;
-    initNowVector(now, score_vector, obs_scaler[current_observer_cnt]);
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered
+        FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);
+        std::vector<std::complex<FloatType>> score_vector;
+        initNowVector(now, score_vector, score);     
         if (temporary_scores.count(idx) > 0) {                
             auto& value_pair = temporary_scores[idx];
             std::vector<std::complex<FloatType>>& observations = value_pair.first;
