@@ -121,7 +121,7 @@ class SDOcluststream(Clustering):
     chi_prop: float, optional (default=0.05)
         Parameter to determine closeness parameter of an Observer. The chi_prop * Modelsize Observers of an Observers are "close".
 
-    e: int, optional (default=3)
+    e: int, optional (default=7)
         Minimum size of a cluster (number of Observers spanning / representing it)
 
     freq_bins: int, optional (default 1)
@@ -133,7 +133,7 @@ class SDOcluststream(Clustering):
     outlier_handling (default=False)
         Outlier handling activation flag.
 
-    outlier_threshold: float, optional (default=5.0)
+    outlier_threshold: float, optional (default=10.0)
         Threshold for outlier handling. 
         If point has distance = outlier_threshold * h_bar to a (closest) Observer probability of being an outlier wrt to this Observer is 0.5 
         If distance is <= h_bar then probability is 0. Calibrated on an activation function (tangens hyperbolicus).
@@ -149,7 +149,7 @@ class SDOcluststream(Clustering):
     """
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
                  float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
-                 chi_prop=0.05, e=3, outlier_threshold=5.0, outlier_handling=False, perturb=0.0, random_sampling=True, 
+                 chi_prop=0.05, e=7, outlier_threshold=10.0, outlier_handling=False, perturb=0.0, random_sampling=True, 
                  freq_bins=1, max_freq=1.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)    
