@@ -3,7 +3,8 @@
 
 template<typename FloatType>
 void tpSDOsc<FloatType>::predict_impl(
-        std::vector<int>& labels,
+        std::vector<int>& label,
+        std::vector<FloatType>& score,
         const std::vector<Vector<FloatType>>& data,
         const std::vector<FloatType>& epsilon,
         const std::unordered_set<int>& sampled,
@@ -26,18 +27,21 @@ void tpSDOsc<FloatType>::predict_impl(
         if (is_observer) {
             if (indexToIterator[current_index]->active) {
                 predict_point(
-                    labels[i],
+                    label[i],
+                    score[i],
                     current_neighbor_cnt2,
                     current_index);
             } else {
                 predict_point(
-                    labels[i],
+                    label[i],
+                    score[i],
                     std::make_pair(data[i], epsilon[i]),
                     current_neighbor_cnt2);
             }
         } else {
             predict_point(
-                labels[i],
+                label[i],
+                score[i],
                 std::make_pair(data[i], epsilon[i]),
                 current_neighbor_cnt);
         }
@@ -47,11 +51,15 @@ void tpSDOsc<FloatType>::predict_impl(
 template<typename FloatType>
 void tpSDOsc<FloatType>::determineLabelVector(
         std::unordered_map<int, FloatType>& label_vector,
+        std::vector<FloatType>& score_vector,
         const std::pair<TreeIterator, FloatType>& neighbor) {
     int idx = neighbor.first->second; // second is distance, first->first Vector, Output is ordered
     const MapIterator& it = indexToIterator[idx];
     const auto& color_distribution = it->color_distribution;
     FloatType distance = neighbor.second;
+    // outlier score
+    if (rel_outlier_score) { score_vector.emplace_back(distance / (zeta * it->h + (1 - zeta) * h)); }
+    else { score_vector.emplace_back(distance); }
     FloatType outlier_factor = FloatType(0);
     if (outlier_handling) {
         if (!hasEdge(distance, it)) {   
@@ -94,19 +102,29 @@ void tpSDOsc<FloatType>::setLabel(
 template<typename FloatType>
 void tpSDOsc<FloatType>::predict_point(
         int& label,
+        FloatType& score,
         int current_neighbor_cnt,
         int observer_index) {
     std::unordered_map<int, FloatType> label_vector;
+    std::vector<FloatType> score_vector;
+    score_vector.reserve(current_neighbor_cnt);
     const MapIterator& it0 = indexToIterator[observer_index];
     TreeNeighbors& nearestNeighbors = it0->nearestNeighbors;
-    int i = 0;
+    int i = 1;
     for (const auto& neighbor : nearestNeighbors) {        
         if (observer_index!= neighbor.first->second) {            
-            determineLabelVector(label_vector, neighbor);          
+            determineLabelVector(label_vector, score_vector, neighbor);          
             ++i;
             if (i > current_neighbor_cnt) { break; }
         }
     }  
+    // set score
+    std::sort(score_vector.begin(), score_vector.end());
+    if (current_neighbor_cnt % 2 == 0) { // If the size is even
+        score = (score_vector[current_neighbor_cnt / 2 - 1] + score_vector[current_neighbor_cnt / 2]) / 2.0;
+    } else { // If the size is odd
+        score = score_vector[current_neighbor_cnt / 2];
+    }
     // set label
     label = 0;
     setLabel(label, label_vector, current_neighbor_cnt);
@@ -115,13 +133,23 @@ void tpSDOsc<FloatType>::predict_point(
 template<typename FloatType>
 void tpSDOsc<FloatType>::predict_point(
         int& label,
+        FloatType& score,
         const Point& point,
         int current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
+    std::vector<FloatType> score_vector;
+    score_vector.reserve(current_neighbor_cnt);
     TreeNeighbors nearestNeighbors = treeA.knnSearch(point, current_neighbor_cnt, true, 0, std::numeric_limits<FloatType>::infinity(), false, false);
     for (const auto& neighbor : nearestNeighbors) {
-        determineLabelVector(label_vector, neighbor);  
+        determineLabelVector(label_vector, score_vector, neighbor);  
     }      
+    // set score
+    std::sort(score_vector.begin(), score_vector.end());
+    if (current_neighbor_cnt % 2 == 0) { // If the size is even
+        score = (score_vector[current_neighbor_cnt / 2 - 1] + score_vector[current_neighbor_cnt / 2]) / 2.0;
+    } else { // If the size is odd
+        score = score_vector[current_neighbor_cnt / 2];
+    }
     // set label
     label = 0;
     setLabel(label, label_vector, current_neighbor_cnt);

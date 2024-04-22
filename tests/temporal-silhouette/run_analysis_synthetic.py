@@ -126,7 +126,7 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
     den = DenStream(eps=0.2, lambd=0.1, beta=0.2, mu=11)
     bir = Birch(n_clusters=k, threshold=0.5)
     dsa = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0)
-    # tps = clustering.tpSDOsc(k=400, T=1500, e=7, chi_prop=0.1, outlier_threshold=10.0)
+    # tps = clustering.tpSDOsc(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0, freq_bins=1)
     tps = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0, freq_bins=10, max_freq=500)
     grt = []
     # algorithms = (("SDOstreamc", dsa),("CluStream", cls),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
@@ -170,7 +170,7 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
                 old_clusters = clusters
                 
             elif alg_name == 'SDOstreamc' or alg_name == 'tpSDOsc':
-                y[i:(i+blocksize)] = alg.fit_predict(chunk)
+                y[i:(i+blocksize)], _ = alg.fit_predict(chunk)
                 # print(y[i:(i+blocksize)])
 
             elif alg_name == 'GT':

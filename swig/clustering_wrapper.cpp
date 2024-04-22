@@ -45,6 +45,7 @@ SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
         FloatType max_freq, 
         FloatType outlier_threshold, 
         bool outlier_handling,
+        bool rel_outlier_score,
         FloatType perturb, 
         bool random_sampling,
         Distance_wrapper<FloatType>* distance, 
@@ -61,6 +62,7 @@ SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
         e, 
         outlier_threshold, 
         outlier_handling,
+        rel_outlier_score,
         perturb, 
         random_sampling,
         distance->getFunction(), 
@@ -75,18 +77,21 @@ void SDOcluststream_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, c
     for (int i = 0; i < data.dim1; i++) {
         vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
     }
-    sdoclust.fitPredict(vec_data, vec_times);  
+    sdoclust.fit(vec_data, vec_times);  
 }
 
 template<typename FloatType>
-void SDOcluststream_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times) {
+void SDOcluststream_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> scores, const NumpyArray1<FloatType> times) {
     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
     for (int i = 0; i < data.dim1; i++) {
         vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
     }
-    std::vector<int> vec_label = sdoclust.fitPredict(vec_data, vec_times);  
+    std::vector<int> vec_label(data.dim1, 0);
+    std::vector<FloatType> vec_score(data.dim1, FloatType(0));
+    sdoclust.fitPredict(vec_label, vec_score, vec_data, vec_times);  
     std::copy(vec_label.begin(), vec_label.end(), &labels.data[0]);  
+    std::copy(vec_score.begin(), vec_score.end(), &scores.data[0]);  
 }
 
 template<typename FloatType>
@@ -127,6 +132,7 @@ tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(
         FloatType max_freq, 
         FloatType outlier_threshold,  
         bool outlier_handling,  
+        bool rel_outlier_score,
         FloatType perturb,
         bool random_sampling,
         Distance_wrapper<FloatType>* distance, 
@@ -145,6 +151,7 @@ tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(
         max_freq, 
         outlier_threshold, 
         outlier_handling,
+        rel_outlier_score,
         perturb, 
         random_sampling,
         distance->getFunction(), 
@@ -159,18 +166,21 @@ void tpSDOsc_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const Nu
     for (int i = 0; i < data.dim1; i++) {
         vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
     }
-    sdoclust.fitPredict(vec_data, vec_times);  
+    sdoclust.fit(vec_data, vec_times);  
 }
 
 template<typename FloatType>
-void tpSDOsc_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times) {
+void tpSDOsc_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> scores, const NumpyArray1<FloatType> times) {
     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
     for (int i = 0; i < data.dim1; i++) {
         vec_data[i] = Vector<FloatType>(&data.data[i * data.dim2], data.dim2);
     }
-    std::vector<int> vec_label = sdoclust.fitPredict(vec_data, vec_times);  
+    std::vector<int> vec_label(data.dim1, 0);
+    std::vector<FloatType> vec_score(data.dim1, FloatType(0));
+    sdoclust.fitPredict(vec_label, vec_score, vec_data, vec_times);  
     std::copy(vec_label.begin(), vec_label.end(), &labels.data[0]);  
+    std::copy(vec_score.begin(), vec_score.end(), &scores.data[0]);  
 }
 
 template<typename FloatType>

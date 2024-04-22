@@ -133,6 +133,9 @@ class SDOcluststream(Clustering):
     outlier_handling (default=False)
         Outlier handling activation flag.
 
+    rel_outlier_score (default=True)
+        Give outlier score as median distance to closest Observers. Either absolute distance or relative to h_bar
+
     outlier_threshold: float, optional (default=10.0)
         Threshold for outlier handling. 
         If point has distance = outlier_threshold * h_bar to a (closest) Observer probability of being an outlier wrt to this Observer is 0.5 
@@ -149,8 +152,8 @@ class SDOcluststream(Clustering):
     """
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
                  float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
-                 chi_prop=0.05, e=7, outlier_threshold=10.0, outlier_handling=False, perturb=0.0, random_sampling=True, 
-                 freq_bins=1, max_freq=1.0):
+                 chi_prop=0.05, e=7, outlier_threshold=10.0, outlier_handling=False, rel_outlier_score=True, 
+                 perturb=0.0, random_sampling=True, freq_bins=1, max_freq=1.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)    
 
@@ -166,7 +169,8 @@ class SDOcluststream(Clustering):
         assert p['e'] > 0, 'e must be > 0'
         assert 1 <= p['freq_bins'], 'freq_bins must be in (1,inf)'
         assert 0 < p['max_freq'], 'max_freq must be in (0, inf)'     
-        assert p['outlier_handling'] in [True, False]
+        assert p['outlier_handling'] in [True, False]    
+        assert p['rel_outlier_score'] in [True, False]
         assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
         assert 0 <= p['perturb'], 'perturb shall be small, so 1e-7 or something'
         assert p['random_sampling'] in [True, False]
@@ -199,6 +203,7 @@ class SDOcluststream(Clustering):
             p['max_freq'], 
             p['outlier_threshold'], 
             p['outlier_handling'],
+            p['rel_outlier_score'],
             p['perturb'], 
             p['random_sampling'],
             distance_function, 
@@ -229,15 +234,19 @@ class SDOcluststream(Clustering):
         """
         X = self._process_data(X)
         times = self._process_times(X, times)        
-        labels = np.empty(X.shape[0], dtype=np.int32)
-        if self.params['return_sampling']:
-            sampling = np.empty(X.shape[0], dtype=np.int32)
-            self.model.fit_predict_with_sampling(X, labels, times, sampling)
-            return labels, sampling
-        else:
-            self.model.fit_predict(X, labels, times)
-            # self.model.fit_predict_batch(X, labels, times)
-            return labels
+        labels = np.empty(X.shape[0], dtype=np.int32)   
+        scores = np.empty(X.shape[0], dtype=self.params['float_type'])
+        # if self.params['return_sampling']:
+        #     sampling = np.empty(X.shape[0], dtype=np.int32)
+        #     self.model.fit_predict_with_sampling(X, labels, times, sampling)
+        #     return labels, sampling
+        # else:
+        #     self.model.fit_predict(X, labels, times)
+        #     # self.model.fit_predict_batch(X, labels, times)
+        #     return labels
+        
+        self.model.fit_predict(X, labels, scores, times)
+        return labels, scores
 
     def observer_count(self):
         """Return the current number of observers."""
@@ -333,6 +342,9 @@ class tpSDOsc(Clustering):
     outlier_threshold: float, optional (default=5.0)
         A new parameter.
 
+    rel_outlier_score (default=True)
+        Give outlier score as median distance to closest Observers. Either absolute distance or relative to h_bar
+
     perturb: float, optional (default=0.0)
         A new parameter.
 
@@ -342,8 +354,8 @@ class tpSDOsc(Clustering):
     
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
                  float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
-                 chi_prop=0.05, e=3, outlier_threshold=5.0, outlier_handling=False, perturb=0.0, random_sampling=True, 
-                 freq_bins=1, max_freq=1.0):
+                 chi_prop=0.05, e=3, outlier_threshold=5.0, outlier_handling=False, rel_outlier_score=True, 
+                 perturb=0.0, random_sampling=True, freq_bins=1, max_freq=1.0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
 
@@ -359,7 +371,8 @@ class tpSDOsc(Clustering):
         assert p['e'] > 0, 'e must be > 0'
         assert 1 <= p['freq_bins'], 'freq_bins must be in (1,inf)'
         assert 0 < p['max_freq'], 'max_freq must be in (0, inf)'        
-        assert p['outlier_handling'] in [True, False]
+        assert p['outlier_handling'] in [True, False]     
+        assert p['rel_outlier_score'] in [True, False]
         assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
         assert 0 <= p['perturb'], 'perturb shall be small, so 1e-7 or something'
         assert p['random_sampling'] in [True, False]
@@ -386,6 +399,7 @@ class tpSDOsc(Clustering):
             p['max_freq'], 
             p['outlier_threshold'], 
             p['outlier_handling'],
+            p['rel_outlier_score'],
             p['perturb'], 
             p['random_sampling'],
             distance_function, 
@@ -416,15 +430,19 @@ class tpSDOsc(Clustering):
         """
         X = self._process_data(X)
         times = self._process_times(X, times)        
-        labels = np.empty(X.shape[0], dtype=np.int32)
-        if self.params['return_sampling']:
-            sampling = np.empty(X.shape[0], dtype=np.int32)
-            self.model.fit_predict_with_sampling(X, labels, times, sampling)
-            return labels, sampling
-        else:
-            self.model.fit_predict(X, labels, times)
-            # self.model.fit_predict_batch(X, labels, times)
-            return labels
+        labels = np.empty(X.shape[0], dtype=np.int32)   
+        scores = np.empty(X.shape[0], dtype=self.params['float_type'])
+        # if self.params['return_sampling']:
+        #     sampling = np.empty(X.shape[0], dtype=np.int32)
+        #     self.model.fit_predict_with_sampling(X, labels, times, sampling)
+        #     return labels, sampling
+        # else:
+        #     self.model.fit_predict(X, labels, times)
+        #     # self.model.fit_predict_batch(X, labels, times)
+        #     return labels
+        
+        self.model.fit_predict(X, labels, scores, times)
+        return labels, scores
 
     def observer_count(self):
         """Return the current number of observers."""

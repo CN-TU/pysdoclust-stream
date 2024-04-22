@@ -32,13 +32,14 @@ class SDOcluststream_wrapper {
       FloatType max_freq, 
       FloatType outlier_threshold, 
       bool outlier_handling,  
+      bool rel_outlier_score,
       FloatType perturb,
       bool random_sampling,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 
     void fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times);
-    void fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int>  labels, const NumpyArray1<FloatType> times);
+    void fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int>  labels, NumpyArray1<FloatType>  scores, const NumpyArray1<FloatType> times);
     // void fit_predict_with_sampling(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times, NumpyArray1<int> sampled);
     int observer_count();
     void get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time);
@@ -68,13 +69,14 @@ class tpSDOsc_wrapper {
       FloatType max_freq,    
       FloatType outlier_threshold, 
       bool outlier_handling,  
+      bool rel_outlier_score,
       FloatType perturb,
       bool random_sampling,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 
     void fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times);
-    void fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int>  labels, const NumpyArray1<FloatType> times);
+    void fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int>  labels, NumpyArray1<FloatType>  scores, const NumpyArray1<FloatType> times);
     // void fit_predict_with_sampling(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, const NumpyArray1<FloatType> times, NumpyArray1<int> sampled);
     int observer_count();
     void get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time);

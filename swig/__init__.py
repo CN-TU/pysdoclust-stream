@@ -173,14 +173,14 @@ class SDOcluststream32(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed):
-        _dSalmon.SDOcluststream32_swiginit(self, _dSalmon.new_SDOcluststream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed))
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed):
+        _dSalmon.SDOcluststream32_swiginit(self, _dSalmon.new_SDOcluststream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed))
 
     def fit(self, data, times):
         return _dSalmon.SDOcluststream32_fit(self, data, times)
 
-    def fit_predict(self, data, labels, times):
-        return _dSalmon.SDOcluststream32_fit_predict(self, data, labels, times)
+    def fit_predict(self, data, labels, scores, times):
+        return _dSalmon.SDOcluststream32_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
         return _dSalmon.SDOcluststream32_observer_count(self)
@@ -196,14 +196,14 @@ class SDOcluststream64(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed):
-        _dSalmon.SDOcluststream64_swiginit(self, _dSalmon.new_SDOcluststream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed))
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed):
+        _dSalmon.SDOcluststream64_swiginit(self, _dSalmon.new_SDOcluststream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed))
 
     def fit(self, data, times):
         return _dSalmon.SDOcluststream64_fit(self, data, times)
 
-    def fit_predict(self, data, labels, times):
-        return _dSalmon.SDOcluststream64_fit_predict(self, data, labels, times)
+    def fit_predict(self, data, labels, scores, times):
+        return _dSalmon.SDOcluststream64_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
         return _dSalmon.SDOcluststream64_observer_count(self)
@@ -219,14 +219,14 @@ class tpSDOsc32(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed):
-        _dSalmon.tpSDOsc32_swiginit(self, _dSalmon.new_tpSDOsc32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed))
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed):
+        _dSalmon.tpSDOsc32_swiginit(self, _dSalmon.new_tpSDOsc32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed))
 
     def fit(self, data, times):
         return _dSalmon.tpSDOsc32_fit(self, data, times)
 
-    def fit_predict(self, data, labels, times):
-        return _dSalmon.tpSDOsc32_fit_predict(self, data, labels, times)
+    def fit_predict(self, data, labels, scores, times):
+        return _dSalmon.tpSDOsc32_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
         return _dSalmon.tpSDOsc32_observer_count(self)
@@ -242,14 +242,14 @@ class tpSDOsc64(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed):
-        _dSalmon.tpSDOsc64_swiginit(self, _dSalmon.new_tpSDOsc64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, perturb, random_sampling, distance, seed))
+    def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed):
+        _dSalmon.tpSDOsc64_swiginit(self, _dSalmon.new_tpSDOsc64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, distance, seed))
 
     def fit(self, data, times):
         return _dSalmon.tpSDOsc64_fit(self, data, times)
 
-    def fit_predict(self, data, labels, times):
-        return _dSalmon.tpSDOsc64_fit_predict(self, data, labels, times)
+    def fit_predict(self, data, labels, scores, times):
+        return _dSalmon.tpSDOsc64_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
         return _dSalmon.tpSDOsc64_observer_count(self)

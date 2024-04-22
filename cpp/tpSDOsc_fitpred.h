@@ -25,29 +25,45 @@
 // };
 
 template<typename FloatType>
-std::vector<int> tpSDOsc<FloatType>::fitPredict_impl(
+void tpSDOsc<FloatType>::fitPredict_impl(
+        std::vector<int>& label,
+        std::vector<FloatType>& score,
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& epsilon,
-        const std::vector<FloatType>& time_data, 
-        bool fit_only) {
+        const std::vector<FloatType>& time_data) {
     // Check for equal lengths:
     if (data.size() != time_data.size()) {
         throw std::invalid_argument("data and now must have the same length");
     }
-    std::vector<int> labels(data.size());
     int first_index = last_index;
     // sample data
-    std::unordered_set<int> sampled;    
+    std::unordered_set<int> sampled;   
     sample(sampled, data, epsilon, time_data, first_index);
-    // fit model
+    // fit model 
     fit_impl(data, epsilon, time_data, sampled, first_index);    
     // update graph
     update(time_data, sampled);
     // predict
-    if (!fit_only) {
-        predict_impl(labels, data, epsilon, sampled, first_index);
-    } 
-    return labels;
-};
+    predict_impl(label, score, data, epsilon, sampled, first_index);
+}
+
+template<typename FloatType>
+void tpSDOsc<FloatType>::fitOnly_impl(
+        const std::vector<Vector<FloatType>>& data, 
+        const std::vector<FloatType>& epsilon,
+        const std::vector<FloatType>& time_data) {
+    // Check for equal lengths:
+    if (data.size() != time_data.size()) {
+        throw std::invalid_argument("data and now must have the same length");
+    }
+    int first_index = last_index;
+    // sample data
+    std::unordered_set<int> sampled;   
+    sample(sampled, data, epsilon, time_data, first_index);
+    // fit model 
+    fit_impl(data, epsilon, time_data, sampled, first_index);    
+    // update graph
+    update(time_data, sampled);
+}
 
 #endif  // TPSDOSC_FITPRED_H

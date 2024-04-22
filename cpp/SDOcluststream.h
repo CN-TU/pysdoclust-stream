@@ -39,6 +39,8 @@ class SDOcluststream {
     // tanh(( k_tanh * (outlier_threshold-1)) = 0.5 where outlier_threshold is a factor of h_bar(Observer)
     bool outlier_handling;
     // flag for outlier handling
+    bool rel_outlier_score;
+    // relative or absolute distance for outlier score
     FloatType perturb;
     // Random Sampling 
     bool random_sampling;
@@ -138,12 +140,14 @@ class SDOcluststream {
     // predict
     void predict_impl(
             std::vector<int>& labels,
+            std::vector<FloatType>& score,
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
             const std::unordered_set<int>& sampled,
             int first_index);
     void determineLabelVector(
-            std::unordered_map<int, FloatType>& label_vector,
+            std::unordered_map<int, FloatType>& label_vector,        
+            std::vector<FloatType>& score_vector,
             const std::pair<TreeIterator, FloatType>& neighbor);
     void setLabel(
             int& label,
@@ -151,10 +155,12 @@ class SDOcluststream {
             int current_neighbor_cnt);
     void predict_point(
             int& label,
+            FloatType& score,
             int current_neighbor_cnt,
             int observer_index); 
     void predict_point(
             int& label,
+            FloatType& score,
             const Point& point,
             int current_neighbor_cnt);
     
@@ -203,11 +209,18 @@ class SDOcluststream {
             FloatType score);
 
     // fitpredict
-    std::vector<int> fitPredict_impl(
+    void fitPredict_impl(
+            std::vector<int>& label,
+            std::vector<FloatType>& score,
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
-            const std::vector<FloatType>& time_data, 
-            bool fit_only); 
+            const std::vector<FloatType>& time_data); 
+
+    void fitOnly_impl(
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon,
+            const std::vector<FloatType>& time_data); 
+
 
 public:
     SDOcluststream(
@@ -221,6 +234,7 @@ public:
         std::size_t e,
         FloatType outlier_threshold,
         bool outlier_handling = false,
+        bool rel_outlier_score = true,
         FloatType perturb = 0,
         bool random_sampling = true,
         SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
@@ -271,7 +285,9 @@ public:
         //           << "seed: " << seed << std::endl;
     }
 
-    void fit(const std::vector<Vector<FloatType>>& data, const std::vector<FloatType>& time_data) {
+    void fit(
+            const std::vector<Vector<FloatType>>& data, 
+            const std::vector<FloatType>& time_data) {        
         std::vector<FloatType> epsilon(data.size(), 0.0);
         if (perturb > 0) {
             std::uniform_real_distribution<FloatType> distribution(-perturb, perturb);
@@ -279,10 +295,12 @@ public:
                 return distribution(rng);
             });
         }
-        fitPredict_impl(data, epsilon, time_data, true);
+        fitOnly_impl(data, epsilon, time_data);
     }
 
-    std::vector<int> fitPredict(
+    void fitPredict(
+            std::vector<int>& label, 
+            std::vector<FloatType>& score,
             const std::vector<Vector<FloatType>>& data, 
             const std::vector<FloatType>& time_data) {
         std::vector<FloatType> epsilon(data.size(), 0.0);
@@ -292,7 +310,7 @@ public:
                 return distribution(rng);
             });
         }
-        return fitPredict_impl(data, epsilon, time_data, false);
+        fitPredict_impl(label, score, data, epsilon, time_data);
     }
     
     int observerCount() { return observers.size(); }
