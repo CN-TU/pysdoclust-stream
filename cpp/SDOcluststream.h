@@ -230,7 +230,7 @@ public:
         sampling_prefactor(observer_cnt / T),
         fading(std::exp(-1/T)),
         neighbor_cnt(neighbor_cnt),
-        k_tanh( (outlier_handling) ? 0 : atanh(0.5f) / (outlier_threshold-1) ),
+        k_tanh( (!outlier_handling) ? 0 : atanh(0.5f) / (outlier_threshold-1) ),
         outlier_handling(outlier_handling),
         perturb(perturb),
         random_sampling(random_sampling),        

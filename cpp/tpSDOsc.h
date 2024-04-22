@@ -246,7 +246,7 @@ public:
         neighbor_cnt(neighbor_cnt),
         freq_bins(freq_bins),
         max_freq(max_freq),
-        k_tanh( (outlier_handling) ? 0 : atanh(0.5f) / (outlier_threshold-1) ),
+        k_tanh( (!outlier_handling) ? 0 : atanh(0.5f) / (outlier_threshold-1) ),
         outlier_handling(outlier_handling),
         perturb(perturb),
         random_sampling(random_sampling),        
