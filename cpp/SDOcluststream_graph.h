@@ -7,11 +7,11 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::update(
         const std::vector<FloatType>& time_data,
         const std::unordered_set<int>& sampled) {
-    int active_threshold(0), active_threshold2(0);
-    int current_neighbor_cnt(0), current_neighbor_cnt2(0);
-    int current_observer_cnt(0), current_observer_cnt2(0);
-    size_t current_e(0);
-    size_t chi(0);    
+    std::size_t active_threshold(0), active_threshold2(0);
+    std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
+    std::size_t current_observer_cnt(0), current_observer_cnt2(0);
+    std::size_t current_e(0);
+    std::size_t chi(0);    
     setModelParameters(
         current_observer_cnt, current_observer_cnt2,
         active_threshold, active_threshold2,

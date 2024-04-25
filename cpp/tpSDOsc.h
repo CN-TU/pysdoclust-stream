@@ -117,11 +117,11 @@ class tpSDOsc {
 //     void setObsScaler();
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score); 
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector);
-    FloatType getActiveObservationsThreshold(int active_threshold, FloatType now);
+    FloatType getActiveObservationsThreshold(std::size_t active_threshold, FloatType now);
     void setModelParameters(
-            int& current_observer_cnt, int&current_observer_cnt2,
-            int& active_threshold, int& active_threshold2,
-            int& current_neighbor_cnt, int& current_neighbor_cnt2,
+            std::size_t& current_observer_cnt, std::size_t&current_observer_cnt2,
+            std::size_t& active_threshold, std::size_t& active_threshold2,
+            std::size_t& current_neighbor_cnt, std::size_t& current_neighbor_cnt2,
             std::size_t& current_e,
             std::size_t& chi,
             bool print);
@@ -137,15 +137,15 @@ class tpSDOsc {
             std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
             const Point& point,
             FloatType now,           
-            int current_observer_cnt,
-            int current_neighbor_cnt,
+            std::size_t current_observer_cnt,
+            std::size_t current_neighbor_cnt,
             int observer_index);
     void fit_point(
             std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
             const Point& point,
             FloatType now,           
-            int current_observer_cnt,
-            int current_neighbor_cnt);
+            std::size_t current_observer_cnt,
+            std::size_t current_neighbor_cnt);
     void update_model(
             const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores);
 
@@ -164,17 +164,17 @@ class tpSDOsc {
     void setLabel(
             int& label,
             const std::unordered_map<int, FloatType>& label_vector,
-            int current_neighbor_cnt);
+            std::size_t current_neighbor_cnt);
     void predict_point(
             int& label,
             FloatType& score,
-            int current_neighbor_cnt,
+            std::size_t current_neighbor_cnt,
             int observer_index); 
     void predict_point(
             int& label,
             FloatType& score,
             const Point& point,
-            int current_neighbor_cnt);
+            std::size_t current_neighbor_cnt);
 
     // sample
     void sample(
@@ -186,7 +186,7 @@ class tpSDOsc {
     bool sample_point( 
             std::unordered_set<int>& sampled,
             FloatType now,
-            int batch_size,
+            std::size_t batch_size,
             FloatType batch_time,
             int current_index);
     void sample_point(
@@ -194,15 +194,15 @@ class tpSDOsc {
             const Point& point,
             FloatType now,
             FloatType observations_sum,
-            int current_observer_cnt,
-            int current_neighbor_cnt,
+            std::size_t current_observer_cnt,
+            std::size_t current_neighbor_cnt,
             int current_index);
     void replaceObservers(
             Point data,
             std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
             FloatType now,
-            int current_observer_cnt,
-            int current_neigbor_cnt,
+            std::size_t current_observer_cnt,
+            std::size_t current_neigbor_cnt,
             int current_index);
 
     // graph

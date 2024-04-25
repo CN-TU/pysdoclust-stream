@@ -104,12 +104,12 @@ struct tpSDOsc<FloatType>::Observer {
         return false;
     }
 
-    void setH(Tree* treeA, int chi) {
+    void setH(Tree* treeA, std::size_t chi) {
         nearestNeighbors = treeA->knnSearch(data, chi+1, true, 0, std::numeric_limits<FloatType>::infinity(), false, true); // one more cause one point is Observer
         h = nearestNeighbors[chi].second;
     }
     // n>=chi is necessary
-    void setH(Tree* treeA, int chi, int n) {
+    void setH(Tree* treeA, std::size_t chi, std::size_t n) {
         nearestNeighbors = treeA->knnSearch(data, n+1, true, 0, std::numeric_limits<FloatType>::infinity(), false, true); // one more cause one point is Observer
         h = nearestNeighbors[chi].second;
     }

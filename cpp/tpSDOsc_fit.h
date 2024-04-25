@@ -8,11 +8,11 @@ void tpSDOsc<FloatType>::fit_impl(
         const std::vector<FloatType>& time_data,
         const std::unordered_set<int>& sampled,
         int first_index) {
-    int active_threshold(0), active_threshold2(0);
-    int current_neighbor_cnt(0), current_neighbor_cnt2(0);
-    int current_observer_cnt(0), current_observer_cnt2(0);
-    size_t current_e(0);
-    size_t chi(0);    
+    std::size_t active_threshold(0), active_threshold2(0);
+    std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
+    std::size_t current_observer_cnt(0), current_observer_cnt2(0);
+    std::size_t current_e(0);
+    std::size_t chi(0);    
     setModelParameters(
         current_observer_cnt, current_observer_cnt2,
         active_threshold, active_threshold2,
@@ -21,7 +21,7 @@ void tpSDOsc<FloatType>::fit_impl(
         chi,
         false); // true for print
    std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>> temporary_scores;
-    for (size_t i = 0; i < data.size(); ++i) {   
+    for (std::size_t i = 0; i < data.size(); ++i) {   
         int current_index = first_index + 1;
         bool is_observer = (sampled.count(current_index) > 0);
         if (is_observer) {
@@ -49,8 +49,8 @@ void tpSDOsc<FloatType>::fit_point(
         std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
         const Point& point,
         FloatType now,           
-        int current_observer_cnt,
-        int current_neighbor_cnt,
+        std::size_t current_observer_cnt,
+        std::size_t current_neighbor_cnt,
         int observer_index) {  
     TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt + 1);     
     for (const auto& neighbor : nearestNeighbors) {
@@ -85,8 +85,8 @@ void tpSDOsc<FloatType>::fit_point(
         std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
         const Point& point,
         FloatType now,           
-        int current_observer_cnt,
-        int current_neighbor_cnt) {   
+        std::size_t current_observer_cnt,
+        std::size_t current_neighbor_cnt) {   
     TreeNeighbors nearestNeighbors = tree.knnSearch(point, current_neighbor_cnt); // one more cause one point is Observer
     for (const auto& neighbor : nearestNeighbors) {
         int idx = neighbor.first->second; // second is distance, first->first Vector, Output is not ordered

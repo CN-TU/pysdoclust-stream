@@ -22,7 +22,7 @@ void tpSDOsc<FloatType>::initNowVector(FloatType now, std::vector<std::complex<F
 }
 
 template<typename FloatType>
-FloatType tpSDOsc<FloatType>::getActiveObservationsThreshold(int active_threshold, FloatType now) {
+FloatType tpSDOsc<FloatType>::getActiveObservationsThreshold(std::size_t active_threshold, FloatType now) {
     if (observers.size() > 1) {      
         MapIterator it = std::next(observers.begin(), active_threshold);  
         return it->getObservations() * std::pow<FloatType>(fading, now-it->time_touched);
@@ -55,11 +55,11 @@ template<typename FloatType>
 class tpSDOsc<FloatType>::BinomialCalculator {
   private:
     // Use outer and inner sizes for construction
-    int outerSize;
-    int innerSize;
+    std::size_t outerSize;
+    std::size_t innerSize;
     std::vector<std::vector<long long>> cache;
 
-    long long calc_long(int n, int k) {        
+    long long calc_long(std::size_t n, std::size_t k) {        
         // If k is 0 or equal to n, return 1
         if (k == 0 || k == n) {
             return 1;
@@ -77,7 +77,7 @@ class tpSDOsc<FloatType>::BinomialCalculator {
 
   public:
     // Constructor with outer and inner size arguments
-    BinomialCalculator(int maxN, int maxK) : outerSize(maxN+1), innerSize(maxK+1), cache(outerSize, std::vector<long long>(innerSize, -1.0)) {}
+    BinomialCalculator(std::size_t maxN, std::size_t maxK) : outerSize(maxN+1), innerSize(maxK+1), cache(outerSize, std::vector<long long>(innerSize, -1.0)) {}
 
     FloatType calc(int n, int k) {
         return static_cast<FloatType>( calc_long(n,k) );
@@ -116,9 +116,9 @@ class tpSDOsc<FloatType>::BinomialCalculator {
 
 template<typename FloatType>
 void tpSDOsc<FloatType>::setModelParameters(
-        int& current_observer_cnt, int&current_observer_cnt2,
-        int& active_threshold, int& active_threshold2,
-        int& current_neighbor_cnt, int& current_neighbor_cnt2,
+        std::size_t& current_observer_cnt, std::size_t&current_observer_cnt2,
+        std::size_t& active_threshold, std::size_t& active_threshold2,
+        std::size_t& current_neighbor_cnt, std::size_t& current_neighbor_cnt2,
         std::size_t& current_e,
         std::size_t& chi,
         bool print) {
@@ -131,16 +131,16 @@ void tpSDOsc<FloatType>::setModelParameters(
 
     current_neighbor_cnt = (observers.size() == observer_cnt) ?
                         neighbor_cnt :
-                        static_cast<int>((current_observer_cnt - 1) / static_cast<FloatType>(observer_cnt - 1) * neighbor_cnt + 1);
-    current_neighbor_cnt2 = static_cast<int>((current_observer_cnt2 - 1) / static_cast<FloatType>(observer_cnt - 1) * neighbor_cnt + 1);
+                        static_cast<std::size_t>((current_observer_cnt - 1) / static_cast<FloatType>(observer_cnt - 1) * neighbor_cnt + 1);
+    current_neighbor_cnt2 = static_cast<std::size_t>((current_observer_cnt2 - 1) / static_cast<FloatType>(observer_cnt - 1) * neighbor_cnt + 1);
     
     current_e = (observers.size() == observer_cnt) ?
             e :
-            static_cast<size_t>((current_observer_cnt - 1) / static_cast<FloatType>(observer_cnt - 1) * e + 1);
+            static_cast<std::size_t>((current_observer_cnt - 1) / static_cast<FloatType>(observer_cnt - 1) * e + 1);
 
     int current_chi_min = (observers.size() == observer_cnt) ?
                     chi_min :
-                    static_cast<int>((current_observer_cnt - 1) / static_cast<FloatType>(observer_cnt - 1) * chi_min + 1);
+                    static_cast<std::size_t>((current_observer_cnt - 1) / static_cast<FloatType>(observer_cnt - 1) * chi_min + 1);
     chi = std::max(static_cast<std::size_t>(current_observer_cnt * chi_prop), static_cast<std::size_t>(current_chi_min));
     
     if (print) {

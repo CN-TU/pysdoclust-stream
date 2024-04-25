@@ -57,6 +57,8 @@ int main() {
     auto start0 = std::chrono::steady_clock::now();
     for (int i = 0; i < m; ++i) {
         std::vector<Vector<double>> data = generateRandomVectors(n, k);
+        std::vector<int> label(n, 0);
+        std::vector<double> score(n, double(0));
 
         // Generate time_data for this batch
         std::vector<double> time_data(n);  // Create a vector of size n
@@ -64,7 +66,7 @@ int main() {
 
         // Measure time taken for fitPredict
         auto start = std::chrono::steady_clock::now();
-        sdoclust.fitPredict(data, time_data);
+        sdoclust.fitPredict(label, score, data, time_data);
         auto end = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::cout << "Time taken for fitPredict: " << duration.count() << " milliseconds" << std::endl;
@@ -92,6 +94,8 @@ int main() {
     auto start1 = std::chrono::steady_clock::now();
     for (int i = 0; i < m; ++i) {
         std::vector<Vector<double>> data = generateRandomVectors(n, k);
+        std::vector<int> label(n, 0);
+        std::vector<double> score(n, double(0));
 
         // Generate time_data for this batch
         std::vector<double> time_data(n);  // Create a vector of size n
@@ -99,7 +103,7 @@ int main() {
 
         // Measure time taken for fitPredict
         auto start = std::chrono::steady_clock::now();
-        tpsdoclust.fitPredict(data, time_data);
+        tpsdoclust.fitPredict(label, score, data, time_data);
         auto end = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::cout << "Time taken for fitPredict: " << duration.count() << " milliseconds" << std::endl;

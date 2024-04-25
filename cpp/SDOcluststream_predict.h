@@ -9,11 +9,11 @@ void SDOcluststream<FloatType>::predict_impl(
         const std::vector<FloatType>& epsilon,
         const std::unordered_set<int>& sampled,
         int first_index) {
-    int active_threshold(0), active_threshold2(0);
-    int current_neighbor_cnt(0), current_neighbor_cnt2(0);
-    int current_observer_cnt(0), current_observer_cnt2(0);
-    size_t current_e(0);
-    size_t chi(0);    
+    std::size_t active_threshold(0), active_threshold2(0);
+    std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
+    std::size_t current_observer_cnt(0), current_observer_cnt2(0);
+    std::size_t current_e(0);
+    std::size_t chi(0);    
     setModelParameters(
         current_observer_cnt, current_observer_cnt2,
         active_threshold, active_threshold2,
@@ -21,7 +21,7 @@ void SDOcluststream<FloatType>::predict_impl(
         current_e,
         chi,
         false); // true for print
-    for (size_t i = 0; i < data.size(); ++i) {
+    for (std::size_t i = 0; i < data.size(); ++i) {
         int current_index = first_index + i;
         bool is_observer = sampled.count(current_index) > 0;
         if (is_observer) {
@@ -78,7 +78,7 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::setLabel(
         int& label,
         const std::unordered_map<int, FloatType>& label_vector,
-        int current_neighbor_cnt) {
+        std::size_t current_neighbor_cnt) {
     FloatType maxColorScore(0);
     if (outlier_handling && (label_vector.find(-1) != label_vector.end())) {
         if ( label_vector.at(-1)<(current_neighbor_cnt*0.5) ) {
@@ -104,7 +104,7 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::predict_point(
         int& label,
         FloatType& score,
-        int current_neighbor_cnt,
+        std::size_t current_neighbor_cnt,
         int observer_index) {
     std::unordered_map<int, FloatType> label_vector;
     std::vector<FloatType> score_vector;
@@ -136,7 +136,7 @@ void SDOcluststream<FloatType>::predict_point(
         int& label,
         FloatType& score,
         const Point& point,
-        int current_neighbor_cnt) {
+        std::size_t current_neighbor_cnt) {
     std::unordered_map<int, FloatType> label_vector;
     std::vector<FloatType> score_vector;
     score_vector.reserve(current_neighbor_cnt);

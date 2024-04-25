@@ -9,18 +9,20 @@ void SDOcluststream<FloatType>::sample(
         const std::vector<FloatType>& epsilon,
         const std::vector<FloatType>& time_data,
         int first_index) {  
-    int active_threshold(0), active_threshold2(0);
-    int current_neighbor_cnt(0), current_neighbor_cnt2(0);
-    int current_observer_cnt(0), current_observer_cnt2(0);
-    size_t current_e(0); // unused 
-    size_t chi(0); 
-    setModelParameters(
-        current_observer_cnt, current_observer_cnt2,
-        active_threshold, active_threshold2,
-        current_neighbor_cnt, current_neighbor_cnt2,
-        current_e,
-        chi,
-        false); // true for print 
+    std::size_t active_threshold(0), active_threshold2(0);
+    std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
+    std::size_t current_observer_cnt(0), current_observer_cnt2(0);
+    std::size_t current_e(0); // unused 
+    std::size_t chi(0); 
+    if (!observers.empty()) {
+        setModelParameters(
+            current_observer_cnt, current_observer_cnt2,
+            active_threshold, active_threshold2,
+            current_neighbor_cnt, current_neighbor_cnt2,
+            current_e,
+            chi,
+            false); // true for print 
+    }
     FloatType observations_sum(0);   
     if (!random_sampling) { // only in use if           
         for (auto it = observers.begin(); it != observers.end(); ++it) {
@@ -29,7 +31,7 @@ void SDOcluststream<FloatType>::sample(
     }
     if (observers.empty()) {
         bool firstPointSampled(false);
-        for (size_t i = 0; i < data.size(); ++i) { 
+        for (std::size_t i = 0; i < data.size(); ++i) { 
             if (sample_point(
                     sampled,
                     time_data[i],
@@ -45,7 +47,7 @@ void SDOcluststream<FloatType>::sample(
             last_added_index = indexToSample;            
         }
     } else {
-        for (size_t i = 0; i < data.size(); ++i) {     
+        for (std::size_t i = 0; i < data.size(); ++i) {     
             if (!random_sampling) {
                 sample_point(
                     sampled,
@@ -79,7 +81,7 @@ void SDOcluststream<FloatType>::sample(
     for (auto it = observers.begin(); it != observers.end(); ++it) {
         worst_observers.push(it);            
     }
-    for (size_t i = 0; i < data.size(); ++i) {
+    for (std::size_t i = 0; i < data.size(); ++i) {
         int current_index = first_index + i;
         bool is_observer = (sampled.count(current_index) > 0);     
         if (is_observer) {            
@@ -101,7 +103,7 @@ template<typename FloatType>
 bool SDOcluststream<FloatType>::sample_point( 
     std::unordered_set<int>& sampled,
     FloatType now,
-    int batch_size,
+    std::size_t batch_size,
     FloatType batch_time,
     int current_index) {
     bool add_as_observer = 
@@ -121,8 +123,8 @@ void SDOcluststream<FloatType>::sample_point(
         const Point& point,
         FloatType now,
         FloatType observations_sum,
-        int current_observer_cnt,
-        int current_neighbor_cnt,
+        std::size_t current_observer_cnt,
+        std::size_t current_neighbor_cnt,
         int current_index) {        
     bool add_as_observer;
     if (!observers.empty()) {            
@@ -149,8 +151,8 @@ void SDOcluststream<FloatType>::replaceObservers(
         Point data,
         std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
         FloatType now,
-        int current_observer_cnt,
-        int current_neighbor_cnt,
+        std::size_t current_observer_cnt,
+        std::size_t current_neighbor_cnt,
         int current_index) {        
     MapIterator obsIt = observers.end();
     FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);

@@ -48,19 +48,56 @@ def lookupDistance(name, float_type, **kwargs):
     else:
         raise TypeError('Unknown metric')
     
-# def lookupDistanceE(name, float_type, **kwargs):
-#     wrappers = {
-#         'chebyshev': 'ChebyshevEDist',
-#         'cityblock': 'ManhattanEDist',
-#         'euclidean': 'EuclideanEDist',
-#     }
-#     suffix = {np.float32: '32', np.float64: '64'}[float_type]
+    
+class Buffer:
+    """
+    A class to buffer data streams in batches (NumPy arrays).
+    """
+    def __init__(self, input_buffer, nfeatures, dtype):
+        self.buffer = {'data': np.empty((0, nfeatures), dtype=dtype),  # Empty array with room for buffer size
+                       'times': np.empty((0, ), dtype=dtype)}  # Empty array with room for buffer size
+        self.input_buffer = input_buffer
+        self.nfeatures = nfeatures
+        self.dtype = dtype
 
-#     if name in wrappers:
-#         return swig.__dict__[wrappers[name] + suffix]()
-#     elif name == 'minkowski':
-#         if not 'p' in kwargs:
-#             raise TypeError('p is required for Minkowski distance')
-#         return swig.__dict__['MinkowskiEDist' + suffix](kwargs['p'])
-#     else:
-#         raise TypeError('Unknown metric')
+    def add_batch(self, data, times, last=False):
+        """
+        Adds a batch of data points to the buffer and returns remaining data.
+
+        Args:
+          data: A NumPy array of shape (batch_size, n_features).
+
+        Returns:
+          A NumPy array of remaining data points that couldn't fit in the buffer.
+        """
+
+        # Add data to the buffer
+        self.buffer['data'] = np.vstack((self.buffer['data'],  data))
+        self.buffer['times'] = np.hstack((self.buffer['times'], times))
+
+        # Check if buffer needs flushing
+        return self.flush(last=last)
+
+    def flush(self, last=False):
+        """
+        Calls the provided program function with the buffered data and clears the buffer.
+
+        Returns:
+          data: A NumPy array of flushed data points.
+          times: A NumPy array of corresponding times.
+        """
+        if self.buffer['data'].shape[0] >= self.input_buffer:
+            data = self.buffer['data'][:self.input_buffer]  # Slice to get requested elements
+            times = self.buffer['times'][:self.input_buffer]  # Slice to get requested elements
+            self.buffer['data'] = self.buffer['data'][self.input_buffer:]  # Remove returned elements
+            self.buffer['times'] = self.buffer['times'][self.input_buffer:]  # Remove returned elements
+            return data, times
+        
+        if last and self.buffer['data'].shape[0] > 0:
+            data = self.buffer['data'][:self.input_buffer]  # Slice to get requested elements
+            times = self.buffer['times'][:self.input_buffer]  # Slice to get requested elements
+            self.buffer = {'data': np.empty((0, self.nfeatures), dtype=self.dtype),  # Empty array with room for buffer size
+                       'times': np.empty((0, ), dtype=self.dtype)}  # Empty array with room for buffer size
+            return data, times
+        
+        return np.empty((0, self.nfeatures), dtype=self.dtype), np.empty((0, ), dtype=self.dtype)  # Empty buffer if no data
