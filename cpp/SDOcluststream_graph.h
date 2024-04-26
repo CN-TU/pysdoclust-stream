@@ -20,7 +20,7 @@ void SDOcluststream<FloatType>::update(
         chi,
         false); // true for print
     // update active tree
-    int i = 0;
+    std::size_t i = 0;
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {            
         if (i > active_threshold) {
             it->deactivate(&treeA);
