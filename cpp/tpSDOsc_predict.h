@@ -110,7 +110,7 @@ void tpSDOsc<FloatType>::predict_point(
     score_vector.reserve(current_neighbor_cnt);
     const MapIterator& it0 = indexToIterator[observer_index];
     TreeNeighbors& nearestNeighbors = it0->nearestNeighbors;
-    int i = 1;
+    std::size_t i = 1;
     for (const auto& neighbor : nearestNeighbors) {        
         if (observer_index!= neighbor.first->second) {            
             determineLabelVector(label_vector, score_vector, neighbor);          
