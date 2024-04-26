@@ -8,22 +8,6 @@
 #include "SDOcluststream_fit.h"
 #include "SDOcluststream_predict.h"
 
-// template<typename FloatType>
-// class SDOcluststream<FloatType>::TreeNodeUpdater {
-//     Vector<FloatType> new_data;
-//     int new_key;
-//     public:
-//     TreeNodeUpdater(Vector<FloatType> new_data, int new_key) : new_data(new_data), new_key(new_key) {}
-//     void operator() (Vector<FloatType>& vector, int& key) {
-//         int i = 0;
-//         for (FloatType& element : vector) {
-//             element = new_data[i];
-//             i++;
-//         }
-//         key = new_key;
-//     }
-// };
-
 template<typename FloatType>
 void SDOcluststream<FloatType>::fitPredict_impl(
         std::vector<int>& label,
@@ -64,6 +48,20 @@ void SDOcluststream<FloatType>::fitOnly_impl(
     fit_impl(data, epsilon, time_data, sampled, first_index);    
     // update graph
     update(time_data, sampled);
+}
+
+template<typename FloatType>
+void SDOcluststream<FloatType>::predictOnly_impl(
+        std::vector<int>& label,
+        std::vector<FloatType>& score,
+        const std::vector<Vector<FloatType>>& data, 
+        const std::vector<FloatType>& epsilon,
+        const std::vector<FloatType>& time_data) {
+    // Check for equal lengths:
+    if (data.size() != time_data.size()) {
+        throw std::invalid_argument("data and now must have the same length");
+    }
+    predict_impl(label, score, data, epsilon);
 }
 
 #endif  // SDOCLUSTSTREAM_FITPRED_H

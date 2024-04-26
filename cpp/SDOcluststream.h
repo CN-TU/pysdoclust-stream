@@ -144,7 +144,12 @@ class SDOcluststream {
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
             const std::unordered_set<int>& sampled,
-            int first_index);
+            int first_index);    
+    void predict_impl(
+            std::vector<int>& labels,
+            std::vector<FloatType>& score,
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon);
     void determineLabelVector(
             std::unordered_map<int, FloatType>& label_vector,        
             std::vector<FloatType>& score_vector,
@@ -221,6 +226,12 @@ class SDOcluststream {
             const std::vector<FloatType>& epsilon,
             const std::vector<FloatType>& time_data); 
 
+    void predictOnly_impl(
+            std::vector<int>& label,
+            std::vector<FloatType>& score,
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon,
+            const std::vector<FloatType>& time_data); 
 
 public:
     SDOcluststream(

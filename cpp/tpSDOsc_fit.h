@@ -116,7 +116,10 @@ void tpSDOsc<FloatType>::fit_point(
 template<typename FloatType>
 void tpSDOsc<FloatType>::update_model(
         const std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores) {
-    for (auto& [key, value_pair] : temporary_scores) {
+    // for (auto& [key, value_pair] : temporary_scores) {
+    for (auto it0 = temporary_scores.begin(); it0 != temporary_scores.end(); ++it0) {
+        int key = it0->first;
+        auto value_pair = it0->second;
         const MapIterator& it = indexToIterator[key];
         // Access the value pair:
         const std::vector<std::complex<FloatType>>& score_vector = value_pair.first;

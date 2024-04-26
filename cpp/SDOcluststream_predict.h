@@ -23,7 +23,7 @@ void SDOcluststream<FloatType>::predict_impl(
         false); // true for print
     for (std::size_t i = 0; i < data.size(); ++i) {
         int current_index = first_index + i;
-        bool is_observer = sampled.count(current_index) > 0;
+        bool is_observer = (sampled.count(current_index) > 0);
         if (is_observer) {
             if (indexToIterator[current_index]->active) {
                 predict_point(
@@ -45,6 +45,33 @@ void SDOcluststream<FloatType>::predict_impl(
                 std::make_pair(data[i], epsilon[i]),
                 current_neighbor_cnt);
         }
+    }
+}
+
+template<typename FloatType>
+void SDOcluststream<FloatType>::predict_impl(
+        std::vector<int>& label,
+        std::vector<FloatType>& score,
+        const std::vector<Vector<FloatType>>& data,
+        const std::vector<FloatType>& epsilon) {
+    std::size_t active_threshold(0), active_threshold2(0);
+    std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
+    std::size_t current_observer_cnt(0), current_observer_cnt2(0);
+    std::size_t current_e(0);
+    std::size_t chi(0);    
+    setModelParameters(
+        current_observer_cnt, current_observer_cnt2,
+        active_threshold, active_threshold2,
+        current_neighbor_cnt, current_neighbor_cnt2,
+        current_e,
+        chi,
+        false); // true for print
+    for (std::size_t i = 0; i < data.size(); ++i) {        
+        predict_point(
+            label[i],
+            score[i],
+            std::make_pair(data[i], epsilon[i]),
+            current_neighbor_cnt);
     }
 }
 
