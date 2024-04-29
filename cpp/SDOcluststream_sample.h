@@ -7,7 +7,7 @@ void SDOcluststream<FloatType>::sample(
         std::unordered_set<int>& sampled,
         const std::vector<Vector<FloatType>>& data,
         const std::vector<FloatType>& epsilon,
-        const std::vector<FloatType>& time_data,
+        const std::vector<FloatType>& time,
         int first_index) {  
     std::size_t active_threshold(0), active_threshold2(0);
     std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
@@ -34,9 +34,9 @@ void SDOcluststream<FloatType>::sample(
         for (std::size_t i = 0; i < data.size(); ++i) { 
             if (sample_point(
                     sampled,
-                    time_data[i],
+                    time[i],
                     data.size(),
-                    time_data.back() - time_data.front(),
+                    time.back() - time.front(),
                     last_index++)
                 ) { firstPointSampled = true; }
         }
@@ -52,17 +52,17 @@ void SDOcluststream<FloatType>::sample(
                 sample_point(
                     sampled,
                     std::make_pair(data[i], epsilon[i]),                    
-                    time_data[i],
-                    observations_sum * std::pow<FloatType>(fading, time_data[i] - last_time),
+                    time[i],
+                    observations_sum * std::pow<FloatType>(fading, time[i] - last_time),
                     current_observer_cnt,
                     current_neighbor_cnt,
                     last_index++);      
             } else {
                 sample_point(
                     sampled,
-                    time_data[i],
+                    time[i],
                     data.size(),
-                    time_data.back() - last_time,
+                    time.back() - last_time,
                     last_index++);
             }       
         }
@@ -88,13 +88,13 @@ void SDOcluststream<FloatType>::sample(
             replaceObservers(
                 std::make_pair(data[i], epsilon[i]),
                 worst_observers,
-                time_data[i],
+                time[i],
                 current_observer_cnt,
                 current_neighbor_cnt,
                 current_index
             );
             last_added_index = current_index;
-            last_added_time = time_data[i];
+            last_added_time = time[i];
         }
     }   
 }

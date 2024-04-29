@@ -125,14 +125,13 @@ for idf, filename in enumerate(glob.glob(os.path.join(inpath, '*.arff'))):
     stk = Streamkm(coresetsize=k * 10, length=5000, seed=42)
     den = DenStream(eps=0.2, lambd=0.1, beta=0.2, mu=11)
     bir = Birch(n_clusters=k, threshold=0.5)
-    dsa = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0, input_buffer=200)
+    dsa = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0, input_buffer=0)
     # tps = clustering.tpSDOsc(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0, freq_bins=1)
-    tps = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0, freq_bins=10, max_freq=500)
+    tps = clustering.SDOcluststream(k=500, T=2000, e=7, chi_prop=0.1, outlier_handling=True, outlier_threshold=10.0, freq_bins=10, max_freq=500, input_buffer = 0)
     grt = []
     # algorithms = (("SDOstreamc", dsa),("CluStream", cls),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
     # algorithms = (("SDOstreamc", dsa),("DenStream", den),("BIRCH", bir),("StreamKM", stk),("GT", grt))
     algorithms = (("SDOstreamc", dsa),("tpSDOsc", tps),("DenStream", den),("GT", grt))
-
 
     old_clusters = []
     for alg_name, alg in algorithms:

@@ -3963,8 +3963,9 @@ SWIGINTERN PyObject *_wrap_new_SDOcluststream32(PyObject *SWIGUNUSEDPARM(self), 
   bool arg13 ;
   float arg14 ;
   bool arg15 ;
-  Distance_wrapper< float > *arg16 = (Distance_wrapper< float > *) 0 ;
-  int arg17 ;
+  int arg16 ;
+  Distance_wrapper< float > *arg17 = (Distance_wrapper< float > *) 0 ;
+  int arg18 ;
   int val1 ;
   int ecode1 = 0 ;
   float val2 ;
@@ -3995,14 +3996,16 @@ SWIGINTERN PyObject *_wrap_new_SDOcluststream32(PyObject *SWIGUNUSEDPARM(self), 
   int ecode14 = 0 ;
   bool val15 ;
   int ecode15 = 0 ;
-  void *argp16 = 0 ;
-  int res16 = 0 ;
-  int val17 ;
-  int ecode17 = 0 ;
-  PyObject *swig_obj[17] ;
+  int val16 ;
+  int ecode16 = 0 ;
+  void *argp17 = 0 ;
+  int res17 = 0 ;
+  int val18 ;
+  int ecode18 = 0 ;
+  PyObject *swig_obj[18] ;
   SDOcluststream_wrapper< float > *result = 0 ;
   
-  if (!SWIG_Python_UnpackTuple(args, "new_SDOcluststream32", 17, 17, swig_obj)) SWIG_fail;
+  if (!SWIG_Python_UnpackTuple(args, "new_SDOcluststream32", 18, 18, swig_obj)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_SDOcluststream32" "', argument " "1"" of type '" "int""'");
@@ -4078,17 +4081,22 @@ SWIGINTERN PyObject *_wrap_new_SDOcluststream32(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(ecode15), "in method '" "new_SDOcluststream32" "', argument " "15"" of type '" "bool""'");
   } 
   arg15 = static_cast< bool >(val15);
-  res16 = SWIG_ConvertPtr(swig_obj[15], &argp16,SWIGTYPE_p_Distance_wrapperT_float_t, 0 |  0 );
-  if (!SWIG_IsOK(res16)) {
-    SWIG_exception_fail(SWIG_ArgError(res16), "in method '" "new_SDOcluststream32" "', argument " "16"" of type '" "Distance_wrapper< float > *""'"); 
-  }
-  arg16 = reinterpret_cast< Distance_wrapper< float > * >(argp16);
-  ecode17 = SWIG_AsVal_int(swig_obj[16], &val17);
-  if (!SWIG_IsOK(ecode17)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode17), "in method '" "new_SDOcluststream32" "', argument " "17"" of type '" "int""'");
+  ecode16 = SWIG_AsVal_int(swig_obj[15], &val16);
+  if (!SWIG_IsOK(ecode16)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode16), "in method '" "new_SDOcluststream32" "', argument " "16"" of type '" "int""'");
   } 
-  arg17 = static_cast< int >(val17);
-  result = (SDOcluststream_wrapper< float > *)new SDOcluststream_wrapper< float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17);
+  arg16 = static_cast< int >(val16);
+  res17 = SWIG_ConvertPtr(swig_obj[16], &argp17,SWIGTYPE_p_Distance_wrapperT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res17)) {
+    SWIG_exception_fail(SWIG_ArgError(res17), "in method '" "new_SDOcluststream32" "', argument " "17"" of type '" "Distance_wrapper< float > *""'"); 
+  }
+  arg17 = reinterpret_cast< Distance_wrapper< float > * >(argp17);
+  ecode18 = SWIG_AsVal_int(swig_obj[17], &val18);
+  if (!SWIG_IsOK(ecode18)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode18), "in method '" "new_SDOcluststream32" "', argument " "18"" of type '" "int""'");
+  } 
+  arg18 = static_cast< int >(val18);
+  result = (SDOcluststream_wrapper< float > *)new SDOcluststream_wrapper< float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17,arg18);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_SDOcluststream_wrapperT_float_t, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -4408,8 +4416,9 @@ SWIGINTERN PyObject *_wrap_new_SDOcluststream64(PyObject *SWIGUNUSEDPARM(self), 
   bool arg13 ;
   double arg14 ;
   bool arg15 ;
-  Distance_wrapper< double > *arg16 = (Distance_wrapper< double > *) 0 ;
-  int arg17 ;
+  int arg16 ;
+  Distance_wrapper< double > *arg17 = (Distance_wrapper< double > *) 0 ;
+  int arg18 ;
   int val1 ;
   int ecode1 = 0 ;
   double val2 ;
@@ -4440,14 +4449,16 @@ SWIGINTERN PyObject *_wrap_new_SDOcluststream64(PyObject *SWIGUNUSEDPARM(self), 
   int ecode14 = 0 ;
   bool val15 ;
   int ecode15 = 0 ;
-  void *argp16 = 0 ;
-  int res16 = 0 ;
-  int val17 ;
-  int ecode17 = 0 ;
-  PyObject *swig_obj[17] ;
+  int val16 ;
+  int ecode16 = 0 ;
+  void *argp17 = 0 ;
+  int res17 = 0 ;
+  int val18 ;
+  int ecode18 = 0 ;
+  PyObject *swig_obj[18] ;
   SDOcluststream_wrapper< double > *result = 0 ;
   
-  if (!SWIG_Python_UnpackTuple(args, "new_SDOcluststream64", 17, 17, swig_obj)) SWIG_fail;
+  if (!SWIG_Python_UnpackTuple(args, "new_SDOcluststream64", 18, 18, swig_obj)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_SDOcluststream64" "', argument " "1"" of type '" "int""'");
@@ -4523,17 +4534,22 @@ SWIGINTERN PyObject *_wrap_new_SDOcluststream64(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(ecode15), "in method '" "new_SDOcluststream64" "', argument " "15"" of type '" "bool""'");
   } 
   arg15 = static_cast< bool >(val15);
-  res16 = SWIG_ConvertPtr(swig_obj[15], &argp16,SWIGTYPE_p_Distance_wrapperT_double_t, 0 |  0 );
-  if (!SWIG_IsOK(res16)) {
-    SWIG_exception_fail(SWIG_ArgError(res16), "in method '" "new_SDOcluststream64" "', argument " "16"" of type '" "Distance_wrapper< double > *""'"); 
-  }
-  arg16 = reinterpret_cast< Distance_wrapper< double > * >(argp16);
-  ecode17 = SWIG_AsVal_int(swig_obj[16], &val17);
-  if (!SWIG_IsOK(ecode17)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode17), "in method '" "new_SDOcluststream64" "', argument " "17"" of type '" "int""'");
+  ecode16 = SWIG_AsVal_int(swig_obj[15], &val16);
+  if (!SWIG_IsOK(ecode16)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode16), "in method '" "new_SDOcluststream64" "', argument " "16"" of type '" "int""'");
   } 
-  arg17 = static_cast< int >(val17);
-  result = (SDOcluststream_wrapper< double > *)new SDOcluststream_wrapper< double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17);
+  arg16 = static_cast< int >(val16);
+  res17 = SWIG_ConvertPtr(swig_obj[16], &argp17,SWIGTYPE_p_Distance_wrapperT_double_t, 0 |  0 );
+  if (!SWIG_IsOK(res17)) {
+    SWIG_exception_fail(SWIG_ArgError(res17), "in method '" "new_SDOcluststream64" "', argument " "17"" of type '" "Distance_wrapper< double > *""'"); 
+  }
+  arg17 = reinterpret_cast< Distance_wrapper< double > * >(argp17);
+  ecode18 = SWIG_AsVal_int(swig_obj[17], &val18);
+  if (!SWIG_IsOK(ecode18)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode18), "in method '" "new_SDOcluststream64" "', argument " "18"" of type '" "int""'");
+  } 
+  arg18 = static_cast< int >(val18);
+  result = (SDOcluststream_wrapper< double > *)new SDOcluststream_wrapper< double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17,arg18);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_SDOcluststream_wrapperT_double_t, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -4853,8 +4869,9 @@ SWIGINTERN PyObject *_wrap_new_tpSDOsc32(PyObject *SWIGUNUSEDPARM(self), PyObjec
   bool arg13 ;
   float arg14 ;
   bool arg15 ;
-  Distance_wrapper< float > *arg16 = (Distance_wrapper< float > *) 0 ;
-  int arg17 ;
+  int arg16 ;
+  Distance_wrapper< float > *arg17 = (Distance_wrapper< float > *) 0 ;
+  int arg18 ;
   int val1 ;
   int ecode1 = 0 ;
   float val2 ;
@@ -4885,14 +4902,16 @@ SWIGINTERN PyObject *_wrap_new_tpSDOsc32(PyObject *SWIGUNUSEDPARM(self), PyObjec
   int ecode14 = 0 ;
   bool val15 ;
   int ecode15 = 0 ;
-  void *argp16 = 0 ;
-  int res16 = 0 ;
-  int val17 ;
-  int ecode17 = 0 ;
-  PyObject *swig_obj[17] ;
+  int val16 ;
+  int ecode16 = 0 ;
+  void *argp17 = 0 ;
+  int res17 = 0 ;
+  int val18 ;
+  int ecode18 = 0 ;
+  PyObject *swig_obj[18] ;
   tpSDOsc_wrapper< float > *result = 0 ;
   
-  if (!SWIG_Python_UnpackTuple(args, "new_tpSDOsc32", 17, 17, swig_obj)) SWIG_fail;
+  if (!SWIG_Python_UnpackTuple(args, "new_tpSDOsc32", 18, 18, swig_obj)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_tpSDOsc32" "', argument " "1"" of type '" "int""'");
@@ -4968,17 +4987,22 @@ SWIGINTERN PyObject *_wrap_new_tpSDOsc32(PyObject *SWIGUNUSEDPARM(self), PyObjec
     SWIG_exception_fail(SWIG_ArgError(ecode15), "in method '" "new_tpSDOsc32" "', argument " "15"" of type '" "bool""'");
   } 
   arg15 = static_cast< bool >(val15);
-  res16 = SWIG_ConvertPtr(swig_obj[15], &argp16,SWIGTYPE_p_Distance_wrapperT_float_t, 0 |  0 );
-  if (!SWIG_IsOK(res16)) {
-    SWIG_exception_fail(SWIG_ArgError(res16), "in method '" "new_tpSDOsc32" "', argument " "16"" of type '" "Distance_wrapper< float > *""'"); 
-  }
-  arg16 = reinterpret_cast< Distance_wrapper< float > * >(argp16);
-  ecode17 = SWIG_AsVal_int(swig_obj[16], &val17);
-  if (!SWIG_IsOK(ecode17)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode17), "in method '" "new_tpSDOsc32" "', argument " "17"" of type '" "int""'");
+  ecode16 = SWIG_AsVal_int(swig_obj[15], &val16);
+  if (!SWIG_IsOK(ecode16)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode16), "in method '" "new_tpSDOsc32" "', argument " "16"" of type '" "int""'");
   } 
-  arg17 = static_cast< int >(val17);
-  result = (tpSDOsc_wrapper< float > *)new tpSDOsc_wrapper< float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17);
+  arg16 = static_cast< int >(val16);
+  res17 = SWIG_ConvertPtr(swig_obj[16], &argp17,SWIGTYPE_p_Distance_wrapperT_float_t, 0 |  0 );
+  if (!SWIG_IsOK(res17)) {
+    SWIG_exception_fail(SWIG_ArgError(res17), "in method '" "new_tpSDOsc32" "', argument " "17"" of type '" "Distance_wrapper< float > *""'"); 
+  }
+  arg17 = reinterpret_cast< Distance_wrapper< float > * >(argp17);
+  ecode18 = SWIG_AsVal_int(swig_obj[17], &val18);
+  if (!SWIG_IsOK(ecode18)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode18), "in method '" "new_tpSDOsc32" "', argument " "18"" of type '" "int""'");
+  } 
+  arg18 = static_cast< int >(val18);
+  result = (tpSDOsc_wrapper< float > *)new tpSDOsc_wrapper< float >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17,arg18);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_tpSDOsc_wrapperT_float_t, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -5298,8 +5322,9 @@ SWIGINTERN PyObject *_wrap_new_tpSDOsc64(PyObject *SWIGUNUSEDPARM(self), PyObjec
   bool arg13 ;
   double arg14 ;
   bool arg15 ;
-  Distance_wrapper< double > *arg16 = (Distance_wrapper< double > *) 0 ;
-  int arg17 ;
+  int arg16 ;
+  Distance_wrapper< double > *arg17 = (Distance_wrapper< double > *) 0 ;
+  int arg18 ;
   int val1 ;
   int ecode1 = 0 ;
   double val2 ;
@@ -5330,14 +5355,16 @@ SWIGINTERN PyObject *_wrap_new_tpSDOsc64(PyObject *SWIGUNUSEDPARM(self), PyObjec
   int ecode14 = 0 ;
   bool val15 ;
   int ecode15 = 0 ;
-  void *argp16 = 0 ;
-  int res16 = 0 ;
-  int val17 ;
-  int ecode17 = 0 ;
-  PyObject *swig_obj[17] ;
+  int val16 ;
+  int ecode16 = 0 ;
+  void *argp17 = 0 ;
+  int res17 = 0 ;
+  int val18 ;
+  int ecode18 = 0 ;
+  PyObject *swig_obj[18] ;
   tpSDOsc_wrapper< double > *result = 0 ;
   
-  if (!SWIG_Python_UnpackTuple(args, "new_tpSDOsc64", 17, 17, swig_obj)) SWIG_fail;
+  if (!SWIG_Python_UnpackTuple(args, "new_tpSDOsc64", 18, 18, swig_obj)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_tpSDOsc64" "', argument " "1"" of type '" "int""'");
@@ -5413,17 +5440,22 @@ SWIGINTERN PyObject *_wrap_new_tpSDOsc64(PyObject *SWIGUNUSEDPARM(self), PyObjec
     SWIG_exception_fail(SWIG_ArgError(ecode15), "in method '" "new_tpSDOsc64" "', argument " "15"" of type '" "bool""'");
   } 
   arg15 = static_cast< bool >(val15);
-  res16 = SWIG_ConvertPtr(swig_obj[15], &argp16,SWIGTYPE_p_Distance_wrapperT_double_t, 0 |  0 );
-  if (!SWIG_IsOK(res16)) {
-    SWIG_exception_fail(SWIG_ArgError(res16), "in method '" "new_tpSDOsc64" "', argument " "16"" of type '" "Distance_wrapper< double > *""'"); 
-  }
-  arg16 = reinterpret_cast< Distance_wrapper< double > * >(argp16);
-  ecode17 = SWIG_AsVal_int(swig_obj[16], &val17);
-  if (!SWIG_IsOK(ecode17)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode17), "in method '" "new_tpSDOsc64" "', argument " "17"" of type '" "int""'");
+  ecode16 = SWIG_AsVal_int(swig_obj[15], &val16);
+  if (!SWIG_IsOK(ecode16)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode16), "in method '" "new_tpSDOsc64" "', argument " "16"" of type '" "int""'");
   } 
-  arg17 = static_cast< int >(val17);
-  result = (tpSDOsc_wrapper< double > *)new tpSDOsc_wrapper< double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17);
+  arg16 = static_cast< int >(val16);
+  res17 = SWIG_ConvertPtr(swig_obj[16], &argp17,SWIGTYPE_p_Distance_wrapperT_double_t, 0 |  0 );
+  if (!SWIG_IsOK(res17)) {
+    SWIG_exception_fail(SWIG_ArgError(res17), "in method '" "new_tpSDOsc64" "', argument " "17"" of type '" "Distance_wrapper< double > *""'"); 
+  }
+  arg17 = reinterpret_cast< Distance_wrapper< double > * >(argp17);
+  ecode18 = SWIG_AsVal_int(swig_obj[17], &val18);
+  if (!SWIG_IsOK(ecode18)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode18), "in method '" "new_tpSDOsc64" "', argument " "18"" of type '" "int""'");
+  } 
+  arg18 = static_cast< int >(val18);
+  result = (tpSDOsc_wrapper< double > *)new tpSDOsc_wrapper< double >(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9,arg10,arg11,arg12,arg13,arg14,arg15,arg16,arg17,arg18);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_tpSDOsc_wrapperT_double_t, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:

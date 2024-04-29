@@ -35,6 +35,7 @@ class SDOcluststream_wrapper {
       bool rel_outlier_score,
       FloatType perturb,
       bool random_sampling,
+      int input_buffer,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 
@@ -72,6 +73,7 @@ class tpSDOsc_wrapper {
       bool rel_outlier_score,
       FloatType perturb,
       bool random_sampling,
+      int input_buffer,
       Distance_wrapper<FloatType>* distance, 
       int seed);
 

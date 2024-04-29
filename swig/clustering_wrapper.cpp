@@ -48,6 +48,7 @@ SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
         bool rel_outlier_score,
         FloatType perturb, 
         bool random_sampling,
+        int input_buffer,
         Distance_wrapper<FloatType>* distance, 
         int seed) :
     dimension(-1),
@@ -65,6 +66,7 @@ SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
         rel_outlier_score,
         perturb, 
         random_sampling,
+        input_buffer,
         distance->getFunction(), 
         seed)
 {
@@ -90,8 +92,8 @@ void SDOcluststream_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType>
     std::vector<int> vec_label(data.dim1, 0);
     std::vector<FloatType> vec_score(data.dim1, FloatType(0));
     sdoclust.fitPredict(vec_label, vec_score, vec_data, vec_times);  
-    std::copy(vec_label.begin(), vec_label.end(), &labels.data[0]);  
-    std::copy(vec_score.begin(), vec_score.end(), &scores.data[0]);  
+    std::move(vec_label.begin(), vec_label.end(), &labels.data[0]);  
+    std::move(vec_score.begin(), vec_score.end(), &scores.data[0]);  
 }
 
 template<typename FloatType>
@@ -135,6 +137,7 @@ tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(
         bool rel_outlier_score,
         FloatType perturb,
         bool random_sampling,
+        int input_buffer,
         Distance_wrapper<FloatType>* distance, 
         int seed) :
     dimension(-1),
@@ -154,6 +157,7 @@ tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(
         rel_outlier_score,
         perturb, 
         random_sampling,
+        input_buffer,
         distance->getFunction(), 
         seed)
 {

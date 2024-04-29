@@ -5,8 +5,7 @@ template<typename FloatType>
 void SDOcluststream<FloatType>::fit_impl(
         const std::vector<Vector<FloatType>>& data,
         const std::vector<FloatType>& epsilon,
-        const std::vector<FloatType>& time_data,
-        const std::unordered_set<int>& sampled,
+        const std::vector<FloatType>& time,
         int first_index) {
     std::size_t active_threshold(0), active_threshold2(0);
     std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
@@ -22,13 +21,14 @@ void SDOcluststream<FloatType>::fit_impl(
         false); // true for print
     std::unordered_map<int, std::pair<FloatType, FloatType>> temporary_scores;
     for (std::size_t i = 0; i < data.size(); ++i) {   
-        int current_index = first_index + 1;
-        bool is_observer = (sampled.count(current_index) > 0);
+        int current_index = first_index + i;
+        auto it = indexToIterator.find(current_index);
+        bool is_observer = (it != indexToIterator.end()) ? true : false;
         if (is_observer) {
             fit_point(
                 temporary_scores,
                 std::make_pair(data[i], epsilon[i]),
-                time_data[i],
+                time[i],
                 current_observer_cnt2,
                 current_neighbor_cnt2,
                 current_index); 
@@ -36,7 +36,7 @@ void SDOcluststream<FloatType>::fit_impl(
             fit_point(
                 temporary_scores,
                 std::make_pair(data[i], epsilon[i]),
-                time_data[i],
+                time[i],
                 current_observer_cnt,
                 current_neighbor_cnt); 
         }

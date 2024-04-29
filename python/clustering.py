@@ -9,7 +9,7 @@ Streaming clustering models.
 import numpy as np
 from dSalmon import swig as dSalmon_cpp
 # from dSalmon import projection
-from dSalmon.util import sanitizeData, sanitizeTimes, lookupDistance, Buffer #, lookupDistanceE
+from dSalmon.util import sanitizeData, sanitizeTimes, lookupDistance #, lookupDistanceE
 
 class Clustering(object):
     """
@@ -157,7 +157,7 @@ class SDOcluststream(Clustering):
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
                  float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
                  chi_prop=0.05, e=7, outlier_threshold=10.0, outlier_handling=False, rel_outlier_score=True, 
-                 perturb=0.0, random_sampling=True, freq_bins=1, max_freq=1.0, input_buffer=200):
+                 perturb=0.0, random_sampling=True, freq_bins=1, max_freq=1.0, input_buffer=0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
         self.buffer = None    
@@ -179,7 +179,7 @@ class SDOcluststream(Clustering):
         assert 1 < p['outlier_threshold'], 'outlier_threshold must be in (1,inf)'
         assert 0 <= p['perturb'], 'perturb shall be small, so 1e-7 or something'
         assert p['random_sampling'] in [True, False]
-        assert p['input_buffer'] > 1
+        assert p['input_buffer'] >= 0
 
         # Map the Python metric name to the C++ distance function
         distance_function = lookupDistance(p['metric'], p['float_type'], **(p['metric_params'] or {}))
@@ -195,7 +195,6 @@ class SDOcluststream(Clustering):
                 np.float32: dSalmon_cpp.SDOcluststream32,
                 np.float64: dSalmon_cpp.SDOcluststream64
             }[p['float_type']]
-
         self.model = cpp_obj(
             p['k'], 
             p['T'], 
@@ -212,10 +211,10 @@ class SDOcluststream(Clustering):
             p['rel_outlier_score'],
             p['perturb'], 
             p['random_sampling'],
+            p['input_buffer'],
             distance_function, 
             p['seed']
         )
-
         self.last_time = 0
         self.dimension = -1
 
@@ -238,26 +237,20 @@ class SDOcluststream(Clustering):
         y: ndarray, shape (n_samples,)
             Labels for provided input data.
         """
-        if self.buffer is None:
-            self.buffer = Buffer(self.params['input_buffer'], nfeatures = X.shape[1], dtype=self.params['float_type'])
-
-        labels = np.empty(0, dtype=np.int32)
-        scores = np.empty(0, dtype=self.params['float_type'])
-
+        X = self._process_data(X)
         times = self._process_times(X, times)        
-        X, times = self.buffer.add_batch(X, times, last=last)
-        while X.shape[0]>0:
-            X = self._process_data(X)
-            times = self._process_times(X, times) 
-            labels0 = np.empty(X.shape[0], dtype=np.int32)   
-            scores0 = np.empty(X.shape[0], dtype=self.params['float_type'])  
-            self.model.fit_predict(X, labels0, scores0, times)
-
-            labels = np.concatenate((labels, labels0))
-            scores = np.concatenate((scores, scores0))
-
-            X, times = self.buffer.flush(last=last)
-
+        labels = np.empty(X.shape[0], dtype=np.int32)   
+        scores = np.empty(X.shape[0], dtype=self.params['float_type'])
+        # if self.params['return_sampling']:
+        #     sampling = np.empty(X.shape[0], dtype=np.int32)
+        #     self.model.fit_predict_with_sampling(X, labels, times, sampling)
+        #     return labels, sampling
+        # else:
+        #     self.model.fit_predict(X, labels, times)
+        #     # self.model.fit_predict_batch(X, labels, times)
+        #     return labels
+        
+        self.model.fit_predict(X, labels, scores, times)
         return labels, scores
 
     def observer_count(self):

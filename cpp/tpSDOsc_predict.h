@@ -7,7 +7,6 @@ void tpSDOsc<FloatType>::predict_impl(
         std::vector<FloatType>& score,
         const std::vector<Vector<FloatType>>& data,
         const std::vector<FloatType>& epsilon,
-        const std::unordered_set<int>& sampled,
         int first_index) {
     std::size_t active_threshold(0), active_threshold2(0);
     std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
@@ -23,7 +22,8 @@ void tpSDOsc<FloatType>::predict_impl(
         false); // true for print
     for (std::size_t i = 0; i < data.size(); ++i) {
         int current_index = first_index + i;
-        bool is_observer = sampled.count(current_index) > 0;
+        auto it = indexToIterator.find(current_index);
+        bool is_observer = (it != indexToIterator.end()) ? true : false;
         if (is_observer) {
             if (indexToIterator[current_index]->active) {
                 predict_point(

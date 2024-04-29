@@ -53,6 +53,10 @@ class tpSDOsc {
     FloatType perturb;
 
     bool random_sampling;
+    // input buffer
+    std::size_t input_buffer;
+    class DataBuffer;
+    DataBuffer buffer;
     
     // std::vector<FloatType> obs_scaler;
     class BinomialCalculator;
@@ -66,6 +70,8 @@ class tpSDOsc {
     FloatType last_time;
     // time when we last sampled
     FloatType last_added_time;
+    // counter of predicted samples
+    int last_predicted_index;
 
     DistanceFunction distance_function;
     std::mt19937 rng;
@@ -113,7 +119,7 @@ class tpSDOsc {
 
      // util
     bool hasEdge(FloatType distance, const MapIterator& it);
-    FloatType calcBatchAge(const std::vector<FloatType>& time_data, FloatType score = 1);
+    FloatType calcBatchAge(const std::vector<FloatType>& time, FloatType score = 1);
 //     void setObsScaler();
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score); 
     void initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector);
@@ -130,8 +136,7 @@ class tpSDOsc {
     void fit_impl(
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
-            const std::vector<FloatType>& time_data,
-            const std::unordered_set<int>& sampled,
+            const std::vector<FloatType>& time,
             int first_index);
     void fit_point(
             std::unordered_map<int, std::pair<std::vector<std::complex<FloatType>>, FloatType>>& temporary_scores,
@@ -155,7 +160,6 @@ class tpSDOsc {
             std::vector<FloatType>& score,
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
-            const std::unordered_set<int>& sampled,
             int first_index);
     void determineLabelVector(
             std::unordered_map<int, FloatType>& label_vector,
@@ -181,7 +185,7 @@ class tpSDOsc {
             std::unordered_set<int>& sampled,
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
-            const std::vector<FloatType>& time_data,
+            const std::vector<FloatType>& time,
             int first_index);
     bool sample_point( 
             std::unordered_set<int>& sampled,
@@ -207,7 +211,7 @@ class tpSDOsc {
 
     // graph
     void update(
-            const std::vector<FloatType>& time_data,
+            const std::vector<FloatType>& time,
             const std::unordered_set<int>& sampled);
     void updateGraph(
             std::size_t current_e,
@@ -221,18 +225,23 @@ class tpSDOsc {
             FloatType score);
 
     // fitpredict
+    // fitpredict
     void fitPredict_impl(
             std::vector<int>& label,
             std::vector<FloatType>& score,
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
-            const std::vector<FloatType>& time_data); 
-
+            const std::vector<FloatType>& time); 
     void fitOnly_impl(
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
-            const std::vector<FloatType>& time_data); 
-
+            const std::vector<FloatType>& time); 
+    void predictOnly_impl(
+            std::vector<int>& label,
+            std::vector<FloatType>& score,
+            const std::vector<Vector<FloatType>>& data,
+            const std::vector<FloatType>& epsilon,
+            const std::vector<FloatType>& time); 
 public:
     tpSDOsc(
         std::size_t observer_cnt, 
@@ -250,6 +259,7 @@ public:
         bool rel_outlier_score = true,
         FloatType perturb = 0,
         bool random_sampling = true,
+        std::size_t input_buffer = 0,
         tpSDOsc<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
@@ -263,13 +273,15 @@ public:
         outlier_handling(outlier_handling),
         rel_outlier_score(rel_outlier_score),
         perturb(perturb),
-        random_sampling(random_sampling),        
-        // obs_scaler(observer_cnt+1),
+        random_sampling(random_sampling), 
+        input_buffer(input_buffer),    
+        buffer(input_buffer),   
         binomial(observer_cnt,neighbor_cnt),
         last_index(0),
         last_added_index(0),
         last_time(0),
         last_added_time(0),
+        last_predicted_index(0),
         distance_function(distance_function),
         rng(seed),
         chi_min(chi_min),
@@ -305,7 +317,7 @@ public:
 
     void fit(
             const std::vector<Vector<FloatType>>& data, 
-            const std::vector<FloatType>& time_data) {        
+            const std::vector<FloatType>& time) {        
         std::vector<FloatType> epsilon(data.size(), 0.0);
         if (perturb > 0) {
             std::uniform_real_distribution<FloatType> distribution(-perturb, perturb);
@@ -313,14 +325,14 @@ public:
                 return distribution(rng);
             });
         }
-        fitOnly_impl(data, epsilon, time_data);
+        fitOnly_impl(data, epsilon, time);
     }
 
     void fitPredict(
             std::vector<int>& label, 
             std::vector<FloatType>& score,
             const std::vector<Vector<FloatType>>& data, 
-            const std::vector<FloatType>& time_data) {
+            const std::vector<FloatType>& time) {
         std::vector<FloatType> epsilon(data.size(), 0.0);
         if (perturb > 0) {
             std::uniform_real_distribution<FloatType> distribution(-perturb, perturb);
@@ -328,7 +340,63 @@ public:
                 return distribution(rng);
             });
         }
-        fitPredict_impl(label, score, data, epsilon, time_data);
+        if (input_buffer>0 && !(observers.empty() && (data.size()<input_buffer))) {
+            std::size_t i(0);
+            if ((buffer.size > 0) && ((buffer.size + data.size()) > input_buffer)) {
+                std::vector<Vector<FloatType>> chunk_data(input_buffer);
+                std::vector<FloatType> chunk_time(input_buffer);
+                std::vector<FloatType> chunk_epsilon(input_buffer);
+                i = input_buffer - buffer.size;
+                buffer.flush(chunk_data, chunk_epsilon, chunk_time);
+
+                std::copy(data.begin(), data.begin() + i, chunk_data.begin() + input_buffer - i);
+                std::copy(epsilon.begin(), epsilon.begin() + i, chunk_epsilon.begin() + input_buffer - i);                
+                std::copy(time.begin(), time.begin() + i, chunk_time.begin() + input_buffer - i);
+
+                fitOnly_impl(chunk_data, chunk_epsilon, chunk_time);
+
+                chunk_data.erase(chunk_data.begin(), chunk_data.begin() + input_buffer - i);
+                chunk_epsilon.erase(chunk_epsilon.begin(), chunk_epsilon.begin() + input_buffer - i);
+                chunk_time.erase(chunk_time.begin(), chunk_time.begin() + input_buffer - i);
+
+                std::vector<int> chunk_label(i, 0);
+                std::vector<FloatType> chunk_score(i, 0.0f);
+                predictOnly_impl(chunk_label, chunk_score, chunk_data, chunk_epsilon, chunk_time);
+                std::move(chunk_label.begin(), chunk_label.begin() + i, label.begin());
+                std::move(chunk_score.begin(), chunk_score.begin() + i, score.begin());
+            }
+            
+            while ((i + input_buffer) <= data.size()) {                  
+                std::vector<Vector<FloatType>> chunk_data(input_buffer);
+                std::vector<FloatType> chunk_time(input_buffer);
+                std::vector<FloatType> chunk_epsilon(input_buffer);
+                std::copy(data.begin() + i, data.begin() + i + input_buffer, chunk_data.begin());
+                std::copy(epsilon.begin() + i, epsilon.begin() + i + input_buffer, chunk_epsilon.begin());                
+                std::copy(time.begin() + i, time.begin() + i + input_buffer, chunk_time.begin());
+                std::vector<int> chunk_label(input_buffer, 0);
+                std::vector<FloatType> chunk_score(input_buffer, 0.0f);
+                fitPredict_impl(chunk_label, chunk_score, chunk_data, chunk_epsilon, chunk_time);
+                std::move(chunk_label.begin(), chunk_label.end(), label.begin() + i);
+                std::move(chunk_score.begin(), chunk_score.end(), score.begin() + i);                
+                i += input_buffer;
+            }
+
+            if (i < data.size()) {
+                int j = data.size() - i;
+                std::vector<Vector<FloatType>> chunk_data(j);
+                std::vector<FloatType> chunk_time(j);
+                std::vector<FloatType> chunk_epsilon(j);
+                std::copy(data.begin() + i, data.end(), chunk_data.begin());
+                std::copy(epsilon.begin() + i, epsilon.end(), chunk_epsilon.begin());                
+                std::copy(time.begin() + i, time.end(), chunk_time.begin());
+                std::vector<int> chunk_label(j, 0);
+                std::vector<FloatType> chunk_score(j, 0.0f);
+                predictOnly_impl(chunk_label, chunk_score, chunk_data, chunk_epsilon, chunk_time);                
+                buffer.add(chunk_data, chunk_epsilon, chunk_time);
+                std::move(chunk_label.begin(), chunk_label.end(), label.begin() + i);
+                std::move(chunk_score.begin(), chunk_score.end(), score.begin() + i);
+            }
+        } else { fitPredict_impl(label, score, data, epsilon, time); }
     }
     
     int observerCount() { return observers.size(); }
@@ -370,5 +438,6 @@ public:
 }; 
 
 #include "tpSDOsc_fitpred.h"
+#include "tpSDOsc_buffer.h"
 
 #endif  // TPSDOSC_H
