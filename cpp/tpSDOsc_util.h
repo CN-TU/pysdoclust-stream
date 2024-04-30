@@ -127,12 +127,14 @@ void tpSDOsc<FloatType>::setModelParameters(
     current_observer_cnt2 = observers.size()-1;
 
     active_threshold = (current_observer_cnt - 1) * active_observers; // active_threshold+1 active observers
-    active_threshold2 = (current_observer_cnt2 - 1) * active_observers; // active_threshold+1 active observers
+    active_threshold2 = (observers.size() == 1) ? 0 : (current_observer_cnt2 - 1) * active_observers; // active_threshold+1 active observers
 
     current_neighbor_cnt = (observers.size() == observer_cnt) ?
                         neighbor_cnt :
                         static_cast<std::size_t>((current_observer_cnt - 1) / static_cast<FloatType>(observer_cnt - 1) * neighbor_cnt + 1);
-    current_neighbor_cnt2 = static_cast<std::size_t>((current_observer_cnt2 - 1) / static_cast<FloatType>(observer_cnt - 1) * neighbor_cnt + 1);
+    current_neighbor_cnt2 = (observers.size() == 1) ?
+                        0 :
+                        static_cast<std::size_t>((current_observer_cnt2 - 1) / static_cast<FloatType>(observer_cnt - 1) * neighbor_cnt + 1);
     
     current_e = (observers.size() == observer_cnt) ?
             e :

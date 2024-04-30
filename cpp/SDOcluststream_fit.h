@@ -92,7 +92,6 @@ void SDOcluststream<FloatType>::fit_point(
 template<typename FloatType>
 void SDOcluststream<FloatType>::update_model(
         const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores) {
-    // for (auto& [key, value_pair] : temporary_scores) {
     for (auto it0 = temporary_scores.begin(); it0 != temporary_scores.end(); ++it0) {
         int key = it0->first;
         auto value_pair = it0->second;

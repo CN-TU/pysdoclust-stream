@@ -104,30 +104,35 @@ void tpSDOsc<FloatType>::predict_point(
         int& label,
         FloatType& score,
         std::size_t current_neighbor_cnt,
-        int observer_index) {
-    std::unordered_map<int, FloatType> label_vector;
-    std::vector<FloatType> score_vector;
-    score_vector.reserve(current_neighbor_cnt);
-    const MapIterator& it0 = indexToIterator[observer_index];
-    TreeNeighbors& nearestNeighbors = it0->nearestNeighbors;
-    std::size_t i = 1;
-    for (const auto& neighbor : nearestNeighbors) {        
-        if (observer_index!= neighbor.first->second) {            
-            determineLabelVector(label_vector, score_vector, neighbor);          
-            ++i;
-            if (i > current_neighbor_cnt) { break; }
+        int observer_index) {    
+    if (current_neighbor_cnt>0) {
+        std::unordered_map<int, FloatType> label_vector;
+        std::vector<FloatType> score_vector;
+        score_vector.reserve(current_neighbor_cnt);
+        const MapIterator& it0 = indexToIterator[observer_index];
+        TreeNeighbors& nearestNeighbors = it0->nearestNeighbors;
+        std::size_t i = 1;
+        for (const auto& neighbor : nearestNeighbors) {        
+            if (observer_index!= neighbor.first->second) {            
+                determineLabelVector(label_vector, score_vector, neighbor);          
+                ++i;
+                if (i > current_neighbor_cnt) { break; }
+            }
+        }  
+        // set score
+        std::sort(score_vector.begin(), score_vector.end());
+        if (current_neighbor_cnt % 2 == 0) { // If the size is even
+            score = (score_vector[current_neighbor_cnt / 2 - 1] + score_vector[current_neighbor_cnt / 2]) / 2.0;
+        } else { // If the size is odd
+            score = score_vector[current_neighbor_cnt / 2];
         }
-    }  
-    // set score
-    std::sort(score_vector.begin(), score_vector.end());
-    if (current_neighbor_cnt % 2 == 0) { // If the size is even
-        score = (score_vector[current_neighbor_cnt / 2 - 1] + score_vector[current_neighbor_cnt / 2]) / 2.0;
-    } else { // If the size is odd
-        score = score_vector[current_neighbor_cnt / 2];
+        // set label
+        label = 0;
+        setLabel(label, label_vector, current_neighbor_cnt);
+    } else {
+        score = 0.0f;
+        label = 0;
     }
-    // set label
-    label = 0;
-    setLabel(label, label_vector, current_neighbor_cnt);
 }
 
 template<typename FloatType>
