@@ -12,31 +12,6 @@ void SDOcluststream<FloatType>::printClusters() {
     }
 };
 
-// template<typename FloatType>
-// void SDOcluststream<FloatType>::printDistanceMatrix() {
-//     std::cout << std::endl << "Distance Matrix" << std::endl;
-//     for (const auto& entry : distance_matrix) {
-//         std::cout << "[" << entry.first << "]: ";
-//         const DistanceMapType& distance_map = entry.second;
-
-//         for (const auto& item : distance_map.template get<1>()) {
-//             std::cout << "(" << item.index << ", " << item.distance << ") ";
-//         }
-//         std::cout << std::endl;
-//     }
-//     std::cout << std::endl;
-//     for (const auto& entry : distance_matrix) {
-//         std::cout << "[" << entry.first << "]: ";
-//         const DistanceMapType& distance_map = entry.second;
-
-//         for (const auto& item : distance_map.template get<0>()) {
-//             std::cout << "" << item.index << " ";
-//         }
-//         std::cout << std::endl;
-//     }
-//     std::cout << std::endl;
-// };
-
 template<typename FloatType>
 void SDOcluststream<FloatType>::printObservers(
     FloatType now) {

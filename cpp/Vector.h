@@ -64,10 +64,6 @@ class Vector : public std::vector<Value>
 
     static Value chebyshevE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b) {
         Value distance = chebyshev(a.first, b.first);
-        // if (distance == 0) {
-        //     // If distance is zero, calculate distance between epsilons
-        //     distance = std::abs(a.second - b.second);
-        // }
         return distance + std::abs(a.second - b.second);
     }
     
@@ -87,10 +83,6 @@ class Vector : public std::vector<Value>
 
     static Value euclideanE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b) {
         Value distance = euclidean(a.first, b.first);
-        // if (distance == 0) {
-        //     // If distance is zero, calculate distance between epsilons
-        //     distance = std::abs(a.second - b.second);
-        // }
         return distance + std::abs(a.second - b.second);
     }
 
@@ -106,10 +98,6 @@ class Vector : public std::vector<Value>
 
     static Value manhattanE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b) {
         Value distance = manhattan(a.first, b.first);
-        // if (distance == 0) {
-        //     // If distance is zero, calculate distance between epsilons
-        //     distance = std::abs(a.second - b.second);
-        // }
         return distance + std::abs(a.second - b.second);
     }
 
@@ -125,10 +113,6 @@ class Vector : public std::vector<Value>
 
     static Value lpE(const std::pair<Vector, Value>& a, const std::pair<Vector, Value>& b, const Value p) {
         Value distance = lp(a.first, b.first, p);
-        // if (distance == 0) {
-        //     // If distance is zero, calculate distance between epsilons
-        //     distance = std::abs(a.second - b.second);
-        // }
         return distance + std::abs(a.second - b.second);
     }
 

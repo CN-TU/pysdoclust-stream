@@ -25,7 +25,6 @@ void tpSDOsc<FloatType>::update(
     std::vector<std::complex<FloatType>> now_vector;
     initNowVector(now, now_vector);
     // update active tree
-    // int i(0); int j(0);
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {   
         FloatType fading_factor = std::pow<FloatType>(fading, now-it->time_touched);  
         FloatType proj_observations = it->getProjObservations(now_vector, fading_factor);      
@@ -33,11 +32,8 @@ void tpSDOsc<FloatType>::update(
             it->deactivate(&treeA); 
         } else {
             it->activate(&treeA);
-            // i++;
         }
-        // j++;
     }
-    // std::cout << "active " << i << "/" << j << std::endl;
     for (MapIterator it = observers.begin(); it != observers.end(); ++it) {  
         if (it->active) { it->setH(&treeA, chi, (chi < current_neighbor_cnt2) ? current_neighbor_cnt2 : chi ); } 
     }
@@ -158,10 +154,6 @@ void tpSDOsc<FloatType>::DetermineColor(
     std::unordered_set<int> takenColors;
     auto it = clusters.begin();
     while (it != clusters.end()) {
-        // auto& color_distribution = it->color_distribution;        
-        // for (const auto& pair: color_distribution) {
-        //     modelColorDistribution[pair.first] += pair.second;
-        // }
         int color;
         if (it->color_score > 0) {
             color = it->color;        
@@ -207,7 +199,6 @@ void tpSDOsc<FloatType>::updateGraph(
                 }
             }
         }
-        // modelColorDistribution.clear();
         DetermineColor(clusters, age_factor, score);
 }
 

@@ -61,7 +61,6 @@ void SDOcluststream<FloatType>::fit_point(
                 auto& value_pair = temporary_scores[idx];
                 value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
                 value_pair.second = now;
-                // value_pair.first += obs_scaler[current_observer_cnt];
                 value_pair.first += score;
             } else { temporary_scores[idx] = std::make_pair(score, now); }
         }            
@@ -83,7 +82,6 @@ void SDOcluststream<FloatType>::fit_point(
             auto& value_pair = temporary_scores[idx];
             value_pair.first *= std::pow<FloatType>(fading, now-value_pair.second);
             value_pair.second = now;
-            // value_pair.first += obs_scaler[current_observer_cnt];
             value_pair.first += score;
         } else { temporary_scores[idx] = std::make_pair(score, now); }
     }  

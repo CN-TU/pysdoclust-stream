@@ -11,7 +11,7 @@ void tpSDOsc<FloatType>::sample(
     std::size_t active_threshold(0), active_threshold2(0);
     std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
     std::size_t current_observer_cnt(0), current_observer_cnt2(0);
-    std::size_t current_e(0); // unused 
+    std::size_t current_e(0);
     std::size_t chi(0); 
     if (!observers.empty()) {
         setModelParameters(
@@ -74,7 +74,7 @@ void tpSDOsc<FloatType>::sample(
         sampled.insert(shuffled_elements.begin(), shuffled_elements.begin() + observer_cnt);
     }
 
-    // Queue worst observers
+    // Queue worst observers, not perfectly efficient as all observers are queued, only n sampled d be necessary
     IteratorAvCompare iterator_av_compare(fading);
     std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare> worst_observers(iterator_av_compare);
     for (auto it = observers.begin(); it != observers.end(); ++it) {

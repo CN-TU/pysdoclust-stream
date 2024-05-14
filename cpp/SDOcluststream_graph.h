@@ -148,10 +148,6 @@ void SDOcluststream<FloatType>::DetermineColor(
     std::unordered_set<int> takenColors;
     auto it = clusters.begin();
     while (it != clusters.end()) {
-        // auto& color_distribution = it->color_distribution;        
-        // for (const auto& pair: color_distribution) {
-        //     modelColorDistribution[pair.first] += pair.second;
-        // }
         int color;
         if (it->color_score > 0) {
             color = it->color;        
@@ -198,7 +194,6 @@ void SDOcluststream<FloatType>::updateGraph(
                 clusters.insert(clusterM); 
             }
         }
-        // modelColorDistribution.clear();
         DetermineColor(clusters, age_factor, score);
 }
 

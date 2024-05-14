@@ -30,32 +30,28 @@ struct tpSDOsc<FloatType>::ClusterModel {
                 for (const auto& entry : observer.color_distribution) {
                     color_distribution[entry.first] += entry.second;
                 }
-            } else {
-                std::cerr << "Error (calcColorDistribution): id " << id << " not found in indexToIterator" << std::endl;
-            }                
+            }              
         }
     }
 
-    void printDistribution() const {
-        std::cout << "Cluster Distribution: " << std::endl;
-        for (const auto& entry : color_distribution) {
-            std::cout << "(" << entry.first << ", " << entry.second << ") ";
-        }
-        std::cout << std::endl;
-    }
-
-    void printColor() const {
-        // Print color and color_score
-        std::cout << std::endl << "Color: " << color << ", Score: " << color_score << std::endl;
-    }
-
-    void printObserverIndices() const {
-        std::cout << "Cluster Indices: " << std::endl;
-        for (const int& id : cluster_observers) {
-            std::cout << id << " ";
-        }
-        std::cout << std::endl;
-    }
+    // void printDistribution() const {
+    //     std::cout << "Cluster Distribution: " << std::endl;
+    //     for (const auto& entry : color_distribution) {
+    //         std::cout << "(" << entry.first << ", " << entry.second << ") ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    // void printColor() const {
+    //     // Print color and color_score
+    //     std::cout << std::endl << "Color: " << color << ", Score: " << color_score << std::endl;
+    // }
+    // void printObserverIndices() const {
+    //     std::cout << "Cluster Indices: " << std::endl;
+    //     for (const int& id : cluster_observers) {
+    //         std::cout << id << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     void setColor() {
         if (!color_distribution.empty()) {
@@ -67,7 +63,6 @@ struct tpSDOsc<FloatType>::ClusterModel {
                     }
                     return a.second < b.second;
                 });
-
             // Set the color to the key with the maximum value
             color = maxIt->first;
             color_score = color_distribution[color];
@@ -76,10 +71,8 @@ struct tpSDOsc<FloatType>::ClusterModel {
 
     void setColor(
             const std::unordered_set<int>& takenColors) {
-
         color = 0;
         color_score = FloatType(0);
-
         if (!color_distribution.empty()) {
             // Find the keys in color_distribution that are not in takenColors
             std::unordered_map<int, FloatType> difference;
@@ -90,7 +83,6 @@ struct tpSDOsc<FloatType>::ClusterModel {
                     return takenColors.find(entry.first) == takenColors.end();
                 }
             );
-
             // Check if the difference is non-empty
             if (!difference.empty()) {
                 // Find the iterator with the maximum value in colorDistribution,
@@ -99,7 +91,6 @@ struct tpSDOsc<FloatType>::ClusterModel {
                     [](const auto& a, const auto& b) {
                         return (a.second == b.second) ? (a.first > b.first) : (a.second < b.second);
                     });
-
                 // Set the color to the key with the maximum value
                 color = maxIt->first;
                 color_score = color_distribution[color];
@@ -109,7 +100,6 @@ struct tpSDOsc<FloatType>::ClusterModel {
 
     void setColor(
             int c) {
-
         color = c;
         color_score = FloatType(0);
     }

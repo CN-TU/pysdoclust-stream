@@ -36,26 +36,24 @@ struct SDOcluststream<FloatType>::ClusterModel {
         }
     }
 
-    void printDistribution() const {
-        std::cout << "Cluster Distribution: " << std::endl;
-        for (const auto& entry : color_distribution) {
-            std::cout << "(" << entry.first << ", " << entry.second << ") ";
-        }
-        std::cout << std::endl;
-    }
-
-    void printColor() const {
-        // Print color and color_score
-        std::cout << std::endl << "Color: " << color << ", Score: " << color_score << std::endl;
-    }
-
-    void printObserverIndices() const {
-        std::cout << "Cluster Indices: " << std::endl;
-        for (const int& id : cluster_observers) {
-            std::cout << id << " ";
-        }
-        std::cout << std::endl;
-    }
+    // void printDistribution() const {
+    //     std::cout << "Cluster Distribution: " << std::endl;
+    //     for (const auto& entry : color_distribution) {
+    //         std::cout << "(" << entry.first << ", " << entry.second << ") ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    // void printColor() const {
+    //     // Print color and color_score
+    //     std::cout << std::endl << "Color: " << color << ", Score: " << color_score << std::endl;
+    // }
+    // void printObserverIndices() const {
+    //     std::cout << "Cluster Indices: " << std::endl;
+    //     for (const int& id : cluster_observers) {
+    //         std::cout << id << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     void setColor() {
         if (!color_distribution.empty()) {

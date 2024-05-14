@@ -124,10 +124,10 @@ struct SDOcluststream<FloatType>::Observer {
             int colorObs,
             FloatType age_factor,
             FloatType score);
-    //PRINT
-    void printColorObservations(FloatType now, FloatType fading_cluster) const;
-    void printData() const;
-    void printColorDistribution() const;
+    // print
+    // void printColorObservations(FloatType now, FloatType fading_cluster) const;
+    // void printData() const;
+    // void printColorDistribution() const;
 };
 
 template<typename FloatType>
@@ -160,5 +160,7 @@ struct SDOcluststream<FloatType>::IteratorAvCompare{
         return observations_a * b.age > observations_b * a.age;
     }
 };
+
+#include "SDOcluststream_graph.h"
 
 #endif  // SDOCLUSTSTREAM_OBSERVER_H

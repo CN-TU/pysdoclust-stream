@@ -1,4 +1,4 @@
-name: netsec  # Replace 'myenv' with your preferred environment name.
+name: netsec
 channels:
   - defaults
 dependencies:

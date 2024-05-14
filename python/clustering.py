@@ -124,7 +124,7 @@ class SDOcluststream(Clustering):
     e: int, optional (default=7)
         Minimum size of a cluster (number of Observers spanning / representing it)
 
-    freq_bins: int, optional (default 1)
+    freq_bins: int, optional (default=1)
         Number of bins when using temporal SDO model. If 1 "normal" SDO model is used.
 
     max_freq: float, optional (default=1.0)
@@ -134,20 +134,23 @@ class SDOcluststream(Clustering):
         Outlier handling activation flag.
 
     rel_outlier_score (default=True)
-        Give outlier score as median distance to closest Observers. Either absolute distance or relative to h_bar
+        Give outlier score either as absolute distance or relative distance with regard to h_bar. 
+        Median value of x closest active observers.
 
     outlier_threshold: float, optional (default=10.0)
         Threshold for outlier handling. 
-        If point has distance = outlier_threshold * h_bar to a (closest) Observer probability of being an outlier wrt to this Observer is 0.5 
+        If point has distance = outlier_threshold * h_bar to a (closest) observer probability of being an outlier wrt to this Observer is 0.5 
         If distance is <= h_bar then probability is 0. Calibrated on an activation function (tangens hyperbolicus).
 
     perturb: float, optional (default=0.0)
-        Perturbation parameter to differentiate between equal points.
+        Perturbation parameter to differentiate between equal points. 
+        Recommended to use a value smaller than an expected small distance between two close points.
 
     random_sampling: float, optional (default=True)
-        Flag do decide if Random Sampling is used.
+        Flag to decide if Random Sampling is used.
+        Recommneded to set to True.
 
-    input_buffer: int, optional (default=200)
+    input_buffer: int, optional (default=0)
         Batch size that is actually processed. If smaller batch is given algorithm waits to process.
         If larger batch is given, batch is split into pieces of size input_buffer.
 
@@ -320,41 +323,50 @@ class tpSDOsc(Clustering):
     float_type: np.float32 or np.float64
         The floating point type to use for internal processing.
 
-    seed: int (default=0)
-        Random seed to use.
-
     zeta: float, optional (default=0.6)
-        A new parameter.
+        Determines ratio between local h and global h that determines h for each Observer.
 
     chi_min: int, optional (default=8)
-        A new parameter.
+        Minimum amount of Observers that determine h (closeness parameter) for each Observer.
 
     chi_prop: float, optional (default=0.05)
-        A new parameter.
+        Parameter to determine closeness parameter of an Observer. The chi_prop * Modelsize Observers of an Observers are "close".
 
-    e: int, optional (default=3)
-        A new parameter.
+    e: int, optional (default=7)
+        Minimum size of a cluster (number of Observers spanning / representing it)
 
-    freq_bins: int, optional (default 1)
-        A new parameter.
+    freq_bins: int, optional (default=1)
+        Number of bins when using temporal SDO model. If 1 "normal" SDO model is used.
 
     max_freq: float, optional (default=1.0)
-        A new parameter.
-    
-    outlier_handling (default=False)
-        A new paramter.
+        Temportal frequency when using temporal SDO model
 
-    outlier_threshold: float, optional (default=5.0)
-        A new parameter.
+    outlier_handling (default=False)
+        Outlier handling activation flag.
 
     rel_outlier_score (default=True)
-        Give outlier score as median distance to closest Observers. Either absolute distance or relative to h_bar
+        Give outlier score either as absolute distance or relative distance with regard to h_bar. 
+        Median value of x closest active observers.
+
+    outlier_threshold: float, optional (default=10.0)
+        Threshold for outlier handling. 
+        If point has distance = outlier_threshold * h_bar to a (closest) observer probability of being an outlier wrt to this Observer is 0.5 
+        If distance is <= h_bar then probability is 0. Calibrated on an activation function (tangens hyperbolicus).
 
     perturb: float, optional (default=0.0)
-        A new parameter.
+        Perturbation parameter to differentiate between equal points. 
+        Recommended to use a value smaller than an expected small distance between two close points.
 
     random_sampling: float, optional (default=True)
-        A new parameter.
+        Flag to decide if Random Sampling is used.
+        Recommneded to set to True.
+
+    input_buffer: int, optional (default=0)
+        Batch size that is actually processed. If smaller batch is given algorithm waits to process.
+        If larger batch is given, batch is split into pieces of size input_buffer.
+
+    seed: int (default=0)
+        Random seed to use.
     """
     
     def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,

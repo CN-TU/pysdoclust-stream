@@ -1,28 +1,11 @@
 #ifndef TPSDOSC_FITPRED_H
 #define TPSDOSC_FITPRED_H
 
-#include "tpSDOsc_print.h"
-#include "tpSDOsc_graph.h"
+// #include "tpSDOsc_print.h"
 #include "tpSDOsc_util.h"
 #include "tpSDOsc_sample.h"
 #include "tpSDOsc_fit.h"
 #include "tpSDOsc_predict.h"
-
-// template<typename FloatType>
-// class tpSDOsc<FloatType>::TreeNodeUpdater {
-//     Vector<FloatType> new_data;
-//     int new_key;
-//     public:
-//     TreeNodeUpdater(Vector<FloatType> new_data, int new_key) : new_data(new_data), new_key(new_key) {}
-//     void operator() (Vector<FloatType>& vector, int& key) {
-//         int i = 0;
-//         for (FloatType& element : vector) {
-//             element = new_data[i];
-//             i++;
-//         }
-//         key = new_key;
-//     }
-// };
 
 template<typename FloatType>
 void tpSDOsc<FloatType>::fitPredict_impl(

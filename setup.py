@@ -33,18 +33,15 @@ dSalmon_cpp = Extension(
     CPP_SOURCES,
     include_dirs=['cpp', numpy_include, 'contrib/boost/include'],
     extra_compile_args=['-g0']
-    # extra_link_args=['-lboost_multi_index', '-lboost_system', '-lboost_filesystem'],
-    # library_dirs=['contrib/boost/lib'],  # Add the path to your Boost library folder
-    # libraries=['boost_system', 'boost_filesystem']  # Specify the libraries without the 'lib' prefix and extension
 )
 
 setup(
     name='dSalmon',
     # version='0.1',
     # license='LGPL-3.0',
-    # description='dSalmon is a framework for analyzing data streams',
-    # author='Alexander Hartl',
-    # author_email='alexander.hartl@tuwien.ac.at',
+    # description='SDOcluststream is an algorithm for clustering data streams',
+    # author='Simon Konzett',
+    # author_email='konzett.simon@gmail.com',
     # url='https://github.com/CN-TU/dSalmon',
     # project_urls={
     #     'Source': 'https://github.com/CN-TU/dSalmon',

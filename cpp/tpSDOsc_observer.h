@@ -3,6 +3,8 @@
 
 #include<limits>
 
+
+
 template<typename FloatType>
 struct tpSDOsc<FloatType>::Observer {
     Point data;
@@ -50,9 +52,6 @@ struct tpSDOsc<FloatType>::Observer {
             const std::vector<std::complex<FloatType>>& now_vector, 
             FloatType fading_factor) const {
         FloatType proj_observations(0);
-        // for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
-        //     proj_observations += real(observations[freq_ind] * conj(now_vector[freq_ind])) * fading_factor;
-        // }
         int freq_ind = 0;
         for (const auto& now : now_vector) {
             proj_observations += real(observations[freq_ind] * conj(now)) * fading_factor;
@@ -74,14 +73,10 @@ struct tpSDOsc<FloatType>::Observer {
     void updateObservations(
             FloatType fading_factor,
             const std::vector<std::complex<FloatType>>& score_vector) {
-        // for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
-        //     observations[freq_ind] *= fading_factor;
-        //     observations[freq_ind] += score_vector[freq_ind];
-        // }
         int freq_ind = 0;
         for (const auto& score : score_vector) {
             observations[freq_ind] *= fading_factor;
-            observations[freq_ind] += score_vector[freq_ind];
+            observations[freq_ind] += score;
             freq_ind++;
         }
     }
@@ -147,10 +142,10 @@ struct tpSDOsc<FloatType>::Observer {
             int colorObs,
             FloatType age_factor,
             FloatType score);
-    //PRINT
-    void printColorObservations(FloatType now, FloatType fading_cluster) const;
-    void printData() const;
-    void printColorDistribution() const;
+    // print
+    // void printColorObservations(FloatType now, FloatType fading_cluster) const;
+    // void printData() const;
+    // void printColorDistribution() const;
 };
 
 template<typename FloatType>
@@ -183,5 +178,7 @@ struct tpSDOsc<FloatType>::IteratorAvCompare{
         return observations_a * b.age > observations_b * a.age;
     }
 };
+
+#include "tpSDOsc_graph.h"
 
 #endif  // TPSDOSC_OBSERVER_H

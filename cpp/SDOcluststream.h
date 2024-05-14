@@ -19,8 +19,6 @@ class SDOcluststream {
   private:
     typedef std::pair<Vector<FloatType>, FloatType> Point; // data, epsilon
   public:
-    // typedef std::function<FloatType(const Vector<FloatType>&, const Vector<FloatType>&)> DistanceFunction;
-    // Define a new DistanceFunction type with epsilon handling
     typedef std::function<FloatType(const Point&, const Point&)> DistanceFunction;
   private:
   
@@ -34,22 +32,26 @@ class SDOcluststream {
     FloatType fading;
     // number of nearest observers to consider
     std::size_t neighbor_cnt;
-    // number of nearest observer relative to active_observers
-    FloatType k_tanh;
+
     // tanh(( k_tanh * (outlier_threshold-1)) = 0.5 where outlier_threshold is a factor of h_bar(Observer)
-    bool outlier_handling;
+    FloatType k_tanh;
     // flag for outlier handling
-    bool rel_outlier_score;
+    bool outlier_handling;
     // relative or absolute distance for outlier score
+    bool rel_outlier_score;
+
+    // scaling of perturb factor for epsilon
     FloatType perturb;
-    // Random Sampling 
+
+    // flag for random Sampling 
     bool random_sampling;
     // input buffer
     std::size_t input_buffer;
     class DataBuffer;
     DataBuffer buffer;
-    
-    // std::vector<FloatType> obs_scaler;
+
+    // for calculating observations scores before model is full
+    // in util defined
     class BinomialCalculator;
     BinomialCalculator binomial;
 
@@ -67,19 +69,25 @@ class SDOcluststream {
     DistanceFunction distance_function;
     std::mt19937 rng;
 
+    // chi defines the threshold for cutting edges in the graph
     std::size_t chi_min;
     FloatType chi_prop;
+    // weight between global and local density value h per observer
     FloatType zeta;
-    FloatType h; // global h (mean of all active h)
-    std::size_t e; // unused by now
+    // global density value h
+    FloatType h;
+    // min cluster size in observer model
+    std::size_t e;
 
+    // counter of used labels 
     int last_color;
 
+    // MTrees for efficient knn
     typedef MTree< Point, int, FloatType, MTreeDescendantCounter<Point,int> > Tree;
     typedef typename Tree::iterator TreeIterator;
     typedef std::vector<std::pair<TreeIterator, FloatType>> TreeNeighbors;
 
-    // Observer Structures
+    // observer
     struct Observer;
     struct ObserverCompare;
     ObserverCompare observer_compare;    
@@ -94,19 +102,21 @@ class SDOcluststream {
     IteratorMapType indexToIterator;
     typedef std::unordered_set<int> IndexSetType;
 
-    // Cluster Declarations
+    // cluster
     struct ClusterModel;
     struct ClusterModelCompare;
     typedef boost::container::multiset<ClusterModel,ClusterModelCompare> ClusterModelMap;    
     ClusterModelMap clusters;
 
+    // Tree of all Observers
     Tree tree;
+    // Tree of active Observers
     Tree treeA; 
-
+    
     // print
-    void printClusters(); 
-    void printDistanceMatrix();
-    void printObservers(FloatType now);
+    // void printClusters(); 
+    // void printDistanceMatrix(); 
+    // void printObservers(FloatType now);
 
     // util
     bool hasEdge(FloatType distance, const MapIterator& it);
@@ -132,13 +142,13 @@ class SDOcluststream {
             FloatType now,           
             std::size_t current_observer_cnt,
             std::size_t current_neighbor_cnt,
-            int observer_index);
+            int observer_index); // point was sampled
     void fit_point(
             std::unordered_map<int, std::pair<FloatType, FloatType>>& temporary_scores,
             const Point& point,
             FloatType now,           
             std::size_t current_observer_cnt,
-            std::size_t current_neighbor_cnt);
+            std::size_t current_neighbor_cnt); // point was not sampled
     void update_model(
             const std::unordered_map<int,std::pair<FloatType, FloatType>>& temporary_scores);
 
@@ -166,12 +176,12 @@ class SDOcluststream {
             int& label,
             FloatType& score,
             std::size_t current_neighbor_cnt,
-            int observer_index); 
+            int observer_index);  // point was sampled
     void predict_point(
             int& label,
             FloatType& score,
             const Point& point,
-            std::size_t current_neighbor_cnt);
+            std::size_t current_neighbor_cnt); // point was not sampled
     
     // sample
     void sample(
@@ -185,7 +195,7 @@ class SDOcluststream {
             FloatType now,
             std::size_t batch_size,
             FloatType batch_time,
-            int current_index);
+            int current_index); // random sampling
     void sample_point(
             std::unordered_set<int>& sampled,
             const Point& point,
@@ -193,7 +203,7 @@ class SDOcluststream {
             FloatType observations_sum,
             std::size_t current_observer_cnt,
             std::size_t current_neighbor_cnt,
-            int current_index);
+            int current_index); // importance sampling
     void replaceObservers(
             Point data,
             std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
@@ -224,12 +234,10 @@ class SDOcluststream {
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
             const std::vector<FloatType>& time); 
-
     void fitOnly_impl(
             const std::vector<Vector<FloatType>>& data,
             const std::vector<FloatType>& epsilon,
             const std::vector<FloatType>& time); 
-
     void predictOnly_impl(
             std::vector<int>& label,
             std::vector<FloatType>& score,
@@ -285,25 +293,7 @@ public:
         clusters(),
         tree(distance_function),
         treeA(distance_function)
-    {
-
-        // Print out the input parameters
-        // std::cout << "Input parameters:\n"
-        //           << "observer_cnt: " << observer_cnt << "\n"
-        //           << "T: " << T << "\n"
-        //           << "idle_observers: " << idle_observers << "\n"
-        //           << "neighbor_cnt: " << neighbor_cnt << "\n"
-        //           << "chi_min: " << chi_min << "\n"
-        //           << "chi_prop: " << chi_prop << "\n"
-        //           << "zeta: " << zeta << "\n"
-        //           << "e: " << e << "\n"
-        //           << "outlier_threshold: " << outlier_threshold << "\n"
-        //           << "outlier_handling: " << outlier_handling << "\n"
-        //           << "perturb: " << perturb << "\n"
-        //           << "random_sampling: " << random_sampling << "\n"
-        //           << "input_buffer: " << input_buffer << "\n"
-        //           << "seed: " << seed << std::endl;
-    }
+    {}
 
     void fit(
             const std::vector<Vector<FloatType>>& data, 
@@ -409,7 +399,6 @@ public:
         }
         FloatType getAvObservations(FloatType now) {
             return (1-fading) * it->getObservations() * std::pow(fading, now - it->time_touched) / it->age;
-                // (1-std::pow(fading, now - it->time_added));
         }
     };
 
@@ -429,6 +418,7 @@ public:
 }; 
 
 #include "SDOcluststream_fitpred.h"
+#include "SDOcluststream_observer.h"
 #include "SDOcluststream_buffer.h"
 
 #endif  // SDOCLUSTSTREAM_H

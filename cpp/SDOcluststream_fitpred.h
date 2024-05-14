@@ -1,8 +1,7 @@
 #ifndef SDOCLUSTSTREAM_FITPRED_H
 #define SDOCLUSTSTREAM_FITPRED_H
 
-#include "SDOcluststream_print.h"
-#include "SDOcluststream_graph.h"
+// #include "SDOcluststream_print.h"
 #include "SDOcluststream_util.h"
 #include "SDOcluststream_sample.h"
 #include "SDOcluststream_fit.h"
