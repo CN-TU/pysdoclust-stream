@@ -10,9 +10,9 @@ if _swig_python_version_info < (2, 7, 0):
 
 # Import the low-level C/C++ module
 if __package__ or "." in __name__:
-    from . import _dSalmon
+    from . import _SDOclustream
 else:
-    import _dSalmon
+    import _SDOclustream
 
 try:
     import builtins as __builtin__
@@ -68,8 +68,8 @@ class Distance32(object):
         raise AttributeError("No constructor defined - class is abstract")
     __repr__ = _swig_repr
 
-# Register Distance32 in _dSalmon:
-_dSalmon.Distance32_swigregister(Distance32)
+# Register Distance32 in _SDOclustream:
+_SDOclustream.Distance32_swigregister(Distance32)
 
 class Distance64(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
@@ -78,188 +78,188 @@ class Distance64(object):
         raise AttributeError("No constructor defined - class is abstract")
     __repr__ = _swig_repr
 
-# Register Distance64 in _dSalmon:
-_dSalmon.Distance64_swigregister(Distance64)
+# Register Distance64 in _SDOclustream:
+_SDOclustream.Distance64_swigregister(Distance64)
 
 class EuclideanDist32(Distance32):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self):
-        _dSalmon.EuclideanDist32_swiginit(self, _dSalmon.new_EuclideanDist32())
-    __swig_destroy__ = _dSalmon.delete_EuclideanDist32
+        _SDOclustream.EuclideanDist32_swiginit(self, _SDOclustream.new_EuclideanDist32())
+    __swig_destroy__ = _SDOclustream.delete_EuclideanDist32
 
-# Register EuclideanDist32 in _dSalmon:
-_dSalmon.EuclideanDist32_swigregister(EuclideanDist32)
+# Register EuclideanDist32 in _SDOclustream:
+_SDOclustream.EuclideanDist32_swigregister(EuclideanDist32)
 
 class EuclideanDist64(Distance64):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self):
-        _dSalmon.EuclideanDist64_swiginit(self, _dSalmon.new_EuclideanDist64())
-    __swig_destroy__ = _dSalmon.delete_EuclideanDist64
+        _SDOclustream.EuclideanDist64_swiginit(self, _SDOclustream.new_EuclideanDist64())
+    __swig_destroy__ = _SDOclustream.delete_EuclideanDist64
 
-# Register EuclideanDist64 in _dSalmon:
-_dSalmon.EuclideanDist64_swigregister(EuclideanDist64)
+# Register EuclideanDist64 in _SDOclustream:
+_SDOclustream.EuclideanDist64_swigregister(EuclideanDist64)
 
 class ManhattanDist32(Distance32):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self):
-        _dSalmon.ManhattanDist32_swiginit(self, _dSalmon.new_ManhattanDist32())
-    __swig_destroy__ = _dSalmon.delete_ManhattanDist32
+        _SDOclustream.ManhattanDist32_swiginit(self, _SDOclustream.new_ManhattanDist32())
+    __swig_destroy__ = _SDOclustream.delete_ManhattanDist32
 
-# Register ManhattanDist32 in _dSalmon:
-_dSalmon.ManhattanDist32_swigregister(ManhattanDist32)
+# Register ManhattanDist32 in _SDOclustream:
+_SDOclustream.ManhattanDist32_swigregister(ManhattanDist32)
 
 class ManhattanDist64(Distance64):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self):
-        _dSalmon.ManhattanDist64_swiginit(self, _dSalmon.new_ManhattanDist64())
-    __swig_destroy__ = _dSalmon.delete_ManhattanDist64
+        _SDOclustream.ManhattanDist64_swiginit(self, _SDOclustream.new_ManhattanDist64())
+    __swig_destroy__ = _SDOclustream.delete_ManhattanDist64
 
-# Register ManhattanDist64 in _dSalmon:
-_dSalmon.ManhattanDist64_swigregister(ManhattanDist64)
+# Register ManhattanDist64 in _SDOclustream:
+_SDOclustream.ManhattanDist64_swigregister(ManhattanDist64)
 
 class ChebyshevDist32(Distance32):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self):
-        _dSalmon.ChebyshevDist32_swiginit(self, _dSalmon.new_ChebyshevDist32())
-    __swig_destroy__ = _dSalmon.delete_ChebyshevDist32
+        _SDOclustream.ChebyshevDist32_swiginit(self, _SDOclustream.new_ChebyshevDist32())
+    __swig_destroy__ = _SDOclustream.delete_ChebyshevDist32
 
-# Register ChebyshevDist32 in _dSalmon:
-_dSalmon.ChebyshevDist32_swigregister(ChebyshevDist32)
+# Register ChebyshevDist32 in _SDOclustream:
+_SDOclustream.ChebyshevDist32_swigregister(ChebyshevDist32)
 
 class ChebyshevDist64(Distance64):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self):
-        _dSalmon.ChebyshevDist64_swiginit(self, _dSalmon.new_ChebyshevDist64())
-    __swig_destroy__ = _dSalmon.delete_ChebyshevDist64
+        _SDOclustream.ChebyshevDist64_swiginit(self, _SDOclustream.new_ChebyshevDist64())
+    __swig_destroy__ = _SDOclustream.delete_ChebyshevDist64
 
-# Register ChebyshevDist64 in _dSalmon:
-_dSalmon.ChebyshevDist64_swigregister(ChebyshevDist64)
+# Register ChebyshevDist64 in _SDOclustream:
+_SDOclustream.ChebyshevDist64_swigregister(ChebyshevDist64)
 
 class MinkowskiDist32(Distance32):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, p):
-        _dSalmon.MinkowskiDist32_swiginit(self, _dSalmon.new_MinkowskiDist32(p))
-    __swig_destroy__ = _dSalmon.delete_MinkowskiDist32
+        _SDOclustream.MinkowskiDist32_swiginit(self, _SDOclustream.new_MinkowskiDist32(p))
+    __swig_destroy__ = _SDOclustream.delete_MinkowskiDist32
 
-# Register MinkowskiDist32 in _dSalmon:
-_dSalmon.MinkowskiDist32_swigregister(MinkowskiDist32)
+# Register MinkowskiDist32 in _SDOclustream:
+_SDOclustream.MinkowskiDist32_swigregister(MinkowskiDist32)
 
 class MinkowskiDist64(Distance64):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, p):
-        _dSalmon.MinkowskiDist64_swiginit(self, _dSalmon.new_MinkowskiDist64(p))
-    __swig_destroy__ = _dSalmon.delete_MinkowskiDist64
+        _SDOclustream.MinkowskiDist64_swiginit(self, _SDOclustream.new_MinkowskiDist64(p))
+    __swig_destroy__ = _SDOclustream.delete_MinkowskiDist64
 
-# Register MinkowskiDist64 in _dSalmon:
-_dSalmon.MinkowskiDist64_swigregister(MinkowskiDist64)
+# Register MinkowskiDist64 in _SDOclustream:
+_SDOclustream.MinkowskiDist64_swigregister(MinkowskiDist64)
 
 class SDOclustream32(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed):
-        _dSalmon.SDOclustream32_swiginit(self, _dSalmon.new_SDOclustream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
+        _SDOclustream.SDOclustream32_swiginit(self, _SDOclustream.new_SDOclustream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
 
     def fit(self, data, times):
-        return _dSalmon.SDOclustream32_fit(self, data, times)
+        return _SDOclustream.SDOclustream32_fit(self, data, times)
 
     def fit_predict(self, data, labels, scores, times):
-        return _dSalmon.SDOclustream32_fit_predict(self, data, labels, scores, times)
+        return _SDOclustream.SDOclustream32_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
-        return _dSalmon.SDOclustream32_observer_count(self)
+        return _SDOclustream.SDOclustream32_observer_count(self)
 
     def get_observers(self, data, labels, observations, av_observations, time):
-        return _dSalmon.SDOclustream32_get_observers(self, data, labels, observations, av_observations, time)
-    __swig_destroy__ = _dSalmon.delete_SDOclustream32
+        return _SDOclustream.SDOclustream32_get_observers(self, data, labels, observations, av_observations, time)
+    __swig_destroy__ = _SDOclustream.delete_SDOclustream32
 
-# Register SDOclustream32 in _dSalmon:
-_dSalmon.SDOclustream32_swigregister(SDOclustream32)
+# Register SDOclustream32 in _SDOclustream:
+_SDOclustream.SDOclustream32_swigregister(SDOclustream32)
 
 class SDOclustream64(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed):
-        _dSalmon.SDOclustream64_swiginit(self, _dSalmon.new_SDOclustream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
+        _SDOclustream.SDOclustream64_swiginit(self, _SDOclustream.new_SDOclustream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
 
     def fit(self, data, times):
-        return _dSalmon.SDOclustream64_fit(self, data, times)
+        return _SDOclustream.SDOclustream64_fit(self, data, times)
 
     def fit_predict(self, data, labels, scores, times):
-        return _dSalmon.SDOclustream64_fit_predict(self, data, labels, scores, times)
+        return _SDOclustream.SDOclustream64_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
-        return _dSalmon.SDOclustream64_observer_count(self)
+        return _SDOclustream.SDOclustream64_observer_count(self)
 
     def get_observers(self, data, labels, observations, av_observations, time):
-        return _dSalmon.SDOclustream64_get_observers(self, data, labels, observations, av_observations, time)
-    __swig_destroy__ = _dSalmon.delete_SDOclustream64
+        return _SDOclustream.SDOclustream64_get_observers(self, data, labels, observations, av_observations, time)
+    __swig_destroy__ = _SDOclustream.delete_SDOclustream64
 
-# Register SDOclustream64 in _dSalmon:
-_dSalmon.SDOclustream64_swigregister(SDOclustream64)
+# Register SDOclustream64 in _SDOclustream:
+_SDOclustream.SDOclustream64_swigregister(SDOclustream64)
 
 class tpSDOclustream32(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed):
-        _dSalmon.tpSDOclustream32_swiginit(self, _dSalmon.new_tpSDOclustream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
+        _SDOclustream.tpSDOclustream32_swiginit(self, _SDOclustream.new_tpSDOclustream32(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
 
     def fit(self, data, times):
-        return _dSalmon.tpSDOclustream32_fit(self, data, times)
+        return _SDOclustream.tpSDOclustream32_fit(self, data, times)
 
     def fit_predict(self, data, labels, scores, times):
-        return _dSalmon.tpSDOclustream32_fit_predict(self, data, labels, scores, times)
+        return _SDOclustream.tpSDOclustream32_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
-        return _dSalmon.tpSDOclustream32_observer_count(self)
+        return _SDOclustream.tpSDOclustream32_observer_count(self)
 
     def get_observers(self, data, labels, observations, av_observations, time):
-        return _dSalmon.tpSDOclustream32_get_observers(self, data, labels, observations, av_observations, time)
-    __swig_destroy__ = _dSalmon.delete_tpSDOclustream32
+        return _SDOclustream.tpSDOclustream32_get_observers(self, data, labels, observations, av_observations, time)
+    __swig_destroy__ = _SDOclustream.delete_tpSDOclustream32
 
-# Register tpSDOclustream32 in _dSalmon:
-_dSalmon.tpSDOclustream32_swigregister(tpSDOclustream32)
+# Register tpSDOclustream32 in _SDOclustream:
+_SDOclustream.tpSDOclustream32_swigregister(tpSDOclustream32)
 
 class tpSDOclustream64(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed):
-        _dSalmon.tpSDOclustream64_swiginit(self, _dSalmon.new_tpSDOclustream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
+        _SDOclustream.tpSDOclustream64_swiginit(self, _SDOclustream.new_tpSDOclustream64(observer_cnt, T, idle_observers, neighbour_cnt, chi_min, chi_prop, zeta, e, freq_bins, max_freq, outlier_threshold, outlier_handling, rel_outlier_score, perturb, random_sampling, input_buffer, distance, seed))
 
     def fit(self, data, times):
-        return _dSalmon.tpSDOclustream64_fit(self, data, times)
+        return _SDOclustream.tpSDOclustream64_fit(self, data, times)
 
     def fit_predict(self, data, labels, scores, times):
-        return _dSalmon.tpSDOclustream64_fit_predict(self, data, labels, scores, times)
+        return _SDOclustream.tpSDOclustream64_fit_predict(self, data, labels, scores, times)
 
     def observer_count(self):
-        return _dSalmon.tpSDOclustream64_observer_count(self)
+        return _SDOclustream.tpSDOclustream64_observer_count(self)
 
     def get_observers(self, data, labels, observations, av_observations, time):
-        return _dSalmon.tpSDOclustream64_get_observers(self, data, labels, observations, av_observations, time)
-    __swig_destroy__ = _dSalmon.delete_tpSDOclustream64
+        return _SDOclustream.tpSDOclustream64_get_observers(self, data, labels, observations, av_observations, time)
+    __swig_destroy__ = _SDOclustream.delete_tpSDOclustream64
 
-# Register tpSDOclustream64 in _dSalmon:
-_dSalmon.tpSDOclustream64_swigregister(tpSDOclustream64)
+# Register tpSDOclustream64 in _SDOclustream:
+_SDOclustream.tpSDOclustream64_swigregister(tpSDOclustream64)
 
 
 

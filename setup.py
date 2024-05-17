@@ -25,23 +25,23 @@ numpy_include = numpy_path + '/core/include'
 
 CPP_SOURCES = [
     'swig/clustering_wrapper.cpp',
-    'swig/dSalmon_wrap.cxx'
+    'swig/SDOclustream_wrap.cxx'
 ]
 
-dSalmon_cpp = Extension(
-    'dSalmon.swig._dSalmon',
+SDOclustream_cpp = Extension(
+    'SDOclustream.swig._SDOclustream',
     CPP_SOURCES,
     include_dirs=['cpp', numpy_include, 'contrib/boost/include'],
     extra_compile_args=['-g0']
 )
 
 setup(
-    name='dSalmon',
-    # version='0.1',
-    # license='LGPL-3.0',
-    # description='SDOcluststream is an algorithm for clustering data streams',
-    # author='Simon Konzett',
-    # author_email='konzett.simon@gmail.com',
+    name='SDOclustream',
+    version='0.1',
+    license='LGPL-3.0',
+    description='SDOclustream is an algorithm for clustering data streams',
+    author='Simon Konzett',
+    author_email='konzett.simon@gmail.com',
     # url='https://github.com/CN-TU/dSalmon',
     # project_urls={
     #     'Source': 'https://github.com/CN-TU/dSalmon',
@@ -60,9 +60,9 @@ setup(
     #     'Programming Language :: Python :: Implementation :: CPython',
     #     'Topic :: Scientific/Engineering'
     # ],
-    packages=['dSalmon', 'dSalmon.swig'],
-    package_dir={'dSalmon': 'python', 'dSalmon.swig': 'swig'},
-    ext_modules = [ dSalmon_cpp ],
+    packages=['SDOclustream', 'SDOclustream.swig'],
+    package_dir={'SDOclustream': 'python', 'SDOclustream.swig': 'swig'},
+    ext_modules = [ SDOclustream_cpp ],
     install_requires=['numpy'],
     python_requires='>=3.5'
 )

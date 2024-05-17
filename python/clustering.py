@@ -7,9 +7,9 @@ Streaming clustering models.
 """
 
 import numpy as np
-from dSalmon import swig as dSalmon_cpp
+from SDOclustream import swig as SDOclustream_cpp
 # from dSalmon import projection
-from dSalmon.util import sanitizeData, sanitizeTimes, lookupDistance #, lookupDistanceE
+from SDOclustream.util import sanitizeData, sanitizeTimes, lookupDistance #, lookupDistanceE
 
 class Clustering(object):
     """
@@ -81,7 +81,7 @@ class Clustering(object):
         self.last_time = times[-1]
         return times
 
-class SDOcluststream(Clustering):
+class SDOclustream(Clustering):
     """
     Streaming clustering based on Sparse Data Observers :cite:p:`Hartl2019`.
 
@@ -190,13 +190,13 @@ class SDOcluststream(Clustering):
         # Create an instance of the C++ SDOcluststream class
         if p['freq_bins']>1:
             cpp_obj = {
-                np.float32: dSalmon_cpp.tpSDOsc32,
-                np.float64: dSalmon_cpp.tpSDOsc64
+                np.float32: SDOclustream_cpp.tpSDOclustream32,
+                np.float64: SDOclustream_cpp.tpSDOclustream64
             }[p['float_type']]
         else:
             cpp_obj = {
-                np.float32: dSalmon_cpp.SDOcluststream32,
-                np.float64: dSalmon_cpp.SDOcluststream64
+                np.float32: SDOclustream_cpp.SDOclustream32,
+                np.float64: SDOclustream_cpp.SDOclustream64
             }[p['float_type']]
         self.model = cpp_obj(
             p['k'], 
@@ -292,7 +292,7 @@ class SDOcluststream(Clustering):
         return data, labels, observations, av_observations
 
 
-class tpSDOsc(Clustering):
+class tpSDOclustream(Clustering):
     """
     Streaming clustering based on Sparse Data Observers :cite:p:`Hartl2019`.
 
@@ -399,8 +399,8 @@ class tpSDOsc(Clustering):
         
         # Create an instance of the C++ SDOcluststream class
         cpp_obj = {
-            np.float32: dSalmon_cpp.tpSDOsc32,
-            np.float64: dSalmon_cpp.tpSDOsc64
+            np.float32: SDOclustream_cpp.tpSDOclustream32,
+            np.float64: SDOclustream_cpp.tpSDOclustream64
         }[p['float_type']]
         
         self.model = cpp_obj(
