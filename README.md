@@ -4,7 +4,7 @@ incremental stream clustering algorithm based on SDO
 ## Usage in python
 
 ```python
-from dSalmon import clustering
+from SDOclustream import clustering
 import numpy as np
 
 size = 500
@@ -12,7 +12,7 @@ X = np.random.rand(size, 3)
 
 k = 50 # Model size
 T = 150 # Time Horizon
-classifier = clustering.SDOcluststream(k=k, T=T)
+classifier = clustering.SDOclustream(k=k, T=T)
 
 # Initialize an array to store the labels
 all_labels = []
@@ -34,12 +34,8 @@ for l in all_labels:
       print(l)
 ```
 
-## Testing
-
-Tests for this project are located in the `tests/temporal-silhouette/` folder. The test framework is mostly adapted from [py-temporal-silhouette](https://github.com/CN-TU/py-temporal-silhouette).
-
 ## Rebuilding
 
 When adding new algorithms or modifying the interface, the SWIG wrappers have to be rebuilt. To this end, SWIG has to be installed and a ``pip`` package can be created and installed  using
 
-```make && pip3 install dSalmon.tar.xz```
+```make && pip3 install SDOclustream.tar.xz```
