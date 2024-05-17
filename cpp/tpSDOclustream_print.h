@@ -1,10 +1,10 @@
-#ifndef SDOCLUSTSTREAM_PRINT_H
-#define SDOCLUSTSTREAM_PRINT_H
+#ifndef TPSDOCLUSTREAM_PRINT_H
+#define TPSDOCLUSTREAM_PRINT_H
 
-#include "SDOcluststream_observer.h"
+#include "tpSDOclustream_observer.h"
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::printClusters() {
+void tpSDOclustream<FloatType>::printClusters() {
     for (const auto& cluster : clusters) {
         cluster.printColor();
         cluster.printObserverIndices();            
@@ -13,7 +13,7 @@ void SDOcluststream<FloatType>::printClusters() {
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::printObservers(
+void tpSDOclustream<FloatType>::printObservers(
     FloatType now) {
 
     std::cout << std::endl << "Observers" << std::endl;
@@ -33,7 +33,7 @@ void SDOcluststream<FloatType>::printObservers(
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::printData() const {
+void tpSDOclustream<FloatType>::Observer::printData() const {
     std::cout << "[ ";
     for (const auto& value : data) {
         std::cout << value << " ";
@@ -42,7 +42,7 @@ void SDOcluststream<FloatType>::Observer::printData() const {
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::printColorObservations(
+void tpSDOclustream<FloatType>::Observer::printColorObservations(
         FloatType now, 
         FloatType fading_cluster) const {
 
@@ -54,7 +54,7 @@ void SDOcluststream<FloatType>::Observer::printColorObservations(
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::printColorDistribution() const {
+void tpSDOclustream<FloatType>::Observer::printColorDistribution() const {
     std::cout << std::endl << "Color Distribution Observer: " << index << ": ";
     FloatType sum(0);
     for (auto& entry : color_distribution) {
@@ -65,4 +65,4 @@ void SDOcluststream<FloatType>::Observer::printColorDistribution() const {
 };
 
 
-#endif  // SDOCLUSTSTREAM_PRINT_H
+#endif  // TPSDOCLUSTREAM_PRINT_H

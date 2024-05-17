@@ -1,5 +1,5 @@
-#ifndef SDOCLUSTSTREAM_H
-#define SDOCLUSTSTREAM_H
+#ifndef SDOCLUSTREAM_H
+#define SDOCLUSTREAM_H
 
 #include <algorithm>
 #include <boost/container/set.hpp>
@@ -15,7 +15,7 @@
 #include "MTree.h"
 
 template<typename FloatType=double>
-class SDOcluststream {
+class SDOclustream {
   private:
     typedef std::pair<Vector<FloatType>, FloatType> Point; // data, epsilon
   public:
@@ -246,7 +246,7 @@ class SDOcluststream {
             const std::vector<FloatType>& time); 
 
 public:
-    SDOcluststream(
+    SDOclustream(
         std::size_t observer_cnt, 
         FloatType T, 
         FloatType idle_observers, 
@@ -261,7 +261,7 @@ public:
         FloatType perturb = 0,
         bool random_sampling = true,
         std::size_t input_buffer = 0,
-        SDOcluststream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
+        SDOclustream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
         active_observers(1-idle_observers), 
@@ -417,8 +417,8 @@ public:
     iterator end() { return iterator(fading, observers.end()); }
 }; 
 
-#include "SDOcluststream_fitpred.h"
-#include "SDOcluststream_observer.h"
-#include "SDOcluststream_buffer.h"
+#include "SDOclustream_fitpred.h"
+#include "SDOclustream_observer.h"
+#include "SDOclustream_buffer.h"
 
-#endif  // SDOCLUSTSTREAM_H
+#endif  // SDOCLUSTREAM_H

@@ -1,8 +1,8 @@
-#ifndef TPSDOSC_BUFFER_H
-#define TPSDOSC_BUFFER_H
+#ifndef TPSDOCLUSTREAM_BUFFER_H
+#define TPSDOCLUSTREAM_BUFFER_H
 
 template<typename FloatType>
-class tpSDOsc<FloatType>::DataBuffer {
+class tpSDOclustream<FloatType>::DataBuffer {
 private:
     std::vector<Vector<FloatType>> data_b;
     std::vector<FloatType> epsilon_b;
@@ -40,4 +40,4 @@ public:
 
 };
 
-#endif  // TPSDOSC_BUFFER_H
+#endif  // TPSDOCLUSTREAM_BUFFER_H

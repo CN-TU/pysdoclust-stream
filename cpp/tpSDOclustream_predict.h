@@ -1,8 +1,8 @@
-#ifndef TPSDOSC_PREDICT_H
-#define TPSDOSC_PREDICT_H
+#ifndef TPSDOCLUSTREAM_PREDICT_H
+#define TPSDOCLUSTREAM_PREDICT_H
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::predict_impl(
+void tpSDOclustream<FloatType>::predict_impl(
         std::vector<int>& label,
         std::vector<FloatType>& score,
         const std::vector<Vector<FloatType>>& data,
@@ -49,7 +49,7 @@ void tpSDOsc<FloatType>::predict_impl(
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::determineLabelVector(
+void tpSDOclustream<FloatType>::determineLabelVector(
         std::unordered_map<int, FloatType>& label_vector,
         std::vector<FloatType>& score_vector,
         const std::pair<TreeIterator, FloatType>& neighbor) {
@@ -74,7 +74,7 @@ void tpSDOsc<FloatType>::determineLabelVector(
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::setLabel(
+void tpSDOclustream<FloatType>::setLabel(
         int& label,
         const std::unordered_map<int, FloatType>& label_vector,
         std::size_t current_neighbor_cnt) {
@@ -100,7 +100,7 @@ void tpSDOsc<FloatType>::setLabel(
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::predict_point(
+void tpSDOclustream<FloatType>::predict_point(
         int& label,
         FloatType& score,
         std::size_t current_neighbor_cnt,
@@ -136,7 +136,7 @@ void tpSDOsc<FloatType>::predict_point(
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::predict_point(
+void tpSDOclustream<FloatType>::predict_point(
         int& label,
         FloatType& score,
         const Point& point,
@@ -160,4 +160,4 @@ void tpSDOsc<FloatType>::predict_point(
     setLabel(label, label_vector, current_neighbor_cnt);
 };
 
-#endif  // TPSDOSC_PREDICT_H
+#endif  // TPSDOCLUSTREAM_PREDICT_H

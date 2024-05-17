@@ -1,8 +1,8 @@
-#ifndef TPSDOSC_CLUSTER_H
-#define TPSDOSC_CLUSTER_H
+#ifndef TPSDOCLUSTREAM_CLUSTER_H
+#define TPSDOCLUSTREAM_CLUSTER_H
 
 template<typename FloatType>
-struct tpSDOsc<FloatType>::ClusterModel {
+struct tpSDOclustream<FloatType>::ClusterModel {
     int color;
     FloatType color_score; // score of set color
     IndexSetType cluster_observers;
@@ -106,7 +106,7 @@ struct tpSDOsc<FloatType>::ClusterModel {
 };
 
 template<typename FloatType>
-struct tpSDOsc<FloatType>::ClusterModelCompare {
+struct tpSDOclustream<FloatType>::ClusterModelCompare {
     bool operator()(const ClusterModel& CM_a, const ClusterModel& CM_b) const {
         return (CM_a.color_score == CM_b.color_score) ? 
             CM_a.cluster_observers.size() > CM_b.cluster_observers.size() :
@@ -114,4 +114,4 @@ struct tpSDOsc<FloatType>::ClusterModelCompare {
     }
 };
 
-#endif  // TPSDOSC_CLUSTER_H
+#endif  // TPSDOCLUSTREAM_CLUSTER_H

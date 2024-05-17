@@ -1,10 +1,10 @@
-#ifndef TPSDOSC_GRAPH_H
-#define TPSDOSC_GRAPH_H
+#ifndef TPSDOCLUSTREAM_GRAPH_H
+#define TPSDOCLUSTREAM_GRAPH_H
 
-#include "tpSDOsc_cluster.h"
+#include "tpSDOclustream_cluster.h"
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::update(
+void tpSDOclustream<FloatType>::update(
         const std::vector<FloatType>& time_data,
         const std::unordered_set<int>& sampled) {
     std::size_t active_threshold(0), active_threshold2(0);
@@ -60,7 +60,7 @@ void tpSDOsc<FloatType>::update(
 
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::DFS(
+void tpSDOclustream<FloatType>::DFS(
         IndexSetType& cluster, 
         IndexSetType& processed, 
         const MapIterator& it) {
@@ -102,7 +102,7 @@ void tpSDOsc<FloatType>::DFS(
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::updateH_all(bool use_median) { 
+void tpSDOclustream<FloatType>::updateH_all(bool use_median) { 
     if (use_median) {       
         std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
         std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
@@ -147,7 +147,7 @@ void tpSDOsc<FloatType>::updateH_all(bool use_median) {
 
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::DetermineColor(
+void tpSDOclustream<FloatType>::DetermineColor(
         ClusterModelMap& clusters,
         FloatType age_factor, 
         FloatType score) {
@@ -183,7 +183,7 @@ void tpSDOsc<FloatType>::DetermineColor(
 
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::updateGraph(
+void tpSDOclustream<FloatType>::updateGraph(
     std::size_t current_e,
     FloatType age_factor,
     FloatType score) {
@@ -203,7 +203,7 @@ void tpSDOsc<FloatType>::updateGraph(
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::Observer::updateColorDistribution() {
+void tpSDOclustream<FloatType>::Observer::updateColorDistribution() {
     // Calculate the sum of all color observations
     FloatType sum = std::accumulate(color_observations.begin(), color_observations.end(), FloatType(0),
         [](FloatType sum, const std::pair<int, FloatType>& entry) {
@@ -216,7 +216,7 @@ void tpSDOsc<FloatType>::Observer::updateColorDistribution() {
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::Observer::updateColorObservations(
+void tpSDOclustream<FloatType>::Observer::updateColorObservations(
         int colorObs,
         FloatType age_factor,
         FloatType score) {
@@ -237,4 +237,4 @@ void tpSDOsc<FloatType>::Observer::updateColorObservations(
     updateColorDistribution();
 };
 
-#endif  // TPSDOSC_GRAPH_H
+#endif  // TPSDOCLUSTREAM_GRAPH_H

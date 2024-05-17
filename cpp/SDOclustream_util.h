@@ -1,17 +1,17 @@
-#ifndef SDOCLUSTSTREAM_UTIL_H
-#define SDOCLUSTSTREAM_UTIL_H
+#ifndef SDOCLUSTREAM_UTIL_H
+#define SDOCLUSTREAM_UTIL_H
 
-#include "SDOcluststream_observer.h"
+#include "SDOclustream_observer.h"
 
 template<typename FloatType>
-bool SDOcluststream<FloatType>::hasEdge(
+bool SDOclustream<FloatType>::hasEdge(
         FloatType distance, 
         const MapIterator& it) {
     return distance < (zeta * it->h + (1 - zeta) * h);
 };
 
 template<typename FloatType>
-FloatType SDOcluststream<FloatType>::calcBatchAge(const std::vector<FloatType>& time_data, FloatType score) {
+FloatType SDOclustream<FloatType>::calcBatchAge(const std::vector<FloatType>& time_data, FloatType score) {
     FloatType age(0);
     for (std::size_t i = 0; i < time_data.size(); ++i) {
         if (i > 0) {
@@ -23,7 +23,7 @@ FloatType SDOcluststream<FloatType>::calcBatchAge(const std::vector<FloatType>& 
 }
 
 template<typename FloatType>
-class SDOcluststream<FloatType>::BinomialCalculator {
+class SDOclustream<FloatType>::BinomialCalculator {
   private:
     // Use outer and inner sizes for construction
     std::size_t outerSize;
@@ -60,7 +60,7 @@ class SDOcluststream<FloatType>::BinomialCalculator {
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::setModelParameters(
+void SDOclustream<FloatType>::setModelParameters(
         std::size_t& current_observer_cnt, std::size_t&current_observer_cnt2,
         std::size_t& active_threshold, std::size_t& active_threshold2,
         std::size_t& current_neighbor_cnt, std::size_t& current_neighbor_cnt2,
@@ -101,4 +101,4 @@ void SDOcluststream<FloatType>::setModelParameters(
     }            
 };
 
-#endif  // SDOCLUSTSTREAM_UTIL_H
+#endif  // SDOCLUSTREAM_UTIL_H

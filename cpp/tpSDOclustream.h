@@ -1,5 +1,5 @@
-#ifndef TPSDOSC_H
-#define TPSDOSC_H
+#ifndef TPSDOCLUSTREAM_H
+#define TPSDOCLUSTREAM_H
 
 #include <algorithm>
 #include <boost/container/set.hpp>
@@ -16,7 +16,7 @@
 #include "MTree.h"
 
 template<typename FloatType=double>
-class tpSDOsc {
+class tpSDOclustream {
   private:
     typedef std::pair<Vector<FloatType>, FloatType> Point; // data, epsilon
   public:
@@ -252,7 +252,7 @@ class tpSDOsc {
             const std::vector<FloatType>& epsilon,
             const std::vector<FloatType>& time); 
 public:
-    tpSDOsc(
+    tpSDOclustream(
         std::size_t observer_cnt, 
         FloatType T, 
         FloatType idle_observers, 
@@ -269,7 +269,7 @@ public:
         FloatType perturb = 0,
         bool random_sampling = true,
         std::size_t input_buffer = 0,
-        tpSDOsc<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
+        tpSDOclustream<FloatType>::DistanceFunction distance_function = Vector<FloatType>::euclideanE, 
         int seed = 0
     ) : observer_cnt(observer_cnt), 
         active_observers(1-idle_observers), 
@@ -428,8 +428,8 @@ public:
     iterator end() { return iterator(fading, observers.end()); }
 }; 
 
-#include "tpSDOsc_observer.h"
-#include "tpSDOsc_fitpred.h"
-#include "tpSDOsc_buffer.h"
+#include "tpSDOclustream_observer.h"
+#include "tpSDOclustream_fitpred.h"
+#include "tpSDOclustream_buffer.h"
 
-#endif  // TPSDOSC_H
+#endif  // TPSDOCLUSTREAM_H

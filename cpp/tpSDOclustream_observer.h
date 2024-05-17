@@ -1,14 +1,16 @@
-#ifndef SDOCLUSTSTREAM_OBSERVER_H
-#define SDOCLUSTSTREAM_OBSERVER_H
+#ifndef TPSDOCLUSTREAM_OBSERVER_H
+#define TPSDOCLUSTREAM_OBSERVER_H
 
 #include<limits>
 
+
+
 template<typename FloatType>
-struct SDOcluststream<FloatType>::Observer {
+struct tpSDOclustream<FloatType>::Observer {
     Point data;
-    FloatType observations;
-    FloatType time_touched;    
-    FloatType age;
+    std::vector<std::complex<FloatType>> observations;
+    FloatType time_touched;       
+	FloatType age;    
     int index;
 
     bool active;
@@ -25,7 +27,7 @@ struct SDOcluststream<FloatType>::Observer {
     // Constructor for Observer
     Observer(
         Point data,
-        FloatType observations,
+        std::vector<std::complex<FloatType>> observations,
         FloatType time_touched,
         int index,
         Tree* tree,
@@ -45,10 +47,22 @@ struct SDOcluststream<FloatType>::Observer {
         nearestNeighbors() {
             treeIt = tree->insert(tree->end(), std::make_pair(data, index)); 
         }
-    
+
+    FloatType getProjObservations(
+            const std::vector<std::complex<FloatType>>& now_vector, 
+            FloatType fading_factor) const {
+        FloatType proj_observations(0);
+        int freq_ind = 0;
+        for (const auto& now : now_vector) {
+            proj_observations += real(observations[freq_ind] * conj(now)) * fading_factor;
+            freq_ind++;
+        }
+        return proj_observations;
+    }
+
     int getIndex() const { return index; }
     Vector<FloatType> getData() const { return data.first; } // without Epsilon
-    FloatType getObservations() const { return observations; }
+    FloatType getObservations() const { return real(observations[0]); }
     FloatType getH() const { return h; }
 
     void updateAge(FloatType age_factor, FloatType score) {
@@ -58,9 +72,13 @@ struct SDOcluststream<FloatType>::Observer {
 
     void updateObservations(
             FloatType fading_factor,
-            FloatType score = 1) {        
-        observations *= fading_factor;
-        observations += score;
+            const std::vector<std::complex<FloatType>>& score_vector) {
+        int freq_ind = 0;
+        for (const auto& score : score_vector) {
+            observations[freq_ind] *= fading_factor;
+            observations[freq_ind] += score;
+            freq_ind++;
+        }
     }
 
     bool activate(Tree* treeA) {
@@ -93,7 +111,7 @@ struct SDOcluststream<FloatType>::Observer {
 
     void reset(
         Point _data,
-        FloatType _observations,
+        std::vector<std::complex<FloatType>> _observations,
         FloatType _time_touched,
         int _index,
         Tree* tree,
@@ -112,8 +130,8 @@ struct SDOcluststream<FloatType>::Observer {
         // TreeNodeUpdater updater(_data, _index);
         // tree->modify(treeIt, updater);
         tree->erase(treeIt);
-        treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));         
-        if (active) { treeA->erase(treeItA); }
+        treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));    
+        if (active) treeA->erase(treeItA);
         treeItA = treeA->end();
         active = false;
     }
@@ -131,7 +149,7 @@ struct SDOcluststream<FloatType>::Observer {
 };
 
 template<typename FloatType>
-struct SDOcluststream<FloatType>::ObserverCompare{
+struct tpSDOclustream<FloatType>::ObserverCompare{
     FloatType fading;
     ObserverCompare(FloatType fading) : fading(fading) {}
     bool operator()(const Observer& a, const Observer& b) const {
@@ -148,7 +166,7 @@ struct SDOcluststream<FloatType>::ObserverCompare{
 };
 
 template<typename FloatType>
-struct SDOcluststream<FloatType>::IteratorAvCompare{
+struct tpSDOclustream<FloatType>::IteratorAvCompare{
     FloatType fading;
     IteratorAvCompare(FloatType fading) : fading(fading) {}
     bool operator()(const MapIterator& it_a, const MapIterator& it_b) {
@@ -161,6 +179,6 @@ struct SDOcluststream<FloatType>::IteratorAvCompare{
     }
 };
 
-#include "SDOcluststream_graph.h"
+#include "tpSDOclustream_graph.h"
 
-#endif  // SDOCLUSTSTREAM_OBSERVER_H
+#endif  // TPSDOCLUSTREAM_OBSERVER_H

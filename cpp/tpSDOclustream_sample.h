@@ -1,9 +1,8 @@
-#ifndef SDOCLUSTSTREAM_SAMPLE_H
-#define SDOCLUSTSTREAM_SAMPLE_H
-
+#ifndef TPSDOCLUSTREAM_SAMPLE_H
+#define TPSDOCLUSTREAM_SAMPLE_H
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::sample(
+void tpSDOclustream<FloatType>::sample(
         std::unordered_set<int>& sampled,
         const std::vector<Vector<FloatType>>& data,
         const std::vector<FloatType>& epsilon,
@@ -12,7 +11,7 @@ void SDOcluststream<FloatType>::sample(
     std::size_t active_threshold(0), active_threshold2(0);
     std::size_t current_neighbor_cnt(0), current_neighbor_cnt2(0);
     std::size_t current_observer_cnt(0), current_observer_cnt2(0);
-    std::size_t current_e(0); 
+    std::size_t current_e(0);
     std::size_t chi(0); 
     if (!observers.empty()) {
         setModelParameters(
@@ -22,7 +21,7 @@ void SDOcluststream<FloatType>::sample(
             current_e,
             chi,
             false); // true for print 
-    }
+    }    
     FloatType observations_sum(0);   
     if (!random_sampling) { // only in use if           
         for (auto it = observers.begin(); it != observers.end(); ++it) {
@@ -75,7 +74,7 @@ void SDOcluststream<FloatType>::sample(
         sampled.insert(shuffled_elements.begin(), shuffled_elements.begin() + observer_cnt);
     }
 
-    // Queue worst observers
+    // Queue worst observers, not perfectly efficient as all observers are queued, only n sampled d be necessary
     IteratorAvCompare iterator_av_compare(fading);
     std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare> worst_observers(iterator_av_compare);
     for (auto it = observers.begin(); it != observers.end(); ++it) {
@@ -100,7 +99,7 @@ void SDOcluststream<FloatType>::sample(
 }
 
 template<typename FloatType>
-bool SDOcluststream<FloatType>::sample_point( 
+bool tpSDOclustream<FloatType>::sample_point( 
     std::unordered_set<int>& sampled,
     FloatType now,
     std::size_t batch_size,
@@ -118,7 +117,7 @@ bool SDOcluststream<FloatType>::sample_point(
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::sample_point(
+void tpSDOclustream<FloatType>::sample_point(
         std::unordered_set<int>& sampled,
         const Point& point,
         FloatType now,
@@ -147,7 +146,7 @@ void SDOcluststream<FloatType>::sample_point(
 };
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::replaceObservers(
+void tpSDOclustream<FloatType>::replaceObservers(
         Point data,
         std::priority_queue<MapIterator,std::vector<MapIterator>,IteratorAvCompare>& worst_observers,
         FloatType now,
@@ -155,23 +154,25 @@ void SDOcluststream<FloatType>::replaceObservers(
         std::size_t current_neighbor_cnt,
         int current_index) {        
     MapIterator obsIt = observers.end();
+    std::vector<std::complex<FloatType>> init_score_vector;
     FloatType score = (observer_cnt==current_observer_cnt) ? FloatType(1) : binomial.calc(current_observer_cnt, current_neighbor_cnt)/binomial.calc(observer_cnt, neighbor_cnt);
+    initNowVector(now, init_score_vector, score);
     if (observers.size() < observer_cnt) {
-        obsIt = observers.insert(Observer(data, score, now, current_index, &tree, &treeA)); // to add to the distance matrix
+        obsIt = observers.insert(Observer(data, init_score_vector, now, current_index, &tree, &treeA)); // maybe init_score instead of 1
     } else {
         // find worst observer
         obsIt = worst_observers.top();  // Get iterator to the "worst" element         
         worst_observers.pop(); 
-        int indexToRemove = obsIt->getIndex();
+        int indexToRemove = obsIt->index;
         // do index handling          
         indexToIterator.erase(indexToRemove);
         // update Observer(s)
         auto node = observers.extract(obsIt);
         Observer& observer = node.value();
-        observer.reset(data, score, now, current_index, &tree, &treeA);
+        observer.reset(data, init_score_vector, now, current_index, &tree, &treeA); // maybe init_score instead of 1
         observers.insert(std::move(node));    
     }
     indexToIterator[current_index] = obsIt;
 };
 
-#endif  // SDOCLUSTSTREAM_SAMPLE_H
+#endif  // TPSDOCLUSTREAM_SAMPLE_H

@@ -1,10 +1,10 @@
-#ifndef SDOCLUSTSTREAM_GRAPH_H
-#define SDOCLUSTSTREAM_GRAPH_H
+#ifndef SDOCLUSTREAM_GRAPH_H
+#define SDOCLUSTREAM_GRAPH_H
 
-#include "SDOcluststream_cluster.h"
+#include "SDOclustream_cluster.h"
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::update(
+void SDOclustream<FloatType>::update(
         const std::vector<FloatType>& time_data,
         const std::unordered_set<int>& sampled) {
     std::size_t active_threshold(0), active_threshold2(0);
@@ -57,7 +57,7 @@ void SDOcluststream<FloatType>::update(
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::DFS(
+void SDOclustream<FloatType>::DFS(
         IndexSetType& cluster, 
         IndexSetType& processed, 
         const MapIterator& it) {    
@@ -99,7 +99,7 @@ void SDOcluststream<FloatType>::DFS(
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::updateH_all(bool use_median) {       
+void SDOclustream<FloatType>::updateH_all(bool use_median) {       
     if (use_median) {
         std::priority_queue<FloatType, std::vector<FloatType>, std::less<FloatType>> maxHeap; 
         std::priority_queue<FloatType, std::vector<FloatType>, std::greater<FloatType>> minHeap;         
@@ -141,7 +141,7 @@ void SDOcluststream<FloatType>::updateH_all(bool use_median) {
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::DetermineColor(
+void SDOclustream<FloatType>::DetermineColor(
         ClusterModelMap& clusters,
         FloatType age_factor, 
         FloatType score) {
@@ -177,7 +177,7 @@ void SDOcluststream<FloatType>::DetermineColor(
 
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::updateGraph(
+void SDOclustream<FloatType>::updateGraph(
     std::size_t current_e,
     FloatType age_factor,
     FloatType score) {
@@ -198,7 +198,7 @@ void SDOcluststream<FloatType>::updateGraph(
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::updateColorDistribution() {
+void SDOclustream<FloatType>::Observer::updateColorDistribution() {
     // Calculate the sum of all color observations
     FloatType sum = std::accumulate(color_observations.begin(), color_observations.end(), FloatType(0),
         [](FloatType sum, const std::pair<int, FloatType>& entry) {
@@ -211,7 +211,7 @@ void SDOcluststream<FloatType>::Observer::updateColorDistribution() {
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::Observer::updateColorObservations(
+void SDOclustream<FloatType>::Observer::updateColorObservations(
         int colorObs,
         FloatType age_factor,
         FloatType score) {
@@ -232,4 +232,4 @@ void SDOcluststream<FloatType>::Observer::updateColorObservations(
     updateColorDistribution();
 };
 
-#endif  // SDOCLUSTSTREAM_GRAPH_H
+#endif  // SDOCLUSTREAM_GRAPH_H

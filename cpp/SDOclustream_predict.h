@@ -1,8 +1,8 @@
-#ifndef SDOCLUSTSTREAM_PREDICT_H
-#define SDOCLUSTSTREAM_PREDICT_H
+#ifndef SDOCLUSTREAM_PREDICT_H
+#define SDOCLUSTREAM_PREDICT_H
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::predict_impl(
+void SDOclustream<FloatType>::predict_impl(
         std::vector<int>& label,
         std::vector<FloatType>& score,
         const std::vector<Vector<FloatType>>& data,
@@ -49,7 +49,7 @@ void SDOcluststream<FloatType>::predict_impl(
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::determineLabelVector(
+void SDOclustream<FloatType>::determineLabelVector(
         std::unordered_map<int, FloatType>& label_vector,
         std::vector<FloatType>& score_vector,
         const std::pair<TreeIterator, FloatType>& neighbor) {
@@ -75,7 +75,7 @@ void SDOcluststream<FloatType>::determineLabelVector(
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::setLabel(
+void SDOclustream<FloatType>::setLabel(
         int& label,
         const std::unordered_map<int, FloatType>& label_vector,
         std::size_t current_neighbor_cnt) {
@@ -101,7 +101,7 @@ void SDOcluststream<FloatType>::setLabel(
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::predict_point(
+void SDOclustream<FloatType>::predict_point(
         int& label,
         FloatType& score,
         std::size_t current_neighbor_cnt,
@@ -137,7 +137,7 @@ void SDOcluststream<FloatType>::predict_point(
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::predict_point(
+void SDOclustream<FloatType>::predict_point(
         int& label,
         FloatType& score,
         const Point& point,
@@ -161,4 +161,4 @@ void SDOcluststream<FloatType>::predict_point(
     setLabel(label, label_vector, current_neighbor_cnt);
 };
 
-#endif  // SDOCLUSTSTREAM_PREDICT_H
+#endif  // SDOCLUSTREAM_PREDICT_H

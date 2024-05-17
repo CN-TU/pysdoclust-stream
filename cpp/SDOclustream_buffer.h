@@ -1,8 +1,8 @@
-#ifndef SDOCLUSTSTREAM_BUFFER_H
-#define SDOCLUSTSTREAM_BUFFER_H
+#ifndef SDOCLUSTREAM_BUFFER_H
+#define SDOCLUSTREAM_BUFFER_H
 
 template<typename FloatType>
-class SDOcluststream<FloatType>::DataBuffer {
+class SDOclustream<FloatType>::DataBuffer {
 private:
     std::vector<Vector<FloatType>> data_b;
     std::vector<FloatType> epsilon_b;
@@ -40,4 +40,4 @@ public:
 
 };
 
-#endif  // SDOCLUSTSTREAM_BUFFER_H
+#endif  // SDOCLUSTREAM_BUFFER_H

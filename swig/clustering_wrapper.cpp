@@ -32,7 +32,7 @@ static void fit_predict_ensemble(unsigned ensemble_size, int n_jobs, std::functi
 }
 
 template<typename FloatType>
-SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
+SDOclustream_wrapper<FloatType>::SDOclustream_wrapper(
         int observer_cnt, 
         FloatType T, 
         FloatType idle_observers, 
@@ -73,7 +73,7 @@ SDOcluststream_wrapper<FloatType>::SDOcluststream_wrapper(
 }
 
 template<typename FloatType>
-void SDOcluststream_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times) {
+void SDOclustream_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times) {
     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
     for (int i = 0; i < data.dim1; i++) {
@@ -83,7 +83,7 @@ void SDOcluststream_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, c
 }
 
 template<typename FloatType>
-void SDOcluststream_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> scores, const NumpyArray1<FloatType> times) {
+void SDOclustream_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> scores, const NumpyArray1<FloatType> times) {
     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
     for (int i = 0; i < data.dim1; i++) {
@@ -97,12 +97,12 @@ void SDOcluststream_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType>
 }
 
 template<typename FloatType>
-int SDOcluststream_wrapper<FloatType>::observer_count() {
+int SDOclustream_wrapper<FloatType>::observer_count() {
     return sdoclust.observerCount();
 }
 
 template<typename FloatType>
-void SDOcluststream_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time) {
+void SDOclustream_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time) {
     // TODO: check dimensions
     int i = 0;
     for (auto observer : sdoclust) {
@@ -115,13 +115,13 @@ void SDOcluststream_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> dat
     }
 }
 
-template class SDOcluststream_wrapper<double>;
-template class SDOcluststream_wrapper<float>;
+template class SDOclustream_wrapper<double>;
+template class SDOclustream_wrapper<float>;
 
 // tpSDO
 
 template<typename FloatType>
-tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(
+tpSDOclustream_wrapper<FloatType>::tpSDOclustream_wrapper(
         int observer_cnt, 
         FloatType T, 
         FloatType idle_observers, 
@@ -164,7 +164,7 @@ tpSDOsc_wrapper<FloatType>::tpSDOsc_wrapper(
 }
 
 template<typename FloatType>
-void tpSDOsc_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times) {
+void tpSDOclustream_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const NumpyArray1<FloatType> times) {
     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
     for (int i = 0; i < data.dim1; i++) {
@@ -174,7 +174,7 @@ void tpSDOsc_wrapper<FloatType>::fit(const NumpyArray2<FloatType> data, const Nu
 }
 
 template<typename FloatType>
-void tpSDOsc_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> scores, const NumpyArray1<FloatType> times) {
+void tpSDOclustream_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> scores, const NumpyArray1<FloatType> times) {
     std::vector<FloatType> vec_times(&times.data[0], &times.data[0] + times.dim1);
     std::vector<Vector<FloatType>> vec_data(data.dim1, Vector<FloatType>(data.dim2));    
     for (int i = 0; i < data.dim1; i++) {
@@ -188,12 +188,12 @@ void tpSDOsc_wrapper<FloatType>::fit_predict(const NumpyArray2<FloatType> data, 
 }
 
 template<typename FloatType>
-int tpSDOsc_wrapper<FloatType>::observer_count() {
+int tpSDOclustream_wrapper<FloatType>::observer_count() {
     return sdoclust.observerCount();
 }
 
 template<typename FloatType>
-void tpSDOsc_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time) {
+void tpSDOclustream_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> data, NumpyArray1<int> labels, NumpyArray1<FloatType> observations, NumpyArray1<FloatType> av_observations, FloatType time) {
     // TODO: check dimensions
     int i = 0;
     for (auto observer : sdoclust) {
@@ -206,6 +206,6 @@ void tpSDOsc_wrapper<FloatType>::get_observers(NumpyArray2<FloatType> data, Nump
     }
 }
 
-template class tpSDOsc_wrapper<double>;
-template class tpSDOsc_wrapper<float>;
+template class tpSDOclustream_wrapper<double>;
+template class tpSDOclustream_wrapper<float>;
 

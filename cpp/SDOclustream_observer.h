@@ -1,16 +1,14 @@
-#ifndef TPSDOSC_OBSERVER_H
-#define TPSDOSC_OBSERVER_H
+#ifndef SDOCLUSTREAM_OBSERVER_H
+#define SDOCLUSTREAM_OBSERVER_H
 
 #include<limits>
 
-
-
 template<typename FloatType>
-struct tpSDOsc<FloatType>::Observer {
+struct SDOclustream<FloatType>::Observer {
     Point data;
-    std::vector<std::complex<FloatType>> observations;
-    FloatType time_touched;       
-	FloatType age;    
+    FloatType observations;
+    FloatType time_touched;    
+    FloatType age;
     int index;
 
     bool active;
@@ -27,7 +25,7 @@ struct tpSDOsc<FloatType>::Observer {
     // Constructor for Observer
     Observer(
         Point data,
-        std::vector<std::complex<FloatType>> observations,
+        FloatType observations,
         FloatType time_touched,
         int index,
         Tree* tree,
@@ -47,22 +45,10 @@ struct tpSDOsc<FloatType>::Observer {
         nearestNeighbors() {
             treeIt = tree->insert(tree->end(), std::make_pair(data, index)); 
         }
-
-    FloatType getProjObservations(
-            const std::vector<std::complex<FloatType>>& now_vector, 
-            FloatType fading_factor) const {
-        FloatType proj_observations(0);
-        int freq_ind = 0;
-        for (const auto& now : now_vector) {
-            proj_observations += real(observations[freq_ind] * conj(now)) * fading_factor;
-            freq_ind++;
-        }
-        return proj_observations;
-    }
-
+    
     int getIndex() const { return index; }
     Vector<FloatType> getData() const { return data.first; } // without Epsilon
-    FloatType getObservations() const { return real(observations[0]); }
+    FloatType getObservations() const { return observations; }
     FloatType getH() const { return h; }
 
     void updateAge(FloatType age_factor, FloatType score) {
@@ -72,13 +58,9 @@ struct tpSDOsc<FloatType>::Observer {
 
     void updateObservations(
             FloatType fading_factor,
-            const std::vector<std::complex<FloatType>>& score_vector) {
-        int freq_ind = 0;
-        for (const auto& score : score_vector) {
-            observations[freq_ind] *= fading_factor;
-            observations[freq_ind] += score;
-            freq_ind++;
-        }
+            FloatType score = 1) {        
+        observations *= fading_factor;
+        observations += score;
     }
 
     bool activate(Tree* treeA) {
@@ -111,7 +93,7 @@ struct tpSDOsc<FloatType>::Observer {
 
     void reset(
         Point _data,
-        std::vector<std::complex<FloatType>> _observations,
+        FloatType _observations,
         FloatType _time_touched,
         int _index,
         Tree* tree,
@@ -130,8 +112,8 @@ struct tpSDOsc<FloatType>::Observer {
         // TreeNodeUpdater updater(_data, _index);
         // tree->modify(treeIt, updater);
         tree->erase(treeIt);
-        treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));    
-        if (active) treeA->erase(treeItA);
+        treeIt = tree->insert(tree->end(), std::make_pair(_data, _index));         
+        if (active) { treeA->erase(treeItA); }
         treeItA = treeA->end();
         active = false;
     }
@@ -149,7 +131,7 @@ struct tpSDOsc<FloatType>::Observer {
 };
 
 template<typename FloatType>
-struct tpSDOsc<FloatType>::ObserverCompare{
+struct SDOclustream<FloatType>::ObserverCompare{
     FloatType fading;
     ObserverCompare(FloatType fading) : fading(fading) {}
     bool operator()(const Observer& a, const Observer& b) const {
@@ -166,7 +148,7 @@ struct tpSDOsc<FloatType>::ObserverCompare{
 };
 
 template<typename FloatType>
-struct tpSDOsc<FloatType>::IteratorAvCompare{
+struct SDOclustream<FloatType>::IteratorAvCompare{
     FloatType fading;
     IteratorAvCompare(FloatType fading) : fading(fading) {}
     bool operator()(const MapIterator& it_a, const MapIterator& it_b) {
@@ -179,6 +161,6 @@ struct tpSDOsc<FloatType>::IteratorAvCompare{
     }
 };
 
-#include "tpSDOsc_graph.h"
+#include "SDOclustream_graph.h"
 
-#endif  // TPSDOSC_OBSERVER_H
+#endif  // SDOCLUSTREAM_OBSERVER_H

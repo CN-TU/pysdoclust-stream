@@ -1,57 +1,56 @@
-#ifndef SDOCLUSTSTREAM_FITPRED_H
-#define SDOCLUSTSTREAM_FITPRED_H
+#ifndef TPSDOCLUSTREAM_FITPRED_H
+#define TPSDOCLUSTREAM_FITPRED_H
 
-// #include "SDOcluststream_print.h"
-#include "SDOcluststream_util.h"
-#include "SDOcluststream_sample.h"
-#include "SDOcluststream_fit.h"
-#include "SDOcluststream_predict.h"
+// #include "tpSDOclustream_print.h"
+#include "tpSDOclustream_util.h"
+#include "tpSDOclustream_sample.h"
+#include "tpSDOclustream_fit.h"
+#include "tpSDOclustream_predict.h"
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::fitPredict_impl(
+void tpSDOclustream<FloatType>::fitPredict_impl(
         std::vector<int>& label,
         std::vector<FloatType>& score,
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& epsilon,
-        const std::vector<FloatType>& time) {
+        const std::vector<FloatType>& time_data) {
     // Check for equal lengths:
-    if (data.size() != time.size()) {
+    if (data.size() != time_data.size()) {
         throw std::invalid_argument("data and now must have the same length");
     }
     int first_index = last_index;
     // sample data
     std::unordered_set<int> sampled;   
-    sample(sampled, data, epsilon, time, first_index);
+    sample(sampled, data, epsilon, time_data, first_index);
     // fit model 
-    fit_impl(data, epsilon, time, first_index);    
+    fit_impl(data, epsilon, time_data, first_index);    
     // update graph
-    update(time, sampled);
+    update(time_data, sampled);
     // predict
     predict_impl(label, score, data, epsilon, first_index);
-    last_predicted_index = last_index;
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::fitOnly_impl(
+void tpSDOclustream<FloatType>::fitOnly_impl(
         const std::vector<Vector<FloatType>>& data, 
         const std::vector<FloatType>& epsilon,
-        const std::vector<FloatType>& time) {
+        const std::vector<FloatType>& time_data) {
     // Check for equal lengths:
-    if (data.size() != time.size()) {
+    if (data.size() != time_data.size()) {
         throw std::invalid_argument("data and now must have the same length");
     }
     int first_index = last_index;
     // sample data
     std::unordered_set<int> sampled;   
-    sample(sampled, data, epsilon, time, first_index);
+    sample(sampled, data, epsilon, time_data, first_index);
     // fit model 
-    fit_impl(data, epsilon, time, first_index);    
+    fit_impl(data, epsilon, time_data, first_index);    
     // update graph
-    update(time, sampled);
+    update(time_data, sampled);
 }
 
 template<typename FloatType>
-void SDOcluststream<FloatType>::predictOnly_impl(
+void tpSDOclustream<FloatType>::predictOnly_impl(
         std::vector<int>& label,
         std::vector<FloatType>& score,
         const std::vector<Vector<FloatType>>& data, 
@@ -66,4 +65,4 @@ void SDOcluststream<FloatType>::predictOnly_impl(
     last_predicted_index += data.size();
 }
 
-#endif  // SDOCLUSTSTREAM_FITPRED_H
+#endif  // TPSDOCLUSTREAM_FITPRED_H

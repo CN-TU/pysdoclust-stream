@@ -1,8 +1,8 @@
-#ifndef SDOCLUSTSTREAM_CLUSTER_H
-#define SDOCLUSTSTREAM_CLUSTER_H
+#ifndef SDOCLUSTREAM_CLUSTER_H
+#define SDOCLUSTREAM_CLUSTER_H
 
 template<typename FloatType>
-struct SDOcluststream<FloatType>::ClusterModel {
+struct SDOclustream<FloatType>::ClusterModel {
     int color;
     FloatType color_score; // score of set color
     IndexSetType cluster_observers;
@@ -107,14 +107,13 @@ struct SDOcluststream<FloatType>::ClusterModel {
 
     void setColor(
             int c) {
-
         color = c;
         color_score = FloatType(0);
     }
 };
 
 template<typename FloatType>
-struct SDOcluststream<FloatType>::ClusterModelCompare {
+struct SDOclustream<FloatType>::ClusterModelCompare {
     bool operator()(const ClusterModel& CM_a, const ClusterModel& CM_b) const {
         return (CM_a.color_score == CM_b.color_score) ? 
             CM_a.cluster_observers.size() > CM_b.cluster_observers.size() :
@@ -122,4 +121,4 @@ struct SDOcluststream<FloatType>::ClusterModelCompare {
     }
 };
 
-#endif  // SDOCLUSTSTREAM_CLUSTER_H
+#endif  // SDOCLUSTREAM_CLUSTER_H

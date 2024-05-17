@@ -1,10 +1,10 @@
-#ifndef TPSDOSC_UTIL_H
-#define TPSDOSC_UTIL_H
+#ifndef TPSDOCLUSTREAM_UTIL_H
+#define TPSDOCLUSTREAM_UTIL_H
 
-#include "tpSDOsc_observer.h"
+#include "tpSDOclustream_observer.h"
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score) {
+void tpSDOclustream<FloatType>::initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector, FloatType score) {
     now_vector.resize(freq_bins);
     for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
         FloatType frequency = max_freq * freq_ind / freq_bins;
@@ -13,7 +13,7 @@ void tpSDOsc<FloatType>::initNowVector(FloatType now, std::vector<std::complex<F
 }
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector) {
+void tpSDOclustream<FloatType>::initNowVector(FloatType now, std::vector<std::complex<FloatType>>& now_vector) {
     now_vector.resize(freq_bins);
     for (std::size_t freq_ind = 0; freq_ind < freq_bins; freq_ind++) {
         FloatType frequency = max_freq * freq_ind / freq_bins;
@@ -22,7 +22,7 @@ void tpSDOsc<FloatType>::initNowVector(FloatType now, std::vector<std::complex<F
 }
 
 template<typename FloatType>
-FloatType tpSDOsc<FloatType>::getActiveObservationsThreshold(std::size_t active_threshold, FloatType now) {
+FloatType tpSDOclustream<FloatType>::getActiveObservationsThreshold(std::size_t active_threshold, FloatType now) {
     if (observers.size() > 1) {      
         MapIterator it = std::next(observers.begin(), active_threshold);  
         return it->getObservations() * std::pow<FloatType>(fading, now-it->time_touched);
@@ -33,14 +33,14 @@ FloatType tpSDOsc<FloatType>::getActiveObservationsThreshold(std::size_t active_
 }
 
 template<typename FloatType>
-bool tpSDOsc<FloatType>::hasEdge(
+bool tpSDOclustream<FloatType>::hasEdge(
         FloatType distance, 
         const MapIterator& it) {
     return distance < (zeta * it->h + (1 - zeta) * h);
 };
 
 template<typename FloatType>
-FloatType tpSDOsc<FloatType>::calcBatchAge(const std::vector<FloatType>& time_data, FloatType score) {
+FloatType tpSDOclustream<FloatType>::calcBatchAge(const std::vector<FloatType>& time_data, FloatType score) {
     FloatType age(0);
     for (std::size_t i = 0; i < time_data.size(); ++i) {
         if (i > 0) {
@@ -52,7 +52,7 @@ FloatType tpSDOsc<FloatType>::calcBatchAge(const std::vector<FloatType>& time_da
 }
 
 template<typename FloatType>
-class tpSDOsc<FloatType>::BinomialCalculator {
+class tpSDOclustream<FloatType>::BinomialCalculator {
   private:
     // Use outer and inner sizes for construction
     std::size_t outerSize;
@@ -89,7 +89,7 @@ class tpSDOsc<FloatType>::BinomialCalculator {
 };
 
 template<typename FloatType>
-void tpSDOsc<FloatType>::setModelParameters(
+void tpSDOclustream<FloatType>::setModelParameters(
         std::size_t& current_observer_cnt, std::size_t&current_observer_cnt2,
         std::size_t& active_threshold, std::size_t& active_threshold2,
         std::size_t& current_neighbor_cnt, std::size_t& current_neighbor_cnt2,
