@@ -4,7 +4,7 @@ incremental stream clustering algorithm based on SDO
 ## Installation
 
 ```
-pip3 install https://github.com/CN-TU/pysdoclust-stream/tree/clean
+pip3 install git+https://github.com/CN-TU/pysdoclust-stream/tree/clean
 ```
 
 ## Usage in python
