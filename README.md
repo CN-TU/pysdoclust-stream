@@ -1,5 +1,5 @@
 # pysdoclust-stream
-incremental stream clustering algorithm based on SDO
+Incremental stream clustering (and outlier detection) algorithm based on Sparse Data Observers (SDO)
 
 ## Installation
 
@@ -9,7 +9,7 @@ pip3 install git+https://github.com/CN-TU/pysdoclust-stream@clean
 
 ## Usage in python
 
-
+SDOclustream requires `numpy` to be installed.
 
 ```python
 from SDOclustream import clustering
