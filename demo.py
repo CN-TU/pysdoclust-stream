@@ -1,17 +1,3 @@
-# pysdoclust-stream
-incremental stream clustering algorithm based on SDO
-
-## Installation
-
-```
-pip3 install https://github.com/CN-TU/pysdoclust-stream/tree/clean
-```
-
-## Usage in python
-
-
-
-```python
 from SDOclustream import clustering
 import numpy as np
 
@@ -46,10 +32,3 @@ for o in obs:
 # print labels
 for l in all_labels:
       print(l)
-```
-
-## Rebuilding
-
-When adding new algorithms or modifying the interface, the SWIG wrappers have to be rebuilt. To this end, SWIG has to be installed and a ``pip`` package can be created and installed  using
-
-```make && pip3 install SDOclustream.tar.xz```

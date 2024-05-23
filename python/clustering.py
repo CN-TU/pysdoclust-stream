@@ -9,7 +9,7 @@ Streaming clustering models.
 import numpy as np
 from SDOclustream import swig as SDOclustream_cpp
 # from dSalmon import projection
-from SDOclustream.util import sanitizeData, sanitizeTimes, lookupDistance #, lookupDistanceE
+from SDOclustream.util import sanitizeData, sanitizeTimes, lookupDistance
 
 class Clustering(object):
     """
