@@ -10,10 +10,11 @@ SDOclustream can be installed with pip3:
         pip3 install git+https://github.com/...
 
 
-However **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. To this end, SWIG must be installed, the complete repository downloaded and SDOclustream installing by running: 
+However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. This requieres the installation of [SWIG](https://www.swig.org/). Hence,the complete repository should be downloaded and SDOclustream locally installed by running: 
 
         make && pip3 install SDOclustream.tar.xz
 
+<\br>
 
 ## Folder Structure and Evaluation Experiments
 
