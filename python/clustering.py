@@ -87,10 +87,10 @@ class SDOclustream(Clustering):
 
     Parameters
     ----------
-    k: int
+    k: int (default=300)
         Number of observers to use.
 
-    T: int
+    T: int (default=500)
         Characteristic time for the model.
         Increasing T makes the model adjust slower, decreasing T
         makes it adjust quicker.
@@ -98,10 +98,10 @@ class SDOclustream(Clustering):
     qv: float, optional (default=0.3)
         Ratio of unused observers due to model cleaning.
 
-    x: int (default=6)
+    x: int (default=5)
         Number of nearest observers to consider for clustering.
 
-    metric: string
+    metric: string (default='euclidean')
         Which distance metric to use. Currently supported metrics
         include 'chebyshev', 'cityblock', 'euclidean', and 'minkowsi'.
 
@@ -109,7 +109,7 @@ class SDOclustream(Clustering):
         Parameters passed to the metric. Minkowsi distance requires
         setting an integer `p` parameter.
 
-    float_type: np.float32 or np.float64
+    float_type: np.float32 or np.float64 (default=np.float64)
         The floating point type to use for internal processing.
 
     zeta: float, optional (default=0.6)
@@ -121,7 +121,7 @@ class SDOclustream(Clustering):
     chi_prop: float, optional (default=0.05)
         Parameter to determine closeness parameter of an Observer. The chi_prop * Modelsize Observers of an Observers are "close".
 
-    e: int, optional (default=7)
+    e: int, optional (default=2)
         Minimum size of a cluster (number of Observers spanning / representing it)
 
     freq_bins: int, optional (default=1)
@@ -137,7 +137,7 @@ class SDOclustream(Clustering):
         Give outlier score either as absolute distance or relative distance with regard to h_bar. 
         Median value of x closest active observers.
 
-    outlier_threshold: float, optional (default=10.0)
+    outlier_threshold: float, optional (default=5.0)
         Threshold for outlier handling. 
         If point has distance = outlier_threshold * h_bar to a (closest) observer probability of being an outlier wrt to this Observer is 0.5 
         If distance is <= h_bar then probability is 0. Calibrated on an activation function (tangens hyperbolicus).
@@ -157,13 +157,12 @@ class SDOclustream(Clustering):
     seed: int (default=0)
         Random seed to use.
     """
-    def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
+    def __init__(self, k=300, T=500, qv=0.3, x=5, metric='euclidean', metric_params=None,
                  float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
-                 chi_prop=0.05, e=7, outlier_threshold=10.0, outlier_handling=False, rel_outlier_score=True, 
+                 chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False, rel_outlier_score=True, 
                  perturb=0.0, random_sampling=True, freq_bins=1, max_freq=1.0, input_buffer=0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
-        self.buffer = None    
 
     def _init_model(self, p):
         assert p['float_type'] in [np.float32, np.float64]
@@ -298,10 +297,10 @@ class tpSDOclustream(Clustering):
 
     Parameters
     ----------
-    k: int
+    k: int (default=300)
         Number of observers to use.
 
-    T: int
+    T: int (default=500)
         Characteristic time for the model.
         Increasing T makes the model adjust slower, decreasing T
         makes it adjust quicker.
@@ -309,10 +308,10 @@ class tpSDOclustream(Clustering):
     qv: float, optional (default=0.3)
         Ratio of unused observers due to model cleaning.
 
-    x: int (default=6)
+    x: int (default=5)
         Number of nearest observers to consider for clustering.
 
-    metric: string
+    metric: string (default='euclidean')
         Which distance metric to use. Currently supported metrics
         include 'chebyshev', 'cityblock', 'euclidean', and 'minkowsi'.
 
@@ -320,7 +319,7 @@ class tpSDOclustream(Clustering):
         Parameters passed to the metric. Minkowsi distance requires
         setting an integer `p` parameter.
 
-    float_type: np.float32 or np.float64
+    float_type: np.float32 or np.float64 (default=np.float64)
         The floating point type to use for internal processing.
 
     zeta: float, optional (default=0.6)
@@ -332,7 +331,7 @@ class tpSDOclustream(Clustering):
     chi_prop: float, optional (default=0.05)
         Parameter to determine closeness parameter of an Observer. The chi_prop * Modelsize Observers of an Observers are "close".
 
-    e: int, optional (default=7)
+    e: int, optional (default=2)
         Minimum size of a cluster (number of Observers spanning / representing it)
 
     freq_bins: int, optional (default=1)
@@ -348,7 +347,7 @@ class tpSDOclustream(Clustering):
         Give outlier score either as absolute distance or relative distance with regard to h_bar. 
         Median value of x closest active observers.
 
-    outlier_threshold: float, optional (default=10.0)
+    outlier_threshold: float, optional (default=5.0)
         Threshold for outlier handling. 
         If point has distance = outlier_threshold * h_bar to a (closest) observer probability of being an outlier wrt to this Observer is 0.5 
         If distance is <= h_bar then probability is 0. Calibrated on an activation function (tangens hyperbolicus).
@@ -368,11 +367,10 @@ class tpSDOclustream(Clustering):
     seed: int (default=0)
         Random seed to use.
     """
-    
-    def __init__(self, k, T, qv=0.3, x=6, metric='euclidean', metric_params=None,
+    def __init__(self, k=300, T=500, qv=0.3, x=5, metric='euclidean', metric_params=None,
                  float_type=np.float64, seed=0, return_sampling=False, zeta=0.6, chi_min=8, 
-                 chi_prop=0.05, e=3, outlier_threshold=5.0, outlier_handling=False, rel_outlier_score=True, 
-                 perturb=0.0, random_sampling=True, freq_bins=1, max_freq=1.0):
+                 chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False, rel_outlier_score=True, 
+                 perturb=0.0, random_sampling=True, freq_bins=1, max_freq=1.0, input_buffer=0):
         self.params = {k: v for k, v in locals().items() if k != 'self'}
         self._init_model(self.params)
 
