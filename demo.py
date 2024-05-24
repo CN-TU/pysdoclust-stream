@@ -1,34 +1,55 @@
 from SDOclustream import clustering
 import numpy as np
+import pandas as pd
 
-size = 500
-X = np.random.rand(size, 3)
-times = np.sort(np.random.rand(size)) * size # random timestamp from 0 to size-1
-# times = np.arange(0,size) # timestamp ordered from 0 to size-1
+df = pd.read_csv('example/dataset.csv')
+t = df['timestamp'].to_numpy()
+x = df[['f0','f1']].to_numpy()
+y = df['label'].to_numpy()
 
-k = 50 # Model size
-T = 200 # Time Horizon
-classifier = clustering.SDOclustream(k=k, T=T)
+k = 200 # Model size
+T = 400 # Time Horizon
+ibuff = 10 # input buffer
+classifier = clustering.SDOclustream(k=k, T=T, input_buffer=ibuff)
 
-# Initialize an array to store the labels
-all_labels = []
+all_predic = []
 all_scores = []
-block_size = 20
-# Iterate through the data in blocks
-for i in range(0, X.shape[0], block_size):
-    chunk = X[i:i + block_size, :]
-    chunk_time = times[i:i + block_size]
+
+block_size = 1 # per-point processing
+for i in range(0, x.shape[0], block_size):
+    chunk = x[i:i + block_size, :]
+    chunk_time = t[i:i + block_size]
     labels, outlier_scores = classifier.fit_predict(chunk, chunk_time)
-    all_labels.append(labels)
+    all_predic.append(labels)
     all_scores.append(outlier_scores)
-final_labels = np.concatenate(all_labels)
-final_scores = np.concatenate(all_scores)
+p = np.concatenate(all_predic) # clustering labels
+s = np.concatenate(all_scores) # outlierness scores
 
-# print model
-obs = classifier.get_observers()
-for o in obs:
-      print(o)
+# Thresholding top outliers based on Chebyshev's inequality (88.9%)
+th = np.mean(s)+3*np.std(s)
+p[s>th]=-1
 
-# print labels
-for l in all_labels:
-      print(l)
+# Evaluation metrics
+from sklearn.metrics.cluster import adjusted_rand_score
+from sklearn.metrics import roc_auc_score
+print("Adjusted Rand Index (clustering):", adjusted_rand_score(y,p))
+print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,s))
+
+ 
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+p = LabelEncoder().fit_transform(p) -1
+
+fig = plt.figure(figsize=(15,4))
+cmap = plt.get_cmap('tab20', len(np.unique(p)))
+
+for i in range(3):
+    ax = fig.add_subplot(1, 3, i+1, projection='3d')
+    ax.scatter3D(t[p>-1], x[p>-1,0], x[p>-1,1], s=5, c=p[p>-1], cmap=cmap)
+    ax.scatter3D(t[p==-1], x[p==-1,0], x[p==-1,1], s=5, c='black')
+    ax.view_init(azim=280+i*30, elev=20)
+    ax.set_xlabel('time')
+    ax.set_ylabel('f0')
+    ax.set_zlabel('f1')
+
+plt.show()
