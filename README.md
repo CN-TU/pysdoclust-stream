@@ -32,9 +32,11 @@ Finally, complete experiments, datasets, scripts and results conducted for the p
 
 SDOclustream only requires `numpy`. It is a straighforward algorithm and very easy to configure. The main parameters are the number of observers `k`, which determines the size of the model and the parameter `T`, which defines the memory of the algorithm. 
 
-`k` (default=300) is determined by the variability of the data and the expected number of clusters, but between [200,500] is usually appropriate for most scenarios. `T` (default=500) sets the model dynamics and inertia, so that on average it is fully replaced after processing `T` points. If the data show very fast dynamics, low `T` is recommended, while if the dynamics are slow and you want to retain old clusters for a long time, `T` should take high values.
+Setting the right `k` (default=300) depends on the variability of the data and the expected number of clusters, but this is quite a robust parameter that gives proper performances with values between [200,500] in most scenarios. On the other hand, `T` (default=500) sets the model dynamics and inertia. Intuitively, it is the number of points processed that results in a fully replaced model (on average). Low `T` is recommended when the data show very fast dynamics, while if data evolution is slow and retaining old clusters is dedired, `T` should be set with high values.
 
-Moreover, `input_buffer` (default=0) establishes how many points are necessary for the observers to update the internal clustering. This fundamentally affects the speed of processing. Normally most scenarios tolerate high values without significant changes. Beyond this, other parameters are inherited from SDOclust and SDOstream and do nott usually require adjustment. You'll find them described in *python/clustering.py*.
+Additionally, `input_buffer` (default=0) establishes how many points are necessary for the observers to update the internal clustering. This fundamentally affects the processing speed. Most scenarios commonly tolerate high values in the `input_buffer` without significantly affecting the accuracy performance. Beyond the mentioned ones, other parameters are inherited from SDOclust and SDOstream and do not usually require adjustment. They are described in *python/clustering.py* file.
+
+The following example code retrieves a data stream and initialize SDOclustream.
 
 ```python
 from SDOclustream import clustering
@@ -52,7 +54,7 @@ ibuff = 10 # input buffer
 classifier = clustering.SDOclustream(k=k, T=T, input_buffer=ibuff)
 ```
 
-In the following piece of code the stream data is processed point by point. SDOclustream provides a clustering label and an outlierness score per point. Additionally, SDOclustream can perform outlier thresholding internally by giving the label *-1* to outliers. To do this, you must set ``outlier_handling=True`` and set the ``outlier_threshold`` (default=5).
+In the piece of code below the stream data is processed point by point. SDOclustream provides a clustering label and an outlierness score per point. It can also perform outlier thresholding internally by giving the label *-1* to outliers. To do this, ``outlier_handling=True`` must be set and the ``outlier_threshold`` (default=5) adjusted.
 
 
 ```python
