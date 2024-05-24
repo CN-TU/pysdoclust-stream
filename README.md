@@ -18,9 +18,9 @@ However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding
 
 ## Folder Structure and Evaluation Experiments
 
-The [cpp] folder contains the code for the C++ core algorithms, which might be used directly by C++ projects. 
+The [cpp] folder contains the code for the C++ core algorithms, which might be used directly in C++ projects. 
 
-When using SDOclustream from Python, the C++ algorithms are wrapped by the interfaces in the SWIG folder. These wrapper functions are translated to a Python interface and have the main purpose of providing an interface which can easily be parsed by SWIG.
+When using SDOclustream from Python, the C++ algorithms are wrapped by the interfaces in the [swig] folder. These wrapper functions are translated to a Python interface and have the main purpose of providing an interface which can easily be parsed by SWIG.
 
 The [python] folder contains the Python interface invoking the Python interface provided by SWIG.
 
