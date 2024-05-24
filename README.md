@@ -26,6 +26,7 @@ The [python] folder contains the Python interface invoking the Python interface 
 
 Finally, complete experiments, datasets, scripts and results conducted for the paper **Stream Clustering Robust to Concept Drift** are provided in the [evaluation_tests] folder. 
 
+<br>
 
 ## Example
 
@@ -83,6 +84,7 @@ Giving *ARI=0.97* and *ROC-AUC=0.99*. Note how SDOclustream assigns high outlier
 
 ![](example/example_dataset.png)
 
+<br>
 
 ## Aknowledgments
 
