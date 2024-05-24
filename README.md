@@ -14,7 +14,7 @@ However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding
 
         make && pip3 install SDOclustream.tar.xz
 
-<\br>
+<br>
 
 ## Folder Structure and Evaluation Experiments
 
