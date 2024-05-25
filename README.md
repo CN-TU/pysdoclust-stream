@@ -43,3 +43,9 @@ Tests for this project are located in the `tests/temporal-silhouette/` folder. T
 When adding new algorithms or modifying the interface, the SWIG wrappers have to be rebuilt. To this end, SWIG has to be installed and a ``pip`` package can be created and installed  using
 
 ```make && pip3 install dSalmon.tar.xz```
+
+<br>
+
+## Aknowledgments
+
+We would like to thank the developers of the [dSalmon](https://github.com/CN-TU/dSalmon) project for providing the framework and algorithms, in particular the MTree implementation, that were instrumental in the development of this project.
