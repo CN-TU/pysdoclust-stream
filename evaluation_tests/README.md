@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-We recommend using a clean python virtual environment:
+In case of conflicts with package-versions, we recommend using a clean python virtual environment:
 
         python3 -m venv venv
 
@@ -22,7 +22,12 @@ To replicate evaluation experiments, simply run:
 
         bash run.sh 2> log.txt
 
-It will generate two folders: [results] and [plots]
+It will generate two folders (if they don't exist already): [results] and [plots]
 
+## Results
 
+The [results] folder contains results used in the paper, separated in three files:
 
+- results_ex.csv (Multiple Concept Drift experiments)
+- results_real.csv (Real Data experiments)
+- results_syn.csv (Specific Concept Drift experiments)
