@@ -92,8 +92,3 @@ Giving *ARI=0.97* and *ROC-AUC=0.99*. Note how SDOclustream assigns high outlier
 
 ![](example/example_dataset.png)
 
-<br>
-
-## Aknowledgments
-
-We would like to thank the developers of the [dSalmon](https://github.com/CN-TU/dSalmon) project for providing the framework and algorithms, in particular the MTree implementation, that were instrumental in the development of this project.
