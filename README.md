@@ -1,6 +1,10 @@
 # pysdoclust-stream
 
-**SDOclustream**: Incremental stream clustering (and outlier detection) algorithm based on Sparse Data Observers (SDO)
+**SDOclustream** 
+
+Incremental stream clustering (and outlier detection) algorithm based on Sparse Data Observers (SDO). SDOclustream is suitable for large, multi-dimensional datasets where clusters are statistically well represented.
+
+<br>
 
 ## Installation
 
