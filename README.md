@@ -1,24 +1,24 @@
 # pysdoclust-stream
 
-**SDOclustream** 
+**SDOstreamclust** 
 
 Incremental stream clustering (and outlier detection) algorithm based on Sparse Data Observers (SDO). 
 
-SDOclustream is suitable for large, multi-dimensional datasets where clusters are statistically well represented.
+SDOstreamclust is suitable for large, multi-dimensional datasets where clusters are statistically well represented.
 
 <br>
 
 ## Installation
 
-SDOclustream can be installed with pip3:
+SDOstreamclust can be installed with pip3:
 
 
         pip3 install git+https://github.com/...
 
 
-However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. This requieres the installation of [SWIG](https://www.swig.org/). Hence,the complete repository should be downloaded and SDOclustream locally installed by running: 
+However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. This requieres the installation of [SWIG](https://www.swig.org/). Hence,the complete repository should be downloaded and SDOstreamclust locally installed by running: 
 
-        make && pip3 install SDOclustream.tar.xz
+        make && pip3 install SDOstreamclust.tar.xz
 
 <br>
 
@@ -26,7 +26,7 @@ However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding
 
 The [cpp] folder contains the code for the C++ core algorithms, which might be used directly in C++ projects. 
 
-When using SDOclustream from Python, the C++ algorithms are wrapped by the interfaces in the [swig] folder. These wrapper functions are translated to a Python interface and have the main purpose of providing an interface which can easily be parsed by SWIG.
+When using SDOstreamclust from Python, the C++ algorithms are wrapped by the interfaces in the [swig] folder. These wrapper functions are translated to a Python interface and have the main purpose of providing an interface which can easily be parsed by SWIG.
 
 The [python] folder contains the Python interface invoking the Python interface provided by SWIG.
 
@@ -36,7 +36,7 @@ Finally, complete experiments, datasets, scripts and results conducted for the p
 
 ## Example
 
-SDOclustream only requires `numpy`. It is a straighforward algorithm and very easy to configure. The main parameters are the number of observers `k`, which determines the size of the model and the parameter `T`, which defines the memory of the algorithm. 
+SDOstreamclust only requires `numpy`. It is a straighforward algorithm and very easy to configure. The main parameters are the number of observers `k`, which determines the size of the model and the parameter `T`, which defines the memory of the algorithm. 
 
 Setting the right `k` (default=300) depends on the variability of the data and the expected number of clusters, but this is quite a robust parameter that gives proper performances with values between [200,500] in most scenarios. On the other hand, `T` (default=500) sets the model dynamics and inertia. Intuitively, it is the number of points processed that results in a fully replaced model (on average). Low `T` is recommended when the data show very fast dynamics, while if data evolution is slow and retaining old clusters is dedired, `T` should be set with high values.
 
