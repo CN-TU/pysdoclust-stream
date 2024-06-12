@@ -88,7 +88,7 @@ print("Adjusted Rand Index (clustering):", adjusted_rand_score(y,p))
 print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,s))
 ```
 
-Giving *ARI=0.97* and *ROC-AUC=0.99*. Note how SDOclustream assigns high outlierness scores to the first points of emerging clusters.
+Giving *ARI=0.97* and *ROC-AUC=0.99*. Note how SDOstreamclust assigns high outlierness scores to the first points of emerging clusters.
 
 ![](example/example_dataset.png)
 
