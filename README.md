@@ -18,7 +18,7 @@ SDOstreamclust can be installed with pip3:
 
 However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. This requieres the installation of [SWIG](https://www.swig.org/). Hence,the complete repository should be downloaded and SDOstreamclust locally installed by running: 
 
-        make && pip3 install SDOstreamclust.tar.xz
+        make && pip3 install SDOclustream.tar.xz
 
 <br>
 
