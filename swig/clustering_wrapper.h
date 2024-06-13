@@ -1,21 +1,21 @@
 #ifndef DSALMON_CLUSTERING_WRAPPER_H
 #define DSALMON_CLUSTERING_WRAPPER_H
 
-#include "SDOclustream.h"
-#include "tpSDOclustream.h"
+#include "SDOstreamclust.h"
+#include "tpSDOstreamclust.h"
 // #include "histogram.h"
 
 #include "array_types.h"
 #include "distance_wrappers.h"
 
 template<typename FloatType>
-class SDOclustream_wrapper {
+class SDOstreamclust_wrapper {
     int dimension;
     // std::size_t freq_bins;
-    SDOclustream<FloatType> sdoclust; // Use SDOclustream
+    SDOstreamclust<FloatType> sdoclust; // Use SDOstreamclust
 
   public:
-    SDOclustream_wrapper(
+    SDOstreamclust_wrapper(
       int observer_cnt, 
       FloatType T, 
       FloatType idle_observers, 
@@ -44,16 +44,16 @@ class SDOclustream_wrapper {
 };
 
 // Instantiate the class for different floating-point types
-DEFINE_FLOATINSTANTIATIONS(SDOclustream)
+DEFINE_FLOATINSTANTIATIONS(SDOstreamclust)
 
 template<typename FloatType>
-class tpSDOclustream_wrapper {
+class tpSDOstreamclust_wrapper {
     int dimension;
     // std::size_t freq_bins;
-    tpSDOclustream<FloatType> sdoclust; // Use SDOclustream
+    tpSDOstreamclust<FloatType> sdoclust; // Use SDOstreamclust
 
   public:
-    tpSDOclustream_wrapper(
+    tpSDOstreamclust_wrapper(
       int observer_cnt, 
       FloatType T, 
       FloatType idle_observers, 
@@ -82,6 +82,6 @@ class tpSDOclustream_wrapper {
 };
 
 // Instantiate the class for different floating-point types
-DEFINE_FLOATINSTANTIATIONS(tpSDOclustream)
+DEFINE_FLOATINSTANTIATIONS(tpSDOstreamclust)
 
 #endif

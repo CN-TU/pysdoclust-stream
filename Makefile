@@ -5,11 +5,11 @@ BUILD_DIR = build
 all: package
 
 swig:
-	swig -c++ -python swig/SDOclustream.i
-	mv swig/SDOclustream.py swig/__init__.py
+	swig -c++ -python swig/SDOstreamclust.i
+	mv swig/SDOstreamclust.py swig/__init__.py
 
 package: swig
-	tar cJf SDOclustream.tar.xz contrib cpp python swig README.md LICENSE setup.py
+	tar cJf SDOstreamclust.tar.xz contrib cpp python swig README.md LICENSE setup.py
 
 clean:
 	rm -rf $(BUILD_DIR)/*

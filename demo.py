@@ -1,4 +1,4 @@
-from SDOclustream import clustering
+from SDOstreamclust import clustering
 import numpy as np
 import pandas as pd
 
@@ -10,7 +10,7 @@ y = df['label'].to_numpy()
 k = 200 # Model size
 T = 400 # Time Horizon
 ibuff = 10 # input buffer
-classifier = clustering.SDOclustream(k=k, T=T, input_buffer=ibuff)
+classifier = clustering.SDOstreamclust(k=k, T=T, input_buffer=ibuff)
 
 all_predic = []
 all_scores = []

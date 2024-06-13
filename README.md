@@ -18,7 +18,7 @@ SDOstreamclust can be installed with pip3:
 
 However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. This requieres the installation of [SWIG](https://www.swig.org/). Hence,the complete repository should be downloaded and SDOstreamclust locally installed by running: 
 
-        make && pip3 install SDOclustream.tar.xz
+        make && pip3 install SDOstreamclust.tar.xz
 
 <br>
 
@@ -42,10 +42,10 @@ Setting the right `k` (default=300) depends on the variability of the data and t
 
 Additionally, `input_buffer` (default=0) establishes how many points are necessary for the observers to update the internal clustering. This fundamentally affects the processing speed. Most scenarios commonly tolerate high values in the `input_buffer` without significantly affecting the accuracy performance. Beyond the mentioned ones, other parameters are inherited from SDOclust and SDOstream and do not usually require adjustment. They are described in *python/clustering.py* file.
 
-The following example code retrieves a data stream and initialize SDOclustream.
+The following example code retrieves a data stream and initialize SDOstreamclust.
 
 ```python
-from SDOclustream import clustering
+from SDOstreamclust import clustering
 import numpy as np
 import pandas as pd
 
@@ -57,10 +57,10 @@ y = df['label'].to_numpy()
 k = 200 # Model size
 T = 400 # Time Horizon
 ibuff = 10 # input buffer
-classifier = clustering.SDOclustream(k=k, T=T, input_buffer=ibuff)
+classifier = clustering.SDOstreamclust(k=k, T=T, input_buffer=ibuff)
 ```
 
-In the piece of code below the stream data is processed point by point. SDOclustream provides a clustering label and an outlierness score per point. It can also perform outlier thresholding internally by giving the label *-1* to outliers. To do this, ``outlier_handling=True`` must be set and the ``outlier_threshold`` (default=5) adjusted.
+In the piece of code below the stream data is processed point by point. SDOstreamclust provides a clustering label and an outlierness score per point. It can also perform outlier thresholding internally by giving the label *-1* to outliers. To do this, ``outlier_handling=True`` must be set and the ``outlier_threshold`` (default=5) adjusted.
 
 
 ```python
