@@ -10,7 +10,7 @@ SDOstreamclust is suitable for large, multi-dimensional datasets where clusters 
 
 ## Installation
 
-SDOstreamclust can be installed with pip3 *(this option is not available during anonymous review, instead downloading the repo is required)*:
+SDOstreamclust only requires `numpy`. It can be installed with pip3 *(this option is not available during anonymous review, instead downloading the repo is required)*:
 
 
         pip3 install git+https://github.com/... 
@@ -36,7 +36,7 @@ Finally, complete experiments, datasets, scripts and results conducted for the p
 
 ## Example
 
-SDOstreamclust only requires `numpy`. It is a straighforward algorithm and very easy to configure. The main parameters are the number of observers `k`, which determines the size of the model and the parameter `T`, which defines the memory of the algorithm. 
+SDOstreamclust is a straighforward algorithm and very easy to configure. The main parameters are the number of observers `k`, which determines the size of the model and the parameter `T`, which defines the memory of the algorithm. 
 
 Setting the right `k` (default=300) depends on the variability of the data and the expected number of clusters, but this is quite a robust parameter that gives proper performances with values between [200,500] in most scenarios. On the other hand, `T` (default=500) sets the model dynamics and inertia. Intuitively, it is the number of points processed that results in a fully replaced model (on average). Low `T` is recommended when the data show very fast dynamics, while if data evolution is slow and retaining old clusters is dedired, `T` should be set with high values.
 
