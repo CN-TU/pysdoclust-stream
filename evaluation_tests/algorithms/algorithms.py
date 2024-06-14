@@ -1,6 +1,6 @@
 
 import numpy as np
-from SDOclustream import clustering
+from SDOstreamclust import clustering
 from river import cluster
 from river import stream
 from sklearn.metrics.cluster import adjusted_rand_score
@@ -88,7 +88,7 @@ def optimize_sdc(trial, x, y, pam):
     minT = min(100, pam['training_block'])
     T = trial.suggest_int("T", minT, pam['training_block'], step=minT)
     outlier_threshold = trial.suggest_int("outlier_threshold", 2, 7)
-    alg = clustering.SDOclustream(k=pam['observers'], T=T, rel_outlier_score=True, outlier_handling=True, outlier_threshold=outlier_threshold, input_buffer=pam['buffer_size'], seed=0, x=5)
+    alg = clustering.SDOstreamclust(k=pam['observers'], T=T, rel_outlier_score=True, outlier_handling=True, outlier_threshold=outlier_threshold, input_buffer=pam['buffer_size'], seed=0, x=5)
 
     p = np.zeros(len(y))
     p, _ = alg.fit_predict(x)
@@ -107,7 +107,7 @@ def StKMeans(fixed_pams, params=None):
 def SDOclst(fixed_pams, params=None):
     buffer_size = fixed_pams['buffer_size']
     observers = fixed_pams['observers']
-    alg = clustering.SDOclustream(k=observers, T=params['T'], rel_outlier_score=True, outlier_handling=True, outlier_threshold=params['outlier_threshold'], input_buffer=buffer_size, seed=0, x=5) 
+    alg = clustering.SDOstreamclust(k=observers, T=params['T'], rel_outlier_score=True, outlier_handling=True, outlier_threshold=params['outlier_threshold'], input_buffer=buffer_size, seed=0, x=5) 
     return alg
 
 def CluStream(fixed_pams, params=None):
