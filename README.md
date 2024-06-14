@@ -12,7 +12,7 @@ SDOstreamclust is suitable for large, multi-dimensional datasets where clusters 
 
 SDOstreamclust only requires **numpy** and **dSalmon**. They can be normally installed with pip3.
 
-For examples, experiments, comparisons with other algoritms and result visualization contained in this repo, you'll find all the required dependencies in the "evaluation_tests/dependencies.sh" file.
+For examples, experiments, comparisons with other algoritms and result visualization contained in this repo, you'll find all the required dependencies in the *evaluation_tests/dependencies.sh* file.
 
 <br>
 
