@@ -10,10 +10,10 @@ SDOstreamclust is suitable for large, multi-dimensional datasets where clusters 
 
 ## Installation
 
-SDOstreamclust can be installed with pip3:
+SDOstreamclust can be installed with pip3 *(this option is not available during anonymous review, instead downloading the repo is required)*:
 
 
-        pip3 install git+https://github.com/... *(this option is not available during anonymous review, instead downloading the repo is required)*
+        pip3 install git+https://github.com/... 
 
 
 However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. This requieres the installation of [SWIG](https://www.swig.org/). Therefore, **the complete repository should be downloaded, extracted and SDOstreamclust locally installed** by running: 
