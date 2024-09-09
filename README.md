@@ -21,12 +21,15 @@ For examples, experiments, comparisons with other algoritms and result visualiza
 SDOstreamclust can be installed with pip3 *(this option is not available during anonymous review, instead downloading the repo is required)*:
 
 
-        pip3 install git+https://github.com/... 
+        pip install git+https://github.com/... 
 
 
 However, **rebuilding** the SWIG wrappers might be necessary, mainly when adding new algorithms or modifying the interface. This requieres the installation of [SWIG](https://www.swig.org/). Therefore, **the complete repository should be downloaded, extracted and SDOstreamclust locally installed** by running: 
 
-        make && pip3 install SDOstreamclust.tar.xz
+        pip install numpy
+        pip install swig
+        pip install wheel
+        make && pip install SDOstreamclust.tar.xz
 
 <br>
 
