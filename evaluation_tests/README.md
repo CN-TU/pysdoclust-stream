@@ -2,7 +2,9 @@
 
 ## Dependencies
 
-In case of conflicts with package-versions, we recommend using a clean python virtual environment:
+These experiments have been run with **Python v3.8.14**.
+
+To avoid conflicts with package-versions, we recommend using a clean python virtual environment:
 
         python3 -m venv venv
 
@@ -13,7 +15,11 @@ Later, install dependencies by running:
 
         bash dependencies.sh
 
-Finally, install SDOclustream as indicated in this repository
+Finally, install SDOclustream as indicated in this repository, i.e.,
+
+        pip3 install swig
+        pip3 install wheel
+        make && pip3 install SDOstreamclust.tar.xz
 
 
 ## Replication
