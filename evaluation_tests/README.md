@@ -6,7 +6,9 @@ Experiments can also be replicated by using Docker:
 
         sudo docker run --rm -v $(pwd)/results:/usr/src/app/results fiv5/sdostreamclust
 
-Note that the previous command creates a [results] folder in your local machine in order to store the analysis results obtained from the container. *Warning!* the analysis process can take several days due to the high number of datasets, algorithms, and parameter adjustment processes. 
+Note that the previous command creates a [results] folder in your local machine in order to store the analysis results obtained from the container. 
+
+*Warning!* the analysis process can take several days due to the high number of datasets, algorithms, and parameter adjustment processes. 
 
 
 ## Dependencies
@@ -38,6 +40,8 @@ To replicate evaluation experiments, simply run:
         bash run.sh 2> log.txt
 
 It will generate two folders (if they don't exist already): [results] and [plots]
+
+*Warning!* the analysis process can take several days due to the high number of datasets, algorithms, and parameter adjustment processes. 
 
 ## Results
 
