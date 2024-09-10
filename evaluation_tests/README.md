@@ -2,7 +2,7 @@
 
 ## Docker
 
-Experiments can be run using Docker:
+Experiments can also be replicated by using Docker:
 
         sudo docker run --rm -v $(pwd)/results:/usr/src/app/results fiv5/sdostreamclust
 
