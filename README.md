@@ -18,7 +18,7 @@ For examples, experiments, comparisons with other algoritms and result visualiza
 
 ## Installation
 
-SDOstreamclust can be installed with pip *(this option is not available during anonymous review, instead downloading the repo is required)*:
+SDOstreamclust can be installed with pip:
 
 
         pip3 install git+https://github.com/CN-TU/pysdoclust-stream.git
