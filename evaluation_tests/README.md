@@ -28,10 +28,7 @@ Later, install dependencies by running:
 
 Finally, install SDOclustream as indicated in this repository, i.e.,
 
-        pip3 install swig
-        pip3 install wheel
-        make && pip3 install SDOstreamclust.tar.xz
-
+    pip3 install git+https://github.com/CN-TU/pysdoclust-stream.git
 
 ## Replication
 
