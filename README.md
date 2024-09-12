@@ -42,7 +42,10 @@ When using SDOstreamclust from Python, the C++ algorithms are wrapped by the int
 
 The [python] folder contains the Python interface invoking the Python interface provided by SWIG.
 
-Finally, complete experiments, datasets, scripts and results conducted for the paper **Stream Clustering Robust to Concept Drift** are provided in the [evaluation_tests] folder (**tested with Python v3.8.14**). 
+Finally, complete experiments, datasets, scripts and results conducted for the paper **Stream Clustering Robust to Concept Drift** are provided in the **[evaluation_tests] folder**. They have been tested with **Python v3.8.14**. 
+
+A Docker version is also available in: [https://hub.docker.com/r/fiv5/sdostreamclust](https://hub.docker.com/r/fiv5/sdostreamclust) 
+ 
 
 <br>
 
