@@ -1,6 +1,7 @@
 # Ignore compiled files
 *.exe
 *.o
+*.tar.xz
 
 # Ignore settings and cache files
 *.pyc
