@@ -12,8 +12,6 @@ SDOstreamclust is suitable for large, multi-dimensional datasets where clusters 
 
 SDOstreamclust only requires **numpy** and **dSalmon**. They can be normally installed with pip.
 
-For examples, experiments, comparisons with other algoritms and result visualization contained in this repo, you'll find all the required dependencies in the *evaluation_tests/dependencies.sh* file.
-
 <br>
 
 ## Installation
@@ -21,7 +19,11 @@ For examples, experiments, comparisons with other algoritms and result visualiza
 SDOstreamclust can be installed with pip:
 
 
-        pip3 install git+https://github.com/CN-TU/pysdoclust-stream.git
+        pip3 install git+https://github.com/CN-TU/pysdoclust-stream.git@main
+
+or simply downloading this repository-branch and running:
+
+        pip install pysdoclust-stream-main.zip  
 
 <br>
 
