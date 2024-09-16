@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <cmath>
 #include <vector>
-#include <cstdint>
+
 #include <istream>
 #include <ostream>
 
