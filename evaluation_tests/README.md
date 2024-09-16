@@ -28,7 +28,11 @@ Later, install dependencies by running:
 
 Finally, install SDOclustream as indicated in this repository, i.e.,
 
-            pip3 install git+https://github.com/CN-TU/pysdoclust-stream.git@main
+        pip3 install git+https://github.com/CN-TU/pysdoclust-stream.git@main
+
+or download the main branch and run:
+
+        pip3 install pysdoclust-stream-main.zip  
     
 ## Replication
 
