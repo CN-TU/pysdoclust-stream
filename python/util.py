@@ -1,5 +1,5 @@
 import numpy as np
-from dSalmon import swig
+from SDOstreamclust import swig
 
 def sanitizeData(data, float_type=np.float64):
     if not (isinstance(data, np.ndarray) and data.dtype==float_type and data.flags['C_CONTIGUOUS']):
