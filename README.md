@@ -10,7 +10,7 @@ SDOstreamclust is suitable for large, multi-dimensional datasets where clusters 
 
 ## Dependencies
 
-SDOstreamclust only requires **numpy**.
+SDOstreamclust requires **numpy**.
 
 <br>
 
