@@ -10,7 +10,7 @@ SDOstreamclust is suitable for large, multi-dimensional datasets where clusters 
 
 ## Dependencies
 
-SDOstreamclust only requires **numpy** and **dSalmon**. They can be normally installed with pip.
+SDOstreamclust only requires **numpy**.
 
 <br>
 
