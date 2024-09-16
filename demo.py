@@ -24,6 +24,7 @@ for i in range(0, x.shape[0], block_size):
     all_scores.append(outlier_scores)
 p = np.concatenate(all_predic) # clustering labels
 s = np.concatenate(all_scores) # outlierness scores
+s = -1/(s+1) # norm. to avoid inf scores
 
 # Thresholding top outliers based on Chebyshev's inequality (88.9%)
 th = np.mean(s)+3*np.std(s)
