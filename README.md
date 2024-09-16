@@ -16,14 +16,13 @@ SDOstreamclust only requires **numpy** and **dSalmon**. They can be normally ins
 
 ## Installation
 
-SDOstreamclust can be installed with pip:
-
+SDOstreamclust can be installed from the *main* branch:
 
         pip3 install git+https://github.com/CN-TU/pysdoclust-stream.git@main
 
-or simply downloading this repository-branch and running:
+or simply download the main branch and run:
 
-        pip install pysdoclust-stream-main.zip  
+        pip3 install pysdoclust-stream-main.zip  
 
 <br>
 
