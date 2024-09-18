@@ -29,22 +29,27 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
     if float_pams is None:
         float_pams = {}
     
+    
     # Extract fixed parameters with defaults
     pam = {**fixed_pams}
     
     # Integer parameters
     for param_name, param_range in int_pams.items():
-        min_value, max_value, step_value = param_range
-        pam[param_name] = trial.suggest_int(param_name, min_value, max_value, step=step_value)
-    
+        if len(param_range) == 3:
+            min_value, max_value, step_value = param_range
+            pam[param_name] = trial.suggest_int(param_name, min_value, max_value, step=step_value)
+        elif len(param_range) == 2:
+            min_value, max_value = param_range
+            pam[param_name] = trial.suggest_int(param_name, min_value, max_value)
+
     # Float parameters
     for param_name, param_range in float_pams.items():
-        min_value, max_value, step_value = param_range
-        pam[param_name] = trial.suggest_float(param_name, min_value, max_value, step=step_value)
-
-    # Eval parameters
-    for param_name, param in eval_pams.items():
-        pam[param_name] = param
+        if len(param_range) == 3:
+            min_value, max_value, step_value = param_range
+            pam[param_name] = trial.suggest_float(param_name, min_value, max_value, step=step_value)
+        elif len(param_range) == 2:
+            min_value, max_value = param_range
+            pam[param_name] = trial.suggest_float(param_name, min_value, max_value)
     
     # Default values if not provided by pam
     k = pam.get('k', 300)
@@ -69,14 +74,14 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
         t = np.arange(0, len(y))
 
     # Add block size parameters
-    first_block_size = pam.get('first_block_size', 1)
-    block_size = pam.get('block_size', 1)
+    first_block_size = eval_pams.get('first_block_size', 1)
+    block_size = eval_pams.get('block_size', 1)
 
     # Evaluate the algorithm n_eval times and store the results
     scores = []
     
     n_eval = eval_pams.get('n_eval', 1)
-    for _ in range(n_eval):
+    for _ in range(n_eval):        
         # Generate a random integer for the seed
         current_seed = np.random.randint(0, 2**31 - 1)
 
@@ -111,7 +116,6 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
 
         plist.append(p_)
         slist.append(s_)
-
         for i in range(first_block_size, data.shape[0], block_size):
             chunk = data[i:i + block_size, :]
             chunk_time = t[i:i + block_size]
@@ -124,8 +128,8 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
         s = -1/(s+1)  # norm. to avoid inf scores
 
         # Evaluate the performance for each run
-        warm_up = pam.get('warm_up', 0)
-        metric = pam.get('metric', 'ari')
+        warm_up = eval_pams.get('warm_up', 0)
+        metric = eval_pams.get('metric', 'ari')
         if metric == 'ari':
             score = adjusted_rand_score(p[warm_up:], y[warm_up:])
         elif metric == 'roc_auc':
@@ -407,8 +411,6 @@ def plot_heat(trials, param_x, param_y, metric='ari', n_bins=5, filepath=None):
         plt.show()
 
 
-
-
 def plot_all(study, metric='ari', n_bins=5, filepath=None):
     """Generate heatmaps for all combinations of parameters."""
     param_names = list(study.best_params.keys())  # Extract the parameter names
@@ -443,7 +445,7 @@ def main(json_file, data_file):
     
     # Optimize the objective function
     n_trials = eval_pams.get('n_trials', 50)    
-    study.optimize(lambda trial: optimize_sdc(trial, x, y, t, fixed_pams, int_pams, float_pams, eval_pams), n_trials=n_trials, n_jobs=1)
+    study.optimize(lambda trial: optimize_sdc(trial, x, y, t, fixed_pams, int_pams, float_pams, eval_pams), n_trials=n_trials, n_jobs=-1)
     
     # Print the best parameters
     print('Best parameters:', study.best_params)
