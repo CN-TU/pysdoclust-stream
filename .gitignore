@@ -2,6 +2,7 @@
 *.exe
 *.o
 *.tar.xz
+*.mp4
 
 # Ignore settings and cache files
 *.pyc
@@ -13,3 +14,8 @@ build/
 
 # Ignore IDE-specific folders
 .vscode/
+
+# Some eval folders
+results/
+frames/
+params/
