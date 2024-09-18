@@ -336,28 +336,78 @@ def plot_heat(trials, param_x, param_y, metric='ari', n_bins=5, filepath=None):
         values_x.append(trial.params[param_x])
         values_y.append(trial.params[param_y])
         scores.append(trial.value)
+
+    # Create a 2D array to store the scores in each bin
+    xedges = np.linspace(min(values_x), max(values_x), n_bins + 1)
+    yedges = np.linspace(min(values_y), max(values_y), n_bins + 1)
+
+    # Initialize 2D lists to store all the scores in each bin
+    bin_scores = [[[] for _ in range(n_bins)] for _ in range(n_bins)]
+
+    # Place each trial score into its respective bin
+    for i in range(len(values_x)):
+        x_idx = np.digitize(values_x[i], xedges) - 1
+        y_idx = np.digitize(values_y[i], yedges) - 1
+        if x_idx < n_bins and y_idx < n_bins:  # Ensure index is within bounds
+            bin_scores[x_idx][y_idx].append(scores[i])
     
-    # Create a 2D histogram of the parameter values and scores
-    heatmap, xedges, yedges = np.histogram2d(values_x, values_y, bins=n_bins, weights=scores)
-    heatmap_count, _, _ = np.histogram2d(values_x, values_y, bins=n_bins)
-    
-    # Avoid division by zero
-    heatmap_count = np.maximum(heatmap_count, 1)
-    heatmap_avg = heatmap / heatmap_count  # Compute average score per bin
+    # Calculate the median for each bin
+    heatmap_median = np.zeros((n_bins, n_bins))
+    for i in range(n_bins):
+        for j in range(n_bins):
+            if bin_scores[i][j]:  # Only calculate median if there are scores
+                heatmap_median[i, j] = np.median(bin_scores[i][j])
+            else:
+                heatmap_median[i, j] = np.nan  # Assign NaN if no scores
 
     # Plot the heatmap
     plt.figure(figsize=(12, 6))
-    sns.heatmap(heatmap_avg, xticklabels=np.round(xedges, 2), yticklabels=np.round(yedges, 2), cmap="viridis", annot=True)
+    ax = sns.heatmap(heatmap_median, cmap="viridis", annot=True)
+    
+    # # Create a 2D histogram of the parameter values and scores
+    # heatmap, xedges, yedges = np.histogram2d(values_x, values_y, bins=n_bins, weights=scores)
+    # heatmap_count, _, _ = np.histogram2d(values_x, values_y, bins=n_bins)
+    
+    # # Avoid division by zero
+    # heatmap_count = np.maximum(heatmap_count, 1)
+    # heatmap_avg = heatmap / heatmap_count  # Compute average score per bin
+
+    # # Plot the heatmap
+    # plt.figure(figsize=(12, 6))
+    # ax = sns.heatmap(heatmap_avg, cmap="viridis", annot=True)
+
+    # Set custom tick positions at the edges
+    ax.set_xticks(np.arange(len(xedges)))  # Center tick positions between bins
+    ax.set_yticks(np.arange(len(yedges)))
+
+    # Create tick labels as (left, right) for each bin
+    x_labels = [f'{np.round(xedges[i], 2)}' for i in range(len(xedges))]
+    y_labels = [f'{np.round(yedges[i], 2)}' for i in range(len(yedges))]
+
+    # Set the tick labels to show bin boundaries
+    ax.set_xticklabels(x_labels, ha='center', rotation=0)  # Rotate x-axis labels by 30 degrees
+    ax.set_yticklabels(y_labels, ha='center', rotation=0)  # Rotate y-axis labels by 90 degrees
+
+     # Adjust padding for tick labels (move them farther from the plot)
+    ax.tick_params(axis='x', pad=10)  # Move x-axis labels away from the plot by 10 points
+    ax.tick_params(axis='y', pad=20)  # Move y-axis labels away from the plot by 10 points
+
+    ax.xaxis.tick_bottom()  # Ensure x-axis ticks are at the bottom
+    ax.yaxis.tick_left()    # Ensure y-axis ticks are on the left
+    
     plt.xlabel(param_x)
     plt.ylabel(param_y)
     plt.title(f'Heatmap of {param_x} vs {param_y} ({metric})')
 
     if filepath:
         plt.savefig(f"{filepath}/heat_{param_x}_{param_y}.png")
-        print(f"Heatmap saved to {filepath}/heat_{param_x}_{param_y}.png")        
+        print(f"Heatmap saved to {filepath}/heat_{param_x}_{param_y}.png")
         plt.close()
     else:
         plt.show()
+
+
+
 
 def plot_all(study, metric='ari', n_bins=5, filepath=None):
     """Generate heatmaps for all combinations of parameters."""
