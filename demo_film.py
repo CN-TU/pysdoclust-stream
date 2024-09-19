@@ -52,10 +52,18 @@ def load_data(filename):
 filename = 'evaluation_tests/data/example/concept_drift.arff'
 t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
-k = 600 # Model size
-T = 1500 # Time Horizon
+# Set the initial block to be of size k
+first_block_size = 250
+block_size = 25  # Remaining blocks will have this size
+
+# Controls the time window of ground truth / predictions points shown at each frame: obs_T +/- (T / f_T), 
+# obs_T is time of model (observer) snapshot
+f_T = 10
+
+k = 350 # Model size
+T = 1200 # Time Horizon
 # ibuff = 10 # input buffer
-chi_prop = 0.025
+chi_prop = 0.04
 qv = 0.3
 e = 3
 outlier_threshold = 3
@@ -83,11 +91,7 @@ all_obs_points = []
 all_obs_labels = []
 all_obs_t = []
 
-# Set the initial block to be of size k
-first_block_size = k
-block_size = 25  # Remaining blocks will have this size
-
-# Process the first block separately with size k
+# Process the first block separately 
 chunk = x[:first_block_size, :]
 chunk_time = t[:first_block_size]
 labels, outlier_scores = classifier.fit_predict(chunk, chunk_time)
@@ -149,18 +153,15 @@ cmap = plt.get_cmap('tab20', len(le.classes_))
 norm = plt.Normalize(vmin=min(np.unique(p)), vmax=max(np.unique(p)))
 
 # Define marker shapes, which will cycle if the number of labels exceeds the number of available shapes
-marker_shapes = ['.', 'o', 's', 'D', '^', 'v', '<', '>', 'p', '*']
+marker_shapes = ['.', 'o', 's', 'd', '^', 'v', '<', '>', 'h', 'p', '*', '+', '1', '2', '3', '4', '8', 'P', 'D', 'H']
 num_shapes = len(marker_shapes)
 
 
 cmap_gt = plt.get_cmap('Dark2', len(np.unique(y)))
 frame_files = []
 
-f_T = 10
-
 # Plot and save each frame
 for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_obs_labels, all_obs_t)):
-    
     
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))
 
@@ -171,7 +172,7 @@ for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_ob
     filtered_points = x[mask]
     filtered_labels = p[mask].astype(int)
     filtered_gt_labels = y[mask].astype(int)
-    for label in np.unique(filtered_labels):
+    for label in all_unique_labels:
         if label != -1:
             shape = marker_shapes[label % num_shapes]  # Use filtered_labels for marker shapes
             axes[0].scatter(filtered_points[filtered_labels == label, 0], 
@@ -194,11 +195,13 @@ for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_ob
     points = np.array(obs_points)
     labels = le.transform(np.array(obs_labels)) - 1
 
-    for label in np.unique(labels):
+    for label in all_unique_labels:
         if label != -1:
             shape = marker_shapes[label % num_shapes]  # Use filtered_labels for marker shapes
-            axes[1].scatter(points[obs_labels == label, 0], points[obs_labels == label, 1], 
-                            c=labels[obs_labels == label], marker=shape, cmap=cmap, norm=norm, s=15)
+            axes[1].scatter(points[labels == label, 0], 
+                            points[labels == label, 1], 
+                            c=labels[labels == label], 
+                            cmap=cmap, norm=norm, s=15, marker=shape)
 
 
     # scatter_obs = axes[1].scatter(points[:, 0], points[:, 1], c=labels, cmap=cmap, norm=norm, s=10, marker='.')
