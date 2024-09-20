@@ -154,8 +154,9 @@ def load_data(filename):
 
     if(df_data['class'].dtypes == 'object'):
         df_data['class'] = df_data['class'].map(lambda x: x.decode("utf-8").lstrip('b').rstrip(''))
-
-    y = df_data['class'].str.strip().astype(int).to_numpy() #df_data['class'].to_numpy()
+        y = df_data['class'].str.strip().astype(int).to_numpy() #df_data['class'].to_numpy()
+    else:
+        y = df_data['class'].astype(int).to_numpy()
     # t = np.arange(len(y))
     # Generate random values
     random_values = np.random.uniform(0, len(y), len(y))

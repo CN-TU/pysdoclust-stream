@@ -53,24 +53,24 @@ def load_data(filename):
 
     return t,x,y,n,m,clusters,outliers,dataname
 
-filename = 'evaluation_tests/data/example/concept_drift.arff'
+filename = 'evaluation_tests/data/real/fert_vs_gdp.arff'
 t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
 # Set the initial block to be of size k
 first_block_size = 250
-block_size = 25  # Remaining blocks will have this size
+block_size = 10  # Remaining blocks will have this size
 
 # Controls the time window of ground truth / predictions points shown at each frame: obs_T +/- (T / f_T), 
 # obs_T is time of model (observer) snapshot
 f_T = 10
 
-k = 350 # Model size
-T = 1200 # Time Horizon
+k = 75 # Model size
+T = 200 # Time Horizon
 # ibuff = 10 # input buffer
-chi_prop = 0.04
-qv = 0.3
+chi_prop = 0.2
+qv = 0.2
 e = 3
-outlier_threshold = 3
+outlier_threshold = 5
 outlier_handling = True
 x_ = 5
 freq_bins= 1 #10
@@ -138,10 +138,9 @@ s = -1/(s+1) # norm. to avoid inf scores
 # Evaluation metrics
 print("Adjusted Rand Index (clustering):", adjusted_rand_score(y,p))
 # print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,s))
-print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,p<0))
-
+# print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,p<0))
+print("Outlier rated (detected):", sum(p<0)/len(p))
  
-
 unique_predic_labels = np.unique(p)  # Unique labels from clustering predictions
 unique_obs_labels = np.unique(np.concatenate(all_obs_labels))  # Unique observed labels
 # Combine both to get all unique labels
@@ -213,9 +212,16 @@ for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_ob
     axes[1].set_xlim(0, 1)
     axes[1].set_ylim(0, 1)
 
-    scatter_gt = axes[2].scatter(filtered_points[filtered_gt_labels!=-1, 0], filtered_points[filtered_gt_labels!=-1, 1], c=filtered_gt_labels[filtered_gt_labels!=-1], cmap=cmap_gt, s=15, marker='.')
-    axes[2].scatter(filtered_points[filtered_gt_labels==-1, 0], filtered_points[filtered_gt_labels==-1, 1], 
+    for label in all_unique_labels:
+        if label != -1:
+            shape = marker_shapes[label % num_shapes]  # Use filtered_labels for marker shapes
+            axes[2].scatter(filtered_points[filtered_gt_labels!=-1, 0], 
+                            filtered_points[filtered_gt_labels!=-1, 1], 
+                            c=filtered_gt_labels[filtered_gt_labels!=-1], cmap=cmap_gt, s=15, marker=shape)
+        else:
+            axes[2].scatter(filtered_points[filtered_gt_labels==-1, 0], filtered_points[filtered_gt_labels==-1, 1], 
                     c='black', s=15, marker='x', label='Outliers')
+            
     axes[2].set_title(f'Ground Truth at Time: {obs_t} +/- {T/f_T}')
     axes[2].set_xlabel('Feature 0')
     axes[2].set_ylabel('Feature 1')
@@ -262,7 +268,7 @@ plt.close(fig)
 
 # Create a video from the saved frames
 clip = mpy.ImageSequenceClip(frame_files, fps=10)
-video_file = 'conglomerate_drift.mp4'
+video_file = 'fert_vs_gdp.mp4'
 clip.write_videofile(video_file, codec='libx264')
 
 # Clean up frames

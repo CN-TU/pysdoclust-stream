@@ -29,8 +29,10 @@ def load_data(filename):
 
     if(df_data['class'].dtypes == 'object'):
         df_data['class'] = df_data['class'].map(lambda x: x.decode("utf-8").lstrip('b').rstrip(''))
+        y = df_data['class'].str.strip().astype(int).to_numpy() #df_data['class'].to_numpy()
+    else:
+        y = df_data['class'].astype(int).to_numpy()
 
-    y = df_data['class'].str.strip().astype(int).to_numpy() #df_data['class'].to_numpy()
     # t = np.arange(len(y))
     # Generate random values
     random_values = np.random.uniform(0, len(y), len(y))
@@ -53,24 +55,24 @@ def load_data(filename):
 
     return t,x,y,n,m,clusters,outliers,dataname
 
-filename = 'evaluation_tests/data/example/concept_drift.arff'
+filename = 'evaluation_tests/data/real/occupancy.arff'
 t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
 # Set the initial block to be of size k
-first_block_size = 250
-block_size = 25  # Remaining blocks will have this size
+first_block_size = 1000
+block_size = 200  # Remaining blocks will have this size
 
 # Controls the time window of ground truth / predictions points shown at each frame: obs_T +/- (T / f_T), 
 # obs_T is time of model (observer) snapshot
 f_T = 10
 
-k = 350 # Model size
-T = 1200 # Time Horizon
+k = 400 # Model size
+T = 1000 # Time Horizon
 # ibuff = 10 # input buffer
-chi_prop = 0.04
-qv = 0.3
+chi_prop = 0.05
+qv = 0.2
 e = 3
-outlier_threshold = 3
+outlier_threshold = 5
 outlier_handling = True
 x_ = 5
 freq_bins= 1 #10
@@ -138,10 +140,11 @@ s = -1/(s+1) # norm. to avoid inf scores
 # Evaluation metrics
 print("Adjusted Rand Index (clustering):", adjusted_rand_score(y,p))
 # print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,s))
-print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,p<0))
-
+try:
+    print("ROC AUC score (outlier/anomaly detection):", roc_auc_score(y<0,p<0))
+except ValueError as e:
+    print("Outlier rated (detected):", sum(p<0)/len(p))
  
-
 unique_predic_labels = np.unique(p)  # Unique labels from clustering predictions
 unique_obs_labels = np.unique(np.concatenate(all_obs_labels))  # Unique observed labels
 # Combine both to get all unique labels
@@ -165,7 +168,7 @@ frame_files = []
 # Plot and save each frame
 for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_obs_labels, all_obs_t)):
     
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    fig, axes = plt.subplots(3, 3, figsize=(18, 6))
 
     # Plot filtered points with corresponding shapes
     time_min = obs_t - T/f_T
@@ -174,53 +177,89 @@ for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_ob
     filtered_points = x[mask]
     filtered_labels = p[mask].astype(int)
     filtered_gt_labels = y[mask].astype(int)
-    for label in all_unique_labels:
-        if label != -1:
-            shape = marker_shapes[label % num_shapes]  # Use filtered_labels for marker shapes
-            axes[0].scatter(filtered_points[filtered_labels == label, 0], 
-                            filtered_points[filtered_labels == label, 1], 
-                            c=filtered_labels[filtered_labels == label], 
-                            cmap=cmap, norm=norm, s=15, marker=shape)
-        else:
-            axes[0].scatter(filtered_points[filtered_labels==-1, 0], filtered_points[filtered_labels==-1, 1], 
-                    c='black', s=15, marker='x', label='Outliers')
-
-    #  scatter_filtered = axes[0].scatter(filtered_points[filtered_labels!=-1, 0], filtered_points[filtered_labels!=-1, 1], c=filtered_labels[filtered_labels!=-1], cmap=cmap, norm=norm, s=10, marker='.')
+    for i in range(3):
+        ax = fig.add_subplot(3, 3, i+1, projection='3d')
+        for label in all_unique_labels:            
+            if label != -1:
+                shape = marker_shapes[label % num_shapes]  # Use filtered_labels for marker shapes
+                ax.scatter3D(
+                                filtered_points[filtered_labels == label, 0], 
+                                filtered_points[filtered_labels == label, 1],  
+                                filtered_points[filtered_labels == label, 2], 
+                                c=filtered_labels[filtered_labels == label], 
+                                cmap=cmap, norm=norm, s=10, marker=shape)
+            else:
+                ax.scatter3D(
+                                filtered_points[filtered_labels==-1, 0], 
+                                filtered_points[filtered_labels==-1, 1], 
+                                filtered_points[filtered_labels==-1, 2], 
+                                c='black', s=10, marker='x', label='Outliers')
+        ax.view_init(azim=280 + i * 30, elev=20)
+        ax.set_xlabel('Feature 0')
+        ax.set_ylabel('Feature 1')
+        ax.set_zlabel('Feature X')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_title(f'Predictions at Time: {obs_t} +/- {T/f_T}')
     
-    axes[0].set_title(f'Predictions at Time: {obs_t} +/- {T/f_T}')
-    axes[0].set_xlabel('Feature 0')
-    axes[0].set_ylabel('Feature 1')
-    axes[0].set_xlim(0, 1)
-    axes[0].set_ylim(0, 1)
 
-    # Plot observers in the second subplot (axes[1])
+    # Observers
     points = np.array(obs_points)
     labels = le.transform(np.array(obs_labels)) - 1
 
-    for label in all_unique_labels:
-        if label != -1:
-            shape = marker_shapes[label % num_shapes]  # Use filtered_labels for marker shapes
-            axes[1].scatter(points[labels == label, 0], 
-                            points[labels == label, 1], 
-                            c=labels[labels == label], 
-                            cmap=cmap, norm=norm, s=15, marker=shape)
+    for i in range(3):
+        ax = fig.add_subplot(3, 3, i+4, projection='3d')
+        for label in all_unique_labels:
+            if label != -1:
+                shape = marker_shapes[label % num_shapes]
+                ax.scatter3D(
+                    points[labels == label, 0], 
+                    points[labels == label, 1], 
+                    points[labels == label, 2], 
+                    c=labels[labels == label], 
+                    cmap=cmap, norm=norm, s=10, marker=shape)
+            else:
+                ax.scatter3D(
+                    points[labels == -1, 0], 
+                    points[labels == -1, 1], 
+                    points[labels == -1, 2], 
+                    c='black', s=10, marker='x', label='Outliers')
 
+        ax.view_init(azim=280 + i * 30, elev=20)
+        ax.set_xlabel('Feature 0')
+        ax.set_ylabel('Feature 1')
+        ax.set_zlabel('Feature X')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_title(f'Observers at Time: {obs_t}')
 
-    # scatter_obs = axes[1].scatter(points[:, 0], points[:, 1], c=labels, cmap=cmap, norm=norm, s=10, marker='.')
-    axes[1].set_title(f'Observers at Time: {obs_t}')
-    axes[1].set_xlabel('Feature 0')
-    axes[1].set_ylabel('Feature 1')
-    axes[1].set_xlim(0, 1)
-    axes[1].set_ylim(0, 1)
-
-    scatter_gt = axes[2].scatter(filtered_points[filtered_gt_labels!=-1, 0], filtered_points[filtered_gt_labels!=-1, 1], c=filtered_gt_labels[filtered_gt_labels!=-1], cmap=cmap_gt, s=15, marker='.')
-    axes[2].scatter(filtered_points[filtered_gt_labels==-1, 0], filtered_points[filtered_gt_labels==-1, 1], 
-                    c='black', s=15, marker='x', label='Outliers')
-    axes[2].set_title(f'Ground Truth at Time: {obs_t} +/- {T/f_T}')
-    axes[2].set_xlabel('Feature 0')
-    axes[2].set_ylabel('Feature 1')
-    axes[2].set_xlim(0, 1)
-    axes[2].set_ylim(0, 1)
+    # Ground Truth
+    for i in range(3):
+        ax = fig.add_subplot(3, 3, i+7, projection='3d')
+        for label in all_unique_labels:
+            if label != -1:
+                shape = marker_shapes[label % num_shapes]
+                ax.scatter3D(
+                    filtered_points[filtered_gt_labels == label, 0], 
+                    filtered_points[filtered_gt_labels == label, 1], 
+                    filtered_points[filtered_gt_labels == label, 2], 
+                    c=filtered_gt_labels[filtered_gt_labels == label], 
+                    cmap=cmap_gt, s=10, marker=shape)
+            else:
+                ax.scatter3D(
+                    filtered_points[filtered_gt_labels == -1, 0], 
+                    filtered_points[filtered_gt_labels == -1, 1], 
+                    filtered_points[filtered_gt_labels == -1, 2], 
+                    c='black', s=10, marker='x', label='Outliers')
+                
+        ax.set_title(f'Ground Truth at Time: {obs_t} +/- {T / f_T}')
+        ax.view_init(azim=280 + i * 30, elev=20)
+        ax.set_xlabel('Feature 0')
+        ax.set_ylabel('Feature 1')
+        ax.set_zlabel('Feature X')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_title(f'Observers at Time: {obs_t}')
 
     plt.tight_layout()
 
@@ -262,7 +301,7 @@ plt.close(fig)
 
 # Create a video from the saved frames
 clip = mpy.ImageSequenceClip(frame_files, fps=10)
-video_file = 'conglomerate_drift.mp4'
+video_file = 'occupancy.mp4'
 clip.write_videofile(video_file, codec='libx264')
 
 # Clean up frames
