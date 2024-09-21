@@ -70,7 +70,7 @@ k = 75 # Model size
 T = 150 # Time Horizon
 # ibuff = 10 # input buffer
 chi_prop = 0.15
-qv = 0.2
+qv = 0.1
 e = 3
 outlier_threshold = 5
 outlier_handling = True
@@ -153,7 +153,9 @@ if -1 not in all_unique_labels:
 le = LabelEncoder().fit(all_unique_labels)
 p = le.transform(p)-1
 
-cmap = plt.get_cmap('tab20', len(le.classes_))
+num_labels = len(all_unique_labels) - 1  # Number of unique labels (minus outlier label)
+cmap = plt.get_cmap('tab20', num_labels)
+norm = plt.Normalize(vmin=0, vmax=num_labels-1)
 
 frame_files = []
 
@@ -198,7 +200,7 @@ for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_ob
     sns.stripplot(data=plot_data, x='Feature', y='Source', hue='Class', ax=ax, jitter=True, size=4, palette=cmap, legend=False, orient='h')
 
     ax.set_title(f'Stripplot at Time: {obs_t} +/- {T/f_T}')
-    ax.set_xlabel('Feature 0')
+    ax.set_xlabel('Feature')
     ax.set_ylabel('Source')
     ax.set_xlim(0, 1)
     
@@ -213,18 +215,18 @@ for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_ob
 fig, axs = plt.subplots(1, 2, figsize=(8, 6))
 
 # Plot predictions
-axs[0].scatter(t, x, s=5, c=p, cmap=cmap)
+axs[0].scatter(t, x, s=5, c=p, cmap=cmap, norm=norm)
 axs[0].set_title('Predictions')
 axs[0].set_xlabel('Time')
-axs[0].set_ylabel('Feature 0 (x)')
+axs[0].set_ylabel('Feature')
 axs[0].set_xlim(t.min(), t.max())
 axs[0].set_ylim(0, 1)
 
 # Plotting ground truth
-axs[1].scatter(t, x, s=5, c=y, cmap=cmap)
+axs[1].scatter(t, x, s=5, c=y, cmap=cmap, norm=norm)
 axs[1].set_title('Ground Truth')
 axs[1].set_xlabel('Time')
-axs[1].set_ylabel('Feature 0 (x)')
+axs[1].set_ylabel('Feature')
 axs[1].set_xlim(t.min(), t.max())
 axs[1].set_ylim(0, 1)
 

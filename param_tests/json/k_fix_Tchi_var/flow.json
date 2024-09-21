@@ -1,0 +1,27 @@
+{
+    "fixed_pams": {
+        "outlier_handling": true,
+        "chi_min": 1,
+        "qv": 0.3,
+        "x": 5
+    },
+    "int_pams": {    
+    	"T": [500, 2000]
+    },
+    "float_pams": {
+        "chi_prop": [0.01, 0.25]       
+    },
+    "grid_pams": {        
+        "k": [250, 350, 500]
+    },
+    "eval_pams": {
+        "n_trials": 500,
+        "metric": "ari",
+        "warmup": 500,
+        "block_size": 50,
+        "first_block_size": 500,
+        "n_eval": 5, 
+        "n_bins": 10,
+        "result_path": "results/k_fix_Tchi_var/flow"
+    }    
+}

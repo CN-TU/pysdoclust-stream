@@ -1,0 +1,29 @@
+
+{
+    "fixed_pams": {
+        "outlier_handling": true,
+        "chi_min": 1,
+        "qv": 0.2,
+        "x": 5
+    },
+    "int_pams": {    
+    },
+    "float_pams": {
+        "chi_prop": [0.01, 0.2],
+        "zeta": [0.1, 0.9]
+    },
+    "grid_pams": {
+        "T": [700, 1000, 1500],
+        "k": [250, 350, 500]
+    },
+    "eval_pams": {
+        "n_trials": 500,
+        "metric": "ari",
+        "warmup": 500,
+        "block_size": 50,
+        "first_block_size": 500,
+        "n_eval": 3, 
+        "n_bins": 5,
+        "result_path": "results/Tk_fix_chizeta_var/flow"
+    }    
+}

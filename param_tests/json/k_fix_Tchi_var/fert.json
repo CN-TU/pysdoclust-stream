@@ -1,0 +1,27 @@
+{
+    "fixed_pams": {
+        "outlier_handling": true,
+        "chi_min": 1,
+        "qv": 0.15,
+        "x": 5
+    },
+    "int_pams": {    
+    	"T": [150, 500]
+    },
+    "float_pams": {
+        "chi_prop": [0.01, 0.35]       
+    },
+    "grid_pams": {        
+        "k": [75, 100, 150]
+    },
+    "eval_pams": {
+        "n_trials": 500,
+        "metric": "ari",
+        "warmup": 200,
+        "block_size": 20,
+        "first_block_size": 200,
+        "n_eval": 5, 
+        "n_bins": 10,
+        "result_path": "results/k_fix_Tchi_var/fert"
+    }    
+}
