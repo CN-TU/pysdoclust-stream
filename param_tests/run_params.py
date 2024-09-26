@@ -22,7 +22,8 @@ from scipy.interpolate import griddata
 import optuna
 from optuna.samplers import TPESampler, RandomSampler
 
-def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_pams=None, eval_pams=None):
+
+def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_pams=None, log_pams=None, eval_pams=None):
     if fixed_pams is None:
         fixed_pams = {}
     
@@ -32,6 +33,8 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
     if float_pams is None:
         float_pams = {}
     
+    if log_pams is None:
+        log_pams = {}
     
     # Extract fixed parameters with defaults
     pam = {**fixed_pams}
@@ -53,6 +56,11 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
         elif len(param_range) == 2:
             min_value, max_value = param_range
             pam[param_name] = trial.suggest_float(param_name, min_value, max_value)
+
+    # Float log scale parameters
+    for param_name, param_range in log_pams.items():        
+        min_value, max_value = param_range
+        pam[param_name] = trial.suggest_float(param_name, min_value, max_value, log=True)
     
     # Default values if not provided by pam
     k = pam.get('k', 300)
@@ -224,8 +232,8 @@ def plot_boxplot(trials, param_name, metric='ari', n_bins=5, filepath=None):
     plt.grid(True)
     
     if filepath:
-        plt.savefig(f"{filepath}/box_{param_name}.png")
-        print(f"Box plot saved to {filepath}/box_{param_name}.png")
+        plt.savefig(f"{filepath}/box_{param_name}.svg", format='svg')
+        print(f"Box plot saved to {filepath}/box_{param_name}.svg")
         plt.close()
     else:
         plt.show()
@@ -270,8 +278,8 @@ def plot_violinplot(trials, param_name, metric='ari', n_bins=5, filepath=None):
     
     plt.grid(True)
     if filepath:
-        plt.savefig(f"{filepath}/violin_{param_name}.png")
-        print(f"Violin plot saved to {filepath}/violin_{param_name}.png")     
+        plt.savefig(f"{filepath}/violin_{param_name}.svg", format='svg')
+        print(f"Violin plot saved to {filepath}/violin_{param_name}.svg")     
         plt.close()
     else:
         plt.show()
@@ -330,94 +338,88 @@ def plot_bar(trials, param_name, metric='ari', n_bins=5, filepath=None):
     plt.grid(True)
     
     if filepath:
-        plt.savefig(f"{filepath}/bar_{param_name}.png")
-        print(f"Bar plot saved to {filepath}/bar_{param_name}.png")     
+        plt.savefig(f"{filepath}/bar_{param_name}.svg", format='svg')
+        print(f"Bar plot saved to {filepath}/bar_{param_name}.svg")     
         plt.close()
     else:
         plt.show()
 
 
-# def plot_heat(trials, param_x, param_y, metric='ari', n_bins=5, filepath=None):
-#     """Generate a heatmap of parameter combinations and their scores."""
+def plot_heat(trials, param_x, param_y, metric='ari', n_bins=5, n_ticks=5, filepath=None):
+    """Generate a heatmap of parameter combinations and their scores."""
     
-#     # Extract parameter values and scores from trials
-#     values_x = []
-#     values_y = []
-#     scores = []
+    # Extract parameter values and scores from trials
+    values_x = []
+    values_y = []
+    scores = []
     
-#     for trial in trials:
-#         values_x.append(trial.params[param_x])
-#         values_y.append(trial.params[param_y])
-#         scores.append(trial.value)
+    for trial in trials:
+        values_x.append(trial.params[param_x])
+        values_y.append(trial.params[param_y])
+        scores.append(trial.value)
 
-#     # Create a 2D array to store the scores in each bin
-#     xedges = np.linspace(min(values_x), max(values_x), n_bins + 1)
-#     yedges = np.linspace(min(values_y), max(values_y), n_bins + 1)
+    # Create a 2D array to store the scores in each bin
+    xedges = np.linspace(min(values_x), max(values_x), n_bins + 1)
+    yedges = np.linspace(min(values_y), max(values_y), n_bins + 1)
 
-#     # Initialize 2D lists to store all the scores in each bin
-#     bin_scores = [[[] for _ in range(n_bins)] for _ in range(n_bins)]
+    # Initialize 2D lists to store all the scores in each bin
+    bin_scores = [[[] for _ in range(n_bins)] for _ in range(n_bins)]
 
-#     # Place each trial score into its respective bin
-#     for i in range(len(values_x)):
-#         x_idx = np.digitize(values_x[i], xedges) - 1
-#         y_idx = np.digitize(values_y[i], yedges) - 1
-#         if x_idx < n_bins and y_idx < n_bins:  # Ensure index is within bounds
-#             bin_scores[x_idx][y_idx].append(scores[i])
+    # Place each trial score into its respective bin
+    for i in range(len(values_x)):
+        x_idx = np.digitize(values_x[i], xedges) - 1
+        y_idx = np.digitize(values_y[i], yedges) - 1
+        if x_idx < n_bins and y_idx < n_bins:  # Ensure index is within bounds
+            bin_scores[x_idx][y_idx].append(scores[i])
     
-#     # Calculate the median for each bin
-#     heatmap_median = np.zeros((n_bins, n_bins))
-#     for i in range(n_bins):
-#         for j in range(n_bins):
-#             if bin_scores[i][j]:  # Only calculate median if there are scores
-#                 heatmap_median[i, j] = np.median(bin_scores[i][j])
-#             else:
-#                 heatmap_median[i, j] = np.nan  # Assign NaN if no scores
+    # Calculate the median for each bin
+    heatmap_median = np.zeros((n_bins, n_bins))
+    for i in range(n_bins):
+        for j in range(n_bins):
+            if bin_scores[i][j]:  # Only calculate median if there are scores
+                heatmap_median[i, j] = np.max(bin_scores[i][j])
+            else:
+                heatmap_median[i, j] = np.nan  # Assign NaN if no scores
 
-#     # Plot the heatmap
-#     plt.figure(figsize=(12, 6))
-#     ax = sns.heatmap(heatmap_median, cmap="Blues", annot=True, vmin=0, vmax=1)
+    # Plot the heatmap
+    plt.figure(figsize=(12, 6))
+    ax = sns.heatmap(heatmap_median, cmap="Blues", annot=True, vmin=0, vmax=1)
+
+    # Custom tick positions with left, right, and evenly distributed middle ticks
+    x_ticks = np.linspace(0, n_bins, n_ticks)  # Positions for n_ticks x-ticks
+    y_ticks = np.linspace(0, n_bins, n_ticks)  # Positions for n_ticks y-ticks
+
+    # Create tick labels corresponding to param_x and param_y values
+    # Ensure that the first and last ticks correspond exactly to min and max values
+    x_labels = [f'{np.round(val, 2)}' for val in np.linspace(min(values_x), max(values_x), n_ticks)]
+    y_labels = [f'{np.round(val, 2)}' for val in np.linspace(min(values_y), max(values_y), n_ticks)]
+
+
+    # Set the tick positions and labels
+    ax.set_xticks(x_ticks)
+    ax.set_yticks(y_ticks)
+
+    # Set the tick labels to show bin boundaries
+    ax.set_xticklabels(x_labels, ha='center', rotation=0)  # Rotate x-axis labels by 30 degrees
+    ax.set_yticklabels(y_labels, ha='center', rotation=0)  # Rotate y-axis labels by 90 degrees
+
+     # Adjust padding for tick labels (move them farther from the plot)
+    ax.tick_params(axis='x', pad=10)  # Move x-axis labels away from the plot by 10 points
+    ax.tick_params(axis='y', pad=20)  # Move y-axis labels away from the plot by 10 points
+
+    ax.xaxis.tick_bottom()  # Ensure x-axis ticks are at the bottom
+    ax.yaxis.tick_left()    # Ensure y-axis ticks are on the left
     
-#     # # Create a 2D histogram of the parameter values and scores
-#     # heatmap, xedges, yedges = np.histogram2d(values_x, values_y, bins=n_bins, weights=scores)
-#     # heatmap_count, _, _ = np.histogram2d(values_x, values_y, bins=n_bins)
-    
-#     # # Avoid division by zero
-#     # heatmap_count = np.maximum(heatmap_count, 1)
-#     # heatmap_avg = heatmap / heatmap_count  # Compute average score per bin
+    plt.xlabel(param_x)
+    plt.ylabel(param_y)
+    # plt.title(f'Heatmap of {param_x} vs {param_y} ({metric})')
 
-#     # # Plot the heatmap
-#     # plt.figure(figsize=(12, 6))
-#     # ax = sns.heatmap(heatmap_avg, cmap="viridis", annot=True)
-
-#     # Set custom tick positions at the edges
-#     ax.set_xticks(np.arange(len(xedges)))  # Center tick positions between bins
-#     ax.set_yticks(np.arange(len(yedges)))
-
-#     # Create tick labels as (left, right) for each bin
-#     x_labels = [f'{np.round(xedges[i], 2)}' for i in range(len(xedges))]
-#     y_labels = [f'{np.round(yedges[i], 2)}' for i in range(len(yedges))]
-
-#     # Set the tick labels to show bin boundaries
-#     ax.set_xticklabels(x_labels, ha='center', rotation=0)  # Rotate x-axis labels by 30 degrees
-#     ax.set_yticklabels(y_labels, ha='center', rotation=0)  # Rotate y-axis labels by 90 degrees
-
-#      # Adjust padding for tick labels (move them farther from the plot)
-#     ax.tick_params(axis='x', pad=10)  # Move x-axis labels away from the plot by 10 points
-#     ax.tick_params(axis='y', pad=20)  # Move y-axis labels away from the plot by 10 points
-
-#     ax.xaxis.tick_bottom()  # Ensure x-axis ticks are at the bottom
-#     ax.yaxis.tick_left()    # Ensure y-axis ticks are on the left
-    
-#     plt.xlabel(param_x)
-#     plt.ylabel(param_y)
-#     # plt.title(f'Heatmap of {param_x} vs {param_y} ({metric})')
-
-#     if filepath:
-#         plt.savefig(f"{filepath}/heat_{param_x}_{param_y}.png")
-#         print(f"Heatmap saved to {filepath}/heat_{param_x}_{param_y}.png")
-#         plt.close()
-#     else:
-#         plt.show()
+    if filepath:
+        plt.savefig(f"{filepath}/heat_{param_x}_{param_y}.svg", format='svg')
+        print(f"Heatmap saved to {filepath}/heat_{param_x}_{param_y}.svg")
+        plt.close()
+    else:
+        plt.show()
 
 
 def plot_contour(trials, param_x, param_y, metric='ari', filepath=None):
@@ -451,8 +453,8 @@ def plot_contour(trials, param_x, param_y, metric='ari', filepath=None):
     # plt.title(f'Contour Plot of {param_x} vs {param_y} ({metric})')
 
     if filepath:
-        plt.savefig(f"{filepath}/xcontour_{param_x}_{param_y}.png")
-        print(f"Contour plot saved to {filepath}/xcontour_{param_x}_{param_y}.png")
+        plt.savefig(f"{filepath}/xcontour_{param_x}_{param_y}.svg", format='svg')
+        print(f"Contour plot saved to {filepath}/xcontour_{param_x}_{param_y}.svg")
         plt.close()
     else:
         plt.show()
@@ -469,21 +471,21 @@ def plot_all(study, metric='ari', n_bins=5, filepath=None):
         for j in range(i + 1, len(param_names)):
             param_x = param_names[i]
             param_y = param_names[j]
-            # print(f'Generating heatmap for {param_x} vs {param_y}')
-            # plot_heat(study.trials, param_x, param_y, metric=metric, n_bins=n_bins, filepath=filepath)
+            print(f'Generating heatmap for {param_x} vs {param_y}')
+            plot_heat(study.trials, param_x, param_y, metric=metric, n_bins=n_bins, filepath=filepath)
 
-            # Generate contour plot
-            print(f'Generating contour maps for {param_x} vs {param_y}')
-            plot_contour(study.trials, param_x, param_y, metric=metric, filepath=filepath)
+            # # Generate contour plot
+            # print(f'Generating contour maps for {param_x} vs {param_y}')
+            # plot_contour(study.trials, param_x, param_y, metric=metric, filepath=filepath)
 
-            # Generate contour plot
-            fig = optuna.visualization.plot_contour(study, params=[param_x, param_y])
+            # # Generate contour plot
+            # fig = optuna.visualization.plot_contour(study, params=[param_x, param_y])
             
-            if filepath:                
-                fig.write_image(f"{filepath}/contour_{param_x}_{param_y}.png")
-                print(f"Contour saved to {filepath}/heat_{param_x}_{param_y}.png")
-            else:
-                show(fig)
+            # if filepath:                
+            #     fig.write_image(f"{filepath}/contour_{param_x}_{param_y}.svg", format='svg')
+            #     print(f"Contour saved to {filepath}/heat_{param_x}_{param_y}.svg")
+            # else:
+            #     show(fig)
             
 
 def main(json_file, data_file):
@@ -494,6 +496,7 @@ def main(json_file, data_file):
     fixed_pams = params.get('fixed_pams', {})
     int_pams = params.get('int_pams', {})
     float_pams = params.get('float_pams', {})
+    log_pams = params.get('log_pams', {})
     eval_pams = params.get('eval_pams', {})
     grid_pams = params.get('grid_pams', {})
 
@@ -519,7 +522,7 @@ def main(json_file, data_file):
         
         # Optimize the objective function
         n_trials = eval_pams.get('n_trials', 50)    
-        study.optimize(lambda trial: optimize_sdc(trial, x, y, t, fixed_pams, int_pams, float_pams, eval_pams), n_trials=n_trials, n_jobs=-1)
+        study.optimize(lambda trial: optimize_sdc(trial, x, y, t, fixed_pams, int_pams, float_pams, log_pams, eval_pams), n_trials=n_trials, n_jobs=-1)
         
         # Print the best parameters
         print('Best parameters:', study.best_params)
