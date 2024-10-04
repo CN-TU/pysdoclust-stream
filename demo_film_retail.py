@@ -59,22 +59,23 @@ filename = 'evaluation_tests/data/real/retail.arff'
 t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
 # Set the initial block to be of size k
-first_block_size = 100
+first_block_size = 25
 block_size = 5  # Remaining blocks will have this size
 
 # Controls the time window of ground truth / predictions points shown at each frame: obs_T +/- (T / f_T), 
 # obs_T is time of model (observer) snapshot
 f_T = 10
 
-k = 75 # Model size
-T = 150 # Time Horizon
+k = 35 # Model size
+T = 60 # Time Horizon
 # ibuff = 10 # input buffer
-chi_prop = 0.15
-qv = 0.1
+chi_prop = 0.2
+qv = 0.3
 e = 3
 outlier_threshold = 5
 outlier_handling = True
-x_ = 5
+x_ = 2
+zeta = 0.3
 freq_bins= 1 #10
 max_freq= 1# 1100
 # chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False 
@@ -85,6 +86,7 @@ classifier = clustering.SDOstreamclust(
     x=x_, 
     chi_prop=chi_prop, 
     e=e, 
+    zeta=zeta,
     outlier_threshold=outlier_threshold, 
     outlier_handling=outlier_handling,
     freq_bins=freq_bins,
@@ -154,7 +156,7 @@ le = LabelEncoder().fit(all_unique_labels)
 p = le.transform(p)-1
 
 num_labels = len(all_unique_labels) - 1  # Number of unique labels (minus outlier label)
-cmap = plt.get_cmap('tab20', num_labels)
+cmap = plt.get_cmap('Set1', num_labels)
 norm = plt.Normalize(vmin=0, vmax=num_labels-1)
 
 frame_files = []

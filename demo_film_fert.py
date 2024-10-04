@@ -57,22 +57,23 @@ filename = 'evaluation_tests/data/real/fert_vs_gdp.arff'
 t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
 # Set the initial block to be of size k
-first_block_size = 250
-block_size = 25  # Remaining blocks will have this size
+first_block_size = 100
+block_size = 5  # Remaining blocks will have this size
 
 # Controls the time window of ground truth / predictions points shown at each frame: obs_T +/- (T / f_T), 
 # obs_T is time of model (observer) snapshot
 f_T = 10
 
-k = 100 # Model size
-T = 250 # Time Horizon
+k = 35 # Model size
+T = 130 # Time Horizon
 # ibuff = 10 # input buffer
 chi_prop = 0.2
-qv = 0.1
+qv = 0.4
 e = 3
-outlier_threshold = 5
+outlier_threshold = 7
 outlier_handling = True
-x_ = 5
+x_ = 7
+zeta = 0.35
 freq_bins= 1 #10
 max_freq= 1# 1100
 # chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False 
@@ -83,6 +84,7 @@ classifier = clustering.SDOstreamclust(
     x=x_, 
     chi_prop=chi_prop, 
     e=e, 
+    zeta=zeta,
     outlier_threshold=outlier_threshold, 
     outlier_handling=outlier_handling,
     freq_bins=freq_bins,
@@ -152,7 +154,7 @@ le = LabelEncoder().fit(all_unique_labels)
 p = le.transform(p) -1
 
 num_labels = len(all_unique_labels) - 1  # Number of unique labels (minus outlier label)
-cmap = plt.get_cmap('tab20', num_labels)
+cmap = plt.get_cmap('Set1', num_labels)
 norm = plt.Normalize(vmin=0, vmax=num_labels-1)
 
 # Define marker shapes, which will cycle if the number of labels exceeds the number of available shapes
@@ -160,7 +162,7 @@ marker_shapes = ['.', 'o', 's', 'd', '^', 'v', '<', '>', 'h', 'p', '*', '+', '1'
 num_shapes = len(marker_shapes)
 
 num_gt_labels = len(np.unique(y[y>-1]))
-cmap_gt = plt.get_cmap('Dark2', num_gt_labels)
+cmap_gt = plt.get_cmap('Set1', num_gt_labels)
 norm_gt = plt.Normalize(vmin=0, vmax=num_gt_labels-1)
 
 frame_files = []

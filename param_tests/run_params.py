@@ -23,7 +23,7 @@ import optuna
 from optuna.samplers import TPESampler, RandomSampler
 
 
-def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_pams=None, log_pams=None, eval_pams=None):
+def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_pams=None, log_pams=None, cat_pams = None, eval_pams=None):
     if fixed_pams is None:
         fixed_pams = {}
     
@@ -35,6 +35,9 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
     
     if log_pams is None:
         log_pams = {}
+
+    if cat_pams is None:
+        cat_pams = {}
     
     # Extract fixed parameters with defaults
     pam = {**fixed_pams}
@@ -61,6 +64,10 @@ def optimize_sdc(trial, data, y, t=None, fixed_pams=None, int_pams=None, float_p
     for param_name, param_range in log_pams.items():        
         min_value, max_value = param_range
         pam[param_name] = trial.suggest_float(param_name, min_value, max_value, log=True)
+
+   # Categorical parameters
+    for param_name, param_values in cat_pams.items():
+        pam[param_name] = trial.suggest_categorical(param_name, param_values)
     
     # Default values if not provided by pam
     k = pam.get('k', 300)
@@ -373,17 +380,17 @@ def plot_heat(trials, param_x, param_y, metric='ari', n_bins=5, n_ticks=5, filep
             bin_scores[x_idx][y_idx].append(scores[i])
     
     # Calculate the median for each bin
-    heatmap_median = np.zeros((n_bins, n_bins))
+    heatmap_data = np.zeros((n_bins, n_bins))
     for i in range(n_bins):
         for j in range(n_bins):
             if bin_scores[i][j]:  # Only calculate median if there are scores
-                heatmap_median[i, j] = np.max(bin_scores[i][j])
+                heatmap_data[i, j] = np.max(bin_scores[i][j])
             else:
-                heatmap_median[i, j] = np.nan  # Assign NaN if no scores
+                heatmap_data[i, j] = np.nan  # Assign NaN if no scores
 
     # Plot the heatmap
     plt.figure(figsize=(12, 6))
-    ax = sns.heatmap(heatmap_median, cmap="Blues", annot=True, vmin=0, vmax=1)
+    ax = sns.heatmap(heatmap_data.T, cmap="Blues", annot=True, vmin=0, vmax=1)
 
     # Custom tick positions with left, right, and evenly distributed middle ticks
     x_ticks = np.linspace(0, n_bins, n_ticks)  # Positions for n_ticks x-ticks
@@ -498,6 +505,7 @@ def main(json_file, data_file):
     float_pams = params.get('float_pams', {})
     log_pams = params.get('log_pams', {})
     eval_pams = params.get('eval_pams', {})
+    cat_pams = params.get('cat_pams', {})
     grid_pams = params.get('grid_pams', {})
 
     # Load data
@@ -522,7 +530,7 @@ def main(json_file, data_file):
         
         # Optimize the objective function
         n_trials = eval_pams.get('n_trials', 50)    
-        study.optimize(lambda trial: optimize_sdc(trial, x, y, t, fixed_pams, int_pams, float_pams, log_pams, eval_pams), n_trials=n_trials, n_jobs=-1)
+        study.optimize(lambda trial: optimize_sdc(trial, x, y, t, fixed_pams, int_pams, float_pams, log_pams, cat_pams, eval_pams), n_trials=n_trials, n_jobs=-1)
         
         # Print the best parameters
         print('Best parameters:', study.best_params)
@@ -540,13 +548,12 @@ def main(json_file, data_file):
                     'best_value': study.best_value,
                     'trials': [t.params for t in study.trials],
                     'values': [t.value for t in study.trials]
-                }, f, indent=4)
+                }, f, indent=4)        
         
-        # Plot the heatmap for two selected parameters
-        metric = eval_pams.get('metric', 'ari')
-        n_bins = eval_pams.get('n_bins', 5)
         # Plot heatmaps for all parameter combinations
-        plot_all(study, metric=metric, n_bins=n_bins, filepath=result_path)
+        # metric = eval_pams.get('metric', 'ari')
+        # n_bins = eval_pams.get('n_bins', 5)
+        # plot_all(study, metric=metric, n_bins=n_bins, filepath=result_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Optimize clustering algorithm parameters.')

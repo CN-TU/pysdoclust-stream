@@ -1,32 +1,30 @@
 {
-   "fixed_pams": {
+    "fixed_pams": {
         "outlier_handling": true,
         "chi_min": 1
     },
-    "cat_pams": {
-        "k": [25, 35, 50, 70, 100, 140, 200],
-        "x": [1, 2, 3, 5, 7, 9, 13, 19],
-        "outlier_threshold": [1.1, 1.5, 2.25, 3, 4, 5, 6, 7.25, 8.5, 10]
-    },
     "int_pams": {
+    	"k": [50, 700],
+    	"x": [1, 21]
     },
     "float_pams": {
         "qv": [0, 0.5],
         "zeta": [0.01, 0.99]
     },
     "log_pams": {
-        "T": [50, 500],
-        "chi_prop": [0.01, 0.5]
+        "T": [100, 2000],
+        "chi_prop": [0.01, 0.35],
+        "outlier_threshold": [1.1, 10]
     },
     "grid_pams": {
     },
     "eval_pams": {
-        "n_trials": 10000,
+        "n_trials": 5000,
         "metric": "ari",
         "warmup": 100,
         "block_size": 20,
         "first_block_size": 100,
-        "n_eval": 10, 
+        "n_eval": 5, 
         "n_bins": 12,
         "result_path": "results/all_var/fert"
     }    
