@@ -64,16 +64,17 @@ block_size = 5  # Remaining blocks will have this size
 # obs_T is time of model (observer) snapshot
 f_T = 10
 
-k = 35 # Model size
-T = 130 # Time Horizon
+k = 25 # Model size
+T = 150 # Time Horizon
 # ibuff = 10 # input buffer
-chi_prop = 0.2
+chi_prop = 0.25
 qv = 0.4
 e = 3
-outlier_threshold = 7
+outlier_threshold = 6
 outlier_handling = True
-x_ = 7
-zeta = 0.35
+x_ = 5
+zeta = 0.95
+chi_min = 1
 freq_bins= 1 #10
 max_freq= 1# 1100
 # chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False 
@@ -83,6 +84,7 @@ classifier = clustering.SDOstreamclust(
     qv=qv,
     x=x_, 
     chi_prop=chi_prop, 
+    chi_min=chi_min,
     e=e, 
     zeta=zeta,
     outlier_threshold=outlier_threshold, 

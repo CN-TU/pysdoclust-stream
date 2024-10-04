@@ -59,23 +59,24 @@ filename = 'evaluation_tests/data/real/retail.arff'
 t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
 # Set the initial block to be of size k
-first_block_size = 25
+first_block_size = 100
 block_size = 5  # Remaining blocks will have this size
 
 # Controls the time window of ground truth / predictions points shown at each frame: obs_T +/- (T / f_T), 
 # obs_T is time of model (observer) snapshot
 f_T = 10
 
-k = 35 # Model size
-T = 60 # Time Horizon
+k = 25 # Model size
+T = 110 # Time Horizon
 # ibuff = 10 # input buffer
 chi_prop = 0.2
+chi_min = 1
 qv = 0.3
 e = 3
 outlier_threshold = 5
 outlier_handling = True
-x_ = 2
-zeta = 0.3
+x_ = 5
+zeta = 0.6
 freq_bins= 1 #10
 max_freq= 1# 1100
 # chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False 
@@ -85,6 +86,7 @@ classifier = clustering.SDOstreamclust(
     qv=qv,
     x=x_, 
     chi_prop=chi_prop, 
+    chi_min=chi_min,
     e=e, 
     zeta=zeta,
     outlier_threshold=outlier_threshold, 
