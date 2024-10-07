@@ -21,12 +21,12 @@
     "grid_pams": {
     },
     "eval_pams": {
-        "n_trials": 5000,
+        "n_trials": 10000,
         "metric": "ari",
-        "warmup": 500,
+        "warmup": 250,
         "block_size": 50,
-        "first_block_size": 500,
-        "n_eval": 5, 
+        "first_block_size": 2500,
+        "n_eval": 10, 
         "n_bins": 12,
         "result_path": "results/all_var/occupancy"
     }    

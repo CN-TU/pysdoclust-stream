@@ -163,7 +163,7 @@ def plot_experiment_results(file_path):
     
     # Define thresholds and k values to evaluate
     thresholds = [1.0, 0.75, 0.5, 0.33, 0.25, 0.1]
-    ks = [25, 35, 50, 70, 100, 140, 200]
+    ks = [25, 35, 50, 70, 100, 140, 200]# [35, 50, 70, 100, 140, 200, 280, 400, 560, 800]
 
     # Specify the original parameter columns to include in the output
     orig_par_cols = ['k', 'T', 'x', 'outlier_threshold', 'chi_prop', 'qv', 'zeta']
@@ -211,7 +211,7 @@ def plot_experiment_results(file_path):
     matrix_df = results_df.pivot(index='k', columns='Threshold', values='Entry')
 
     # Save the results to a CSV file
-    matrix_file_path = file_path + "best_param_settings_matrix.csv"
+    matrix_file_path = file_path + "/best_param_settings_matrix.csv"
     matrix_df.to_csv(matrix_file_path, index=True)
     print(f"Matrix saved to: {matrix_file_path}")
     
@@ -223,7 +223,7 @@ def plot_experiment_results(file_path):
     results_df = results_df.sort_values(by=['Best Value', 'Replacement Rate'], ascending=[False, True])
 
     # Save the results to a CSV file
-    table_file_path = file_path + "best_param_settings_table.csv"
+    table_file_path = file_path + "/best_param_settings_table.csv"
     results_df.to_csv(table_file_path, index=False)
     print(f"Table saved to: {table_file_path}")
 
@@ -236,7 +236,7 @@ def plot_experiment_results(file_path):
     df['sq_outlier_threshold'] = np.square(df['outlier_threshold'])
 
     # Set the filter percentage
-    filter_per = 0.8  # for example, top 10%
+    filter_per = 0.5  # for example, top 10%
 
     # Calculate the threshold value for the top 'filter_per' percent of 'values'
     threshold_value = np.percentile(df['values'], 100 * (1 - filter_per))
