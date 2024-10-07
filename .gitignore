@@ -3,6 +3,7 @@
 *.o
 *.tar.xz
 *.mp4
+*.svg
 
 # Ignore settings and cache files
 *.pyc
