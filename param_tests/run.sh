@@ -15,5 +15,5 @@ python3 run_params.py --data "$DATA_FOLDER/real/occupancy.arff" --json "$JSON_FO
 # python3 plot_results.py "$RESULT_FOLDER/fert"
 # python3 plot_results.py "$RESULT_FOLDER/retail"
 # python3 plot_results.py "$RESULT_FOLDER/cong"
-python3 plot_results.py "$RESULT_FOLDER/occupancy"
-python3 plot_results.py "$RESULT_FOLDER/flow"
+# python3 plot_results.py "$RESULT_FOLDER/occupancy"
+# python3 plot_results.py "$RESULT_FOLDER/flow"
