@@ -4,7 +4,7 @@
         "chi_min": 1
     },
     "cat_pams": {
-        "k": [50, 70, 100, 140, 200, 280, 400, 560, 800],
+        "k": [35, 50, 70, 100, 140, 200, 280, 400, 560, 800],
         "x": [1, 2, 3, 5, 7, 9, 13, 19, 27],
         "outlier_threshold": [1.1, 1.5, 2.25, 3, 4, 5, 6, 7.25, 8.5, 10]
     },
@@ -25,8 +25,8 @@
         "metric": "ari",
         "warmup": 250,
         "block_size": 50,
-        "first_block_size": 2500,
-        "n_eval": 10, 
+        "first_block_size": 250,
+        "n_eval": 3, 
         "n_bins": 12,
         "result_path": "results/all_var/occupancy"
     }    
