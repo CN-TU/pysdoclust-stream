@@ -26,7 +26,7 @@
         "warmup": 250,
         "block_size": 50,
         "first_block_size": 250,
-        "n_eval": 10, 
+        "n_eval": 3, 
         "n_bins": 12,
         "result_path": "results/all_var/cong"
     }    
