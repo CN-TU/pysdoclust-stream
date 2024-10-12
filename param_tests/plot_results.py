@@ -114,7 +114,7 @@ def compute_param_importance(df, par_cols, dataset_name=None, file_path=None, su
 
     return lasso_importance, combined_importance, correlation_matrix
 
-def plot_param_importance_all(file_path, dataset_to_color=None, json_file='param_importance.json', output_file='param_importance.svg'):
+def plot_param_importance_all(file_path, par_cols, dataset_to_color=None, json_file='param_importance.json', output_file='param_importance.svg'):
     """
     Plots parameter importance from a JSON file and saves the figure as an SVG.
 
@@ -158,8 +158,24 @@ def plot_param_importance_all(file_path, dataset_to_color=None, json_file='param
     df.reset_index(inplace=True)
     df.rename(columns={'index': 'Dataset'}, inplace=True)
 
+    # Reverse the par_cols list
+    custom_order_param = par_cols[::-1]  # This reverses the list    
+    custom_order_dataset = ['cong', 'retail', 'fert', 'flow', 'occupancy']
+
     # Melt the DataFrame for seaborn
     df_melted = df.melt(id_vars='Dataset', var_name='Parameter', value_name='Value')
+
+    # Map categories in 'Parameter' to numerical values based on custom_order_param
+    df_melted['category_order_param'] = df_melted['Parameter'].map(dict(zip(custom_order_param, range(len(custom_order_param)))))
+
+    # Map categories in 'Dataset' to numerical values based on custom_order_dataset
+    df_melted['category_order_dataset'] = df_melted['Dataset'].map(dict(zip(custom_order_dataset, range(len(custom_order_dataset)))))
+
+    # Sort by both 'category_order_param' and 'category_order_dataset'
+    df_melted.sort_values(['category_order_param', 'category_order_dataset'], inplace=True)
+
+    # Drop the temporary sorting columns
+    df_melted.drop(['category_order_param', 'category_order_dataset'], axis=1, inplace=True)
 
     # Step 2: Create the Bar Plot
     plt.figure(figsize=(10, 6))
@@ -191,7 +207,7 @@ def plot_param_importance_all(file_path, dataset_to_color=None, json_file='param
     plt.close()  # Close the figure after saving to avoid display issues
     print(f"Parameter importance plot saved to: {output_path}")
 
-def plot_histogram(df, file_path, bins=30, color=None):
+def plot_histogram(df, file_path, dataset_name, bins=30, color=None):
     """
     Plots a histogram of the specified column in the DataFrame and saves it as an SVG file.
 
@@ -217,11 +233,11 @@ def plot_histogram(df, file_path, bins=30, color=None):
     # plt.title(f'Histogram of {column}')
 
     # Save the figure as an SVG file for the histogram
-    svg_file_path = f"{file_path}/histogram_ARI.svg"  # Ensure file_path is defined
+    svg_file_path = f"{file_path}/{dataset_name}_histogram_ARI.svg"  # Ensure file_path is defined
     plt.savefig(svg_file_path, format='svg')
     print(f"Histogram plot saved to: {svg_file_path}")
 
-def plot_parameter_importance(importance, file_path, suffix=None, color=None):
+def plot_parameter_importance(importance, file_path, dataset_name, suffix=None, color=None):
     """
     Plots parameter importance and saves it as an SVG file.
 
@@ -248,14 +264,14 @@ def plot_parameter_importance(importance, file_path, suffix=None, color=None):
 
     # Save the figure as an SVG file
     if suffix==None:
-        svg_file_path = file_path + "/parameter_importance.svg"
+        svg_file_path = file_path + f"/{dataset_name}_importance.svg"
     else:
-        svg_file_path = file_path + "/parameter_importance_" + suffix + ".svg"
+        svg_file_path = file_path + f"/{dataset_name}_importance_" + suffix + ".svg"
     plt.savefig(svg_file_path, format='svg')
     plt.close()  # Close the plot to free up memory
     print(f"Aggregated parameter importance plot saved to: {svg_file_path}")
 
-def plot_parameter_correlations(correlation_matrix, ordered_params, threshold, file_path, suffix=None, cmap=None):
+def plot_parameter_correlations(correlation_matrix, ordered_params, file_path, dataset_name, suffix=None, cmap=None):
     """
     Plots a heatmap of parameter correlations with specified order and saves it as an SVG file.
 
@@ -276,7 +292,7 @@ def plot_parameter_correlations(correlation_matrix, ordered_params, threshold, f
     mask = np.triu(np.ones_like(abs_correlation_matrix, dtype=bool), k=0)
 
     # Visualize the correlations with a heatmap
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(10, 6))
     if cmap:
         hm = sns.heatmap(abs_correlation_matrix, annot=ordered_correlation_matrix, cmap=cmap, vmin=0, vmax=1, fmt=".2f", mask=mask, cbar=False)
     else:
@@ -298,14 +314,14 @@ def plot_parameter_correlations(correlation_matrix, ordered_params, threshold, f
 
     # Save the figure as an SVG file for parameter correlations
     if suffix==None:
-        svg_file_path = file_path + "/parameter_correlations.svg"
+        svg_file_path = file_path + f"/{dataset_name}_correlations.svg"
     else:
-        svg_file_path = file_path + "/parameter_correlations_" + suffix + ".svg"
+        svg_file_path = file_path + f"/{dataset_name}_correlations_" + suffix + ".svg"
     plt.savefig(svg_file_path, format='svg')
     plt.close()  # Close the plot to free up memory
     print(f"Parameter correlations plot saved to: {svg_file_path}")
 
-def create_parallel_coordinates_plot(df, params, file_path, nticks=5, jitter_strength=0.1, suffix=None):
+def create_parallel_coordinates_plot(df, params, file_path, dataset_name, cmap='Viridis', nticks=5, jitter_strength=0.1, suffix=None):
     """
     Create a parallel coordinates plot.
 
@@ -328,13 +344,14 @@ def create_parallel_coordinates_plot(df, params, file_path, nticks=5, jitter_str
         return values + np.random.uniform(-jitter_strength, jitter_strength, size=len(values))
     
     # Conditional squaring of scaled values: square the normalized values (values/cmax)
-    color_values = np.where(df['values'] > 0, np.square(np.square(df['values'] / np.max(df['values']))), 0)
+    # color_values = np.where(df['values'] > 0, np.square(np.square(df['values'] / np.max(df['values']))), 0)
+    color_values = np.where(df['values'] > 0, np.square(df['values'] / np.max(df['values'])), 0)
 
     fig = go.Figure(
         data=go.Parcoords(
             line=dict(
                 color=color_values,
-                colorscale='Viridis',  # You can change the colorscale if desired
+                colorscale=cmap,  # You can change the colorscale if desired
                 #showscale=True
             ),
             dimensions=[
@@ -366,21 +383,27 @@ def create_parallel_coordinates_plot(df, params, file_path, nticks=5, jitter_str
     )
 
     # Adjust the layout for a more compact visualization
-    fig.update_layout(
-        width=600,  # Adjust the width of the entire plot
-        height=400,  # Adjust the height of the entire plot
-        font=dict(color='#D3D3D3'),  # Set the color of all tick text here '#D3D3D3' '#A9A9A9' gray, '#D75B0D' orange
-    )
+    if cmap == 'viridis':
+        fig.update_layout(
+            width=600,  # Adjust the width of the entire plot
+            height=400,  # Adjust the height of the entire plot
+            font=dict(color='#D3D3D3'),  # Set the color of all tick text here '#D3D3D3' '#A9A9A9' gray, '#D75B0D' orange
+        )
+    else:
+        fig.update_layout(
+            width=600,  # Adjust the width of the entire plot
+            height=400,  # Adjust the height of the entire plot
+        )
 
     # Save the figure as an SVG file for parallel coordinates
     if suffix:
-        svg_file_path = f"{file_path}/parallel_coordinates_{params[1]}_" + suffix +".svg"
+        svg_file_path = f"{file_path}/{dataset_name}_parcords_{params[1]}_" + suffix +".svg"
     else:
-        svg_file_path = f"{file_path}/parallel_coordinates_{params[1]}.svg"
+        svg_file_path = f"{file_path}/{dataset_name}_parcords_{params[1]}.svg"
     fig.write_image(svg_file_path, format='svg')
     print(f"Parallel coordinates plot saved to: {svg_file_path}")
 
-def create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par_cols, file_path, suffix=None):
+def create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par_cols, file_path, dataset_name, dataset_to_cmap=None, suffix=None):
     """
     Create parallel coordinates plots for the top two correlated parameters with each parameter.
 
@@ -390,6 +413,12 @@ def create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par
     - par_cols: A list of parameter columns to consider for correlations.
     - file_path: The path where the plots will be saved.
     """
+
+    if dataset_to_cmap:
+        cmap = dataset_to_cmap[dataset_name]
+    else:
+        cmap = 'Viridis'
+
     for param in par_cols:
         # Get the absolute correlations of the current parameter with all others
         abs_correlations = correlation_matrix[param].abs()
@@ -401,7 +430,7 @@ def create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par
         params = [top_two[0], param, top_two[1]]
         
         # Call the function to create the parallel coordinates plot
-        create_parallel_coordinates_plot(df, params, file_path, suffix=suffix)
+        create_parallel_coordinates_plot(df, params, file_path, dataset_name, cmap=cmap, suffix=suffix)
 
 def save_best_param_settings(df, dataset_name, file_path):
     """
@@ -415,7 +444,7 @@ def save_best_param_settings(df, dataset_name, file_path):
     - file_path: The path where the CSV files will be saved.
     """
     # Define thresholds and k values to evaluate
-    thresholds = [1.0, 0.75, 0.5, 0.33, 0.25, 0.1]
+    thresholds = [1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.15, 0.1]
 
     # Specify the original parameter columns to include in the output
     orig_par_cols = ['T', 'x', 'outlier_threshold', 'chi_prop', 'qv', 'zeta'] # without k
@@ -476,7 +505,7 @@ def save_best_param_settings(df, dataset_name, file_path):
     matrix_df = results_df.pivot(index='k', columns='Threshold', values='Entry')
 
     # Save the results to a CSV file
-    matrix_file_path = file_path + "/best_param_settings_matrix.csv"
+    matrix_file_path = file_path + f"/{dataset_name}_matrix.csv"
     matrix_df.to_csv(matrix_file_path, index=True)
     print(f"Matrix saved to: {matrix_file_path}")
 
@@ -484,8 +513,15 @@ def save_best_param_settings(df, dataset_name, file_path):
     matrix_df = results_df.pivot(index='k', columns='Threshold', values='Best Value')
     matrix_df = matrix_df.fillna('')
 
+    # Add dataset_name as part of the index
+    matrix_df['dataset_name'] = dataset_name
+    matrix_df.set_index('dataset_name', append=True, inplace=True)
+
+    # Reorder the index to have dataset_name first
+    matrix_df = matrix_df.reorder_levels(['dataset_name', 'k'])
+
     # Save the LaTeX table
-    latex_file_path = file_path + "/best_param_settings_table.tex"
+    latex_file_path = file_path + f"/{dataset_name}_table.tex"
     with open(latex_file_path, 'w') as f:
         f.write(matrix_df.to_latex(index=True, escape=False))
     print(f"LaTeX table saved to: {latex_file_path}")
@@ -498,7 +534,7 @@ def save_best_param_settings(df, dataset_name, file_path):
     results_df = results_df.sort_values(by=['Best Value', 'Replacement Rate'], ascending=[False, True])
 
     # Save the results to a CSV file
-    table_file_path = file_path + "/best_param_settings_table.csv"
+    table_file_path = file_path + f"/{dataset_name}_table.csv"
     results_df.to_csv(table_file_path, index=False)
     print(f"Table saved to: {table_file_path}")    
 
@@ -574,19 +610,19 @@ def preprocess_data(file_path, filter_per=1):
     f = 0.7
     dataset_to_color = {
         'cong': plt.cm.Blues(f),      # Drifting Conglomerates, blue
-        'retail': plt.cm.Greys(f),    # Retail, orange
-        'fert': plt.cm.Greens(f),       # Fertility vs Income, green
-        'flow': plt.cm.Reds(f),       # Network Traffic Flows, red
-        'occupancy': plt.cm.Purples(f),   # Occupancy, purple
+        'retail': plt.cm.Greens(f),    # Retail, orange
+        'fert': plt.cm.Greys(f),       # Fertility vs Income, green
+        'flow': plt.cm.Purples(f),       # Network Traffic Flows, red
+        'occupancy': plt.cm.Reds(f),   # Occupancy, purple
     }
     
     # Define the color mapping for the datasets
     dataset_to_cmap = {
         'cong': 'Blues',      # Drifting Conglomerates
-        'retail': 'Greys',  # Retail
-        'fert': 'Greens',     # Fertility vs Income
-        'flow': 'Reds',       # Network Traffic Flows
-        'occupancy': 'Purples'  # Occupancy
+        'retail': 'Greens',  # Retail
+        'fert': 'Greys',     # Fertility vs Income
+        'flow': 'Purples',       # Network Traffic Flows
+        'occupancy': 'Reds'  # Occupancy
     }
 
 
@@ -605,6 +641,14 @@ def plot_experiment_results(file_path):
 
     df, par_cols, dataset_name, dataset_to_color, dataset_to_cmap = preprocess_data(file_path, filter_per=1)
     df = df[df['replacement_rate'] < 0.5]
+
+    # Calculate the threshold value for the top 'filter_per' percent of 'values'
+    filter_per = 1
+    threshold_value = np.percentile(df['values'], 100 * (1 - filter_per))
+
+    # Filter the DataFrame to include only rows with 'values' greater than or equal to the threshold
+    df = df[df['values'] >= threshold_value]
+
     color = dataset_to_color[dataset_name] # None
     cmap = dataset_to_cmap[dataset_name] # None
 
@@ -615,52 +659,54 @@ def plot_experiment_results(file_path):
     save_best_param_settings(df, dataset_name, file_path)
 
     # Plot histogram of scores
-    plot_histogram(df, file_path, color=color)
+    plot_histogram(df, file_path, dataset_name, color=color)
 
     # Lasso param importance 
-    lasso_importance, combined_importance, _ = compute_param_importance(df, par_cols, dataset_name=dataset_name, file_path=file_path)
-    plot_parameter_importance(lasso_importance, file_path, color=color) 
-    plot_param_importance_all(file_path, dataset_to_color=dataset_to_color)
+    lasso_importance, _, _ = compute_param_importance(df, par_cols, dataset_name=dataset_name, file_path=file_path)
+    plot_parameter_importance(lasso_importance, file_path, dataset_name, color=color) 
+    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color)
 
     # Filter the DataFrame for good scores
     max_score = df['values'].max()
-    threshold = 0.9 * max_score    
+    threshold = 0.75 * max_score    
     good_scores_df = df[df['values'] >= threshold]
 
     # Lasso param importance top
     lasso_importance, _, correlation_matrix = compute_param_importance(good_scores_df, par_cols, dataset_name=dataset_name, file_path=file_path, suffix="top")
-    plot_parameter_importance(lasso_importance, file_path, suffix="top", color=color)        
-    plot_param_importance_all(file_path, dataset_to_color=dataset_to_color, json_file='param_importance_top.json', output_file='param_importance_top.svg')
+    plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix="top", color=color)        
+    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color, json_file='param_importance_top.json', output_file='param_importance_top.svg')
    
     # Correlation Matrix plot
     # ordered_params = [param for param in reversed(lasso_importance.index)] # ['values'] + [param for param in reversed(lasso_importance.index)]
-    plot_parameter_correlations(correlation_matrix, par_cols, threshold, file_path, cmap=cmap)
+    plot_parameter_correlations(correlation_matrix, par_cols, file_path, dataset_name, cmap=cmap)
 
     # Paralle coordinates plots
-    create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par_cols, file_path)
+    create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par_cols, file_path, dataset_name, dataset_to_cmap=dataset_to_cmap)
 
     # Replace 'T' with 'replacement_rate' in par_cols
     # par_cols = [param if param != 'log_T' else 'log_replacement_rate' for param in par_cols]
     par_cols = ['replacement_rate'] + par_cols[:4] + par_cols[5:]
+    # par_cols = ['replacement_rate'] + par_cols
+
     suffix = 'rr'
 
     # Lasso param importance rr
-    lasso_importance, combined_importance, _ = compute_param_importance(df, par_cols, dataset_name=dataset_name, file_path=file_path, suffix=suffix)
-    plot_parameter_importance(lasso_importance, file_path, suffix=suffix, color=color) 
-    plot_param_importance_all(file_path, dataset_to_color=dataset_to_color, json_file='param_importance_rr.json', output_file='param_importance_rr.svg')
+    lasso_importance, _, _ = compute_param_importance(df, par_cols, dataset_name=dataset_name, file_path=file_path, suffix=suffix)
+    plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix=suffix, color=color) 
+    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color, json_file='param_importance_rr.json', output_file='param_importance_rr.svg')
 
     # Lasso param importance top rr
-    par_cols = par_cols[:5] + ['log_T'] + par_cols[5:]
+    # par_cols = par_cols[:5] + ['log_T'] + par_cols[5:]
     lasso_importance, _, correlation_matrix = compute_param_importance(good_scores_df, par_cols, dataset_name=dataset_name, file_path=file_path, suffix=suffix + "_top")
-    plot_parameter_importance(lasso_importance, file_path, suffix=suffix + "_top", color=color)     
-    plot_param_importance_all(file_path, dataset_to_color=dataset_to_color, json_file='param_importance_rr_top.json', output_file='param_importance_rr_top.svg')
+    plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix=suffix + "_top", color=color)     
+    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color, json_file='param_importance_rr_top.json', output_file='param_importance_rr_top.svg')
    
     # Correlation Matrix plot
     # ordered_params = [param for param in reversed(lasso_importance.index)] # ['values'] + [param for param in reversed(lasso_importance.index)]
-    plot_parameter_correlations(correlation_matrix, par_cols, threshold, file_path, suffix=suffix, cmap=cmap)   
+    plot_parameter_correlations(correlation_matrix, par_cols, file_path, dataset_name, suffix=suffix, cmap=cmap)   
     
     # Paralle coordinates plots
-    create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par_cols, file_path, suffix=suffix)
+    create_parallel_coordinates_for_top_correlations(df, correlation_matrix, par_cols, file_path, dataset_name, dataset_to_cmap=dataset_to_cmap, suffix=suffix)
 
 def main():
     # Check if a file path is provided as a command-line argument
