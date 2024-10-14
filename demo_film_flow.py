@@ -87,7 +87,7 @@ def project_to_3d(x, d1, d2):
     return projected
 
 
-filename = 'evaluation_tests/data/real/occupancy.arff'
+filename = 'evaluation_tests/data/real/flow.arff'
 t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
 # Set the initial block to be of size k
@@ -200,14 +200,15 @@ marker_shapes = ['.', 'o', 's', 'd', '^', 'v', '<', '>', 'h', 'p', '*', '+', '1'
 num_shapes = len(marker_shapes)
 
 num_gt_labels = len(np.unique(y[y>-1]))
+print(num_gt_labels)
 cmap_gt = plt.get_cmap('Paired', num_gt_labels)
-norm_gt = plt.Normalize(vmin=0, vmax=num_gt_labels-1)
+norm_gt = plt.Normalize(vmin=np.min(y[y>-1]), vmax=np.max(y[y>-1]))
 # colors_gt = cmap(np.linspace(0, 1, num_labels))  # Create an array of colors based on the number of labels
 
 frame_files = []
 
-d1 = 2
-d2 = 3
+d1 = 22
+d2 = 23
 
 # Plot and save each frame
 for idx, (obs_points, obs_labels, obs_t) in enumerate(zip(all_obs_points, all_obs_labels, all_obs_t)):
@@ -367,7 +368,7 @@ plt.close(fig)
 
 # Create a video from the saved frames
 clip = mpy.ImageSequenceClip(frame_files, fps=10)
-video_file = 'occupancy.mp4'
+video_file = 'flow.mp4'
 clip.write_videofile(video_file, codec='libx264')
 
 # Clean up frames
@@ -381,25 +382,25 @@ fig, axs = plt.subplots(5, 1, figsize=(10, 10))  # 5 rows and 1 column
 
 # Create 5 plots for each dimension of x (f0, f1, f2, f3, f4)
 for i in range(5):
-    axs[i].scatter(t[y > -1], x[y > -1, i], c=y[y > -1], s=1, cmap=cmap_gt, norm=norm_gt, label='Class > -1')
-    axs[i].scatter(t[y == -1], x[y == -1, i], c='black', s=1, label='Class = -1')
+    axs[i].scatter(t[y > -1], x[y > -1, i+3], c=y[y > -1], s=1, cmap=cmap_gt, norm=norm_gt, label='Class > -1')
+    axs[i].scatter(t[y == -1], x[y == -1, i+3], c='black', s=1, label='Class = -1')
 
     axs[i].set_xlabel('t')
     #axs[i].set_ylabel(f'f{i}')  # Dynamic labeling based on dimension
     # axs[i].set_title(f'Plot of Time vs f{i}')  # Add title for clarity
     # axs[i].legend(loc='best')  # Optional: add legend
 
-axs[0].set_ylabel('Temperature')
-axs[1].set_ylabel('Humidity')
-axs[2].set_ylabel('Light')
-axs[3].set_ylabel('CO2')
-axs[4].set_ylabel('Humidity Ratio')
+axs[0].set_ylabel('FIN')
+axs[1].set_ylabel('SYN')
+axs[2].set_ylabel('RST')
+axs[3].set_ylabel('PSH')
+axs[4].set_ylabel('ACK')
 
 # Adjust layout to prevent overlapping
 plt.tight_layout()
 
 # Save the figure as an EPS file
-frame_file = os.path.join(frames_dir, f'frame_occupancy_gt.eps')
+frame_file = os.path.join(frames_dir, f'frame_flow_gt.eps')
 plt.savefig(frame_file)
 
 plt.close()

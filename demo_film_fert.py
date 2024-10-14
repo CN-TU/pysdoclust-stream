@@ -58,23 +58,23 @@ t,x,y,n,m,clusters,outliers,dataname = load_data(filename)
 
 # Set the initial block to be of size k
 first_block_size = 100
-block_size = 5  # Remaining blocks will have this size
+block_size = 25  # Remaining blocks will have this size
 
 # Controls the time window of ground truth / predictions points shown at each frame: obs_T +/- (T / f_T), 
 # obs_T is time of model (observer) snapshot
-f_T = 10
+f_T = 5
 
 k = 25 # Model size
 T = 150 # Time Horizon
 # ibuff = 10 # input buffer
 chi_prop = 0.25
+chi_min = 1
 qv = 0.4
 e = 3
 outlier_threshold = 6
 outlier_handling = True
 x_ = 5
 zeta = 0.95
-chi_min = 1
 freq_bins= 1 #10
 max_freq= 1# 1100
 # chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False 
@@ -164,7 +164,7 @@ marker_shapes = ['.', 'o', 's', 'd', '^', 'v', '<', '>', 'h', 'p', '*', '+', '1'
 num_shapes = len(marker_shapes)
 
 num_gt_labels = len(np.unique(y[y>-1]))
-cmap_gt = plt.get_cmap('Set1', num_gt_labels)
+cmap_gt = plt.get_cmap('Paired', num_gt_labels)
 norm_gt = plt.Normalize(vmin=0, vmax=num_gt_labels-1)
 
 frame_files = []
@@ -297,3 +297,28 @@ for frame_file in frame_files:
     os.remove(frame_file)
 
 print(f'Video saved as {video_file}')
+
+# Create a figure with 5 subplots for each dimension of x
+fig, axs = plt.subplots(2, 1, figsize=(10, 10))  # 2 rows and 1 column
+
+# Create 5 plots for each dimension of x (f0, f1)
+for i in range(2):
+    axs[i].scatter(t[y > -1], x[y > -1, i], c=y[y > -1], s=10, cmap=cmap_gt, norm=norm_gt, label='Class > -1')
+    axs[i].scatter(t[y == -1], x[y == -1, i], c='black', s=10, label='Class = -1')
+
+    axs[i].set_xlabel('t')
+    # axs[i].set_ylabel(f'f{i}')  # Dynamic labeling based on dimension
+    # axs[i].set_title(f'Plot of Time vs f{i}')  # Add title for clarity
+    # axs[i].legend(loc='best')  # Optional: add legend
+
+axs[0].set_ylabel('Children per Women')
+axs[1].set_ylabel('GDP per Capita')
+
+# Adjust layout to prevent overlapping
+plt.tight_layout()
+
+# Save the figure as an EPS file
+frame_file = os.path.join(frames_dir, f'frame_fert_gt.eps')
+plt.savefig(frame_file)
+
+plt.close()

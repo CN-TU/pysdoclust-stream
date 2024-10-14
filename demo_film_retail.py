@@ -67,7 +67,7 @@ block_size = 5  # Remaining blocks will have this size
 f_T = 10
 
 k = 25 # Model size
-T = 110 # Time Horizon
+T = 120 # Time Horizon
 # ibuff = 10 # input buffer
 chi_prop = 0.2
 chi_min = 1
@@ -158,7 +158,7 @@ le = LabelEncoder().fit(all_unique_labels)
 p = le.transform(p)-1
 
 num_labels = len(all_unique_labels) - 1  # Number of unique labels (minus outlier label)
-cmap = plt.get_cmap('Set1', num_labels)
+cmap = plt.get_cmap('Paired', num_labels)
 norm = plt.Normalize(vmin=0, vmax=num_labels-1)
 
 frame_files = []
@@ -252,3 +252,23 @@ for frame_file in frame_files:
     os.remove(frame_file)
 
 print(f'Video saved as {video_file}')
+
+# Create a figure for all the plots
+plt.figure(figsize=(10, 10))
+
+cmap = plt.get_cmap('Paired', num_labels)
+norm = plt.Normalize(vmin=0, vmax=2)
+
+plt.scatter(t[y > -1], x[y > -1], c=y[y > -1], s=10, cmap=cmap, norm=norm, label='Class > -1')
+plt.scatter(t[y == -1], x[y == -1], c='black', s=10, label='Class = -1')
+
+plt.xlabel('t')
+plt.ylabel(f'f0')  # Dynamic labeling based on dimension
+# plt.title(f'Plot of Time vs f{i}')  # Add title for clarity
+# plt.legend(loc='best')  # Optional: add legend
+
+# Save the figure as an EPS file
+frame_file = os.path.join(frames_dir, f'frame_retail_gt.eps')
+plt.savefig(frame_file)
+
+plt.close()
