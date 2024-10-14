@@ -98,16 +98,17 @@ block_size = 50  # Remaining blocks will have this size
 # obs_T is time of model (observer) snapshot
 f_T = 10
 
-k = 400 # Model size
-T = 800 # Time Horizon
+k = 200 # Model size
+T = 1200 # Time Horizon
 # ibuff = 10 # input buffer
-chi_prop = 0.2
-qv = 0.2
+chi_prop = 0.3 #
+chi_min = 1
+qv = 0.1
 e = 3
-outlier_threshold = 5
+outlier_threshold = 1.5
 outlier_handling = True
-x_ = 5
-zeta = 0.6
+x_ = 3
+zeta = 0.05
 freq_bins= 1 #10
 max_freq= 1# 1100
 # chi_prop=0.05, e=2, outlier_threshold=5.0, outlier_handling=False 
@@ -117,6 +118,7 @@ classifier = clustering.SDOstreamclust(
     qv=qv,
     x=x_, 
     chi_prop=chi_prop, 
+    chi_min = chi_min,
     e=e, 
     zeta=zeta,
     outlier_threshold=outlier_threshold, 
@@ -373,3 +375,31 @@ for frame_file in frame_files:
     os.remove(frame_file)
 
 print(f'Video saved as {video_file}')
+
+# Create a figure with 5 subplots for each dimension of x
+fig, axs = plt.subplots(5, 1, figsize=(10, 15))  # 5 rows and 1 column
+
+# Create 5 plots for each dimension of x (f0, f1, f2, f3, f4)
+for i in range(5):
+    axs[i].scatter(t[y > -1], x[y > -1, i], c=y[y > -1], s=1, cmap=cmap_gt, norm=norm_gt, label='Class > -1')
+    axs[i].scatter(t[y == -1], x[y == -1, i], c='black', s=1, label='Class = -1')
+
+    axs[i].set_xlabel('t')
+    #axs[i].set_ylabel(f'f{i}')  # Dynamic labeling based on dimension
+    # axs[i].set_title(f'Plot of Time vs f{i}')  # Add title for clarity
+    # axs[i].legend(loc='best')  # Optional: add legend
+
+axs[0].set_ylabel('Temperature')
+axs[1].set_ylabel('Humidity')
+axs[2].set_ylabel('Light')
+axs[3].set_ylabel('CO2')
+axs[4].set_ylabel('Humidity Ratio')
+
+# Adjust layout to prevent overlapping
+plt.tight_layout()
+
+# Save the figure as an EPS file
+frame_file = os.path.join(frames_dir, f'frame_occupancy_gt.eps')
+plt.savefig(frame_file)
+
+plt.close()

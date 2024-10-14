@@ -65,147 +65,7 @@ def compute_param_importance(df, par_cols, dataset_name=None, file_path=None, su
     # Replace NaN values with 0 for any parameter missing from one metric
     combined_importance = combined_importance.fillna(0)
 
-    def get_parent_directory(dir):
-        """
-        Extract the parent directory from the given filepath by removing the last subfolder.
-
-        Parameters:
-        - filepath: The full path from which to extract the parent directory.
-
-        Returns:
-        - Parent directory path.
-        """
-        # Ensure the path does not have a trailing slash, so dirname works correctly
-        dir = dir.rstrip(os.sep)
-
-        # Get the parent directory
-        parent_directory = os.path.dirname(dir)
-    
-        return parent_directory + os.sep  # Append separator for consistency
-
-    # Save Lasso importance values to a JSON file if `file_path` and `dataset_name` are provided
-    if file_path and dataset_name:
-        # Define the JSON file path
-        parent_path = get_parent_directory(file_path)
-        if suffix:
-            json_file_path = f"{parent_path}/param_importance_" + suffix + ".json"
-        else:
-            json_file_path = f"{parent_path}/param_importance.json"
-
-        # Load existing data if the file exists, otherwise create an empty dictionary
-        if os.path.exists(json_file_path):
-            with open(json_file_path, "r") as json_file:
-                importance_dict = json.load(json_file)
-        else:
-            importance_dict = {}
-
-        # Normalize the lasso_importance by the sum of all values
-        lasso_importance_normalized = lasso_importance / lasso_importance.sum()
-
-        # Save the normalized importance to a dictionary
-        importance_dict[dataset_name] = lasso_importance_normalized.to_dict()
-        
-        # Save the updated dictionary back to the file
-        with open(json_file_path, "w") as json_file:
-            json.dump(importance_dict, json_file, indent=4)
-
-        # Print confirmation message
-        print(f"Lasso importance values have been saved in the file: {json_file_path}")
-
     return lasso_importance, combined_importance, correlation_matrix
-
-def plot_param_importance_all(file_path, par_cols, dataset_to_color=None, json_file='param_importance.json', output_file='param_importance.svg'):
-    """
-    Plots parameter importance from a JSON file and saves the figure as an SVG.
-
-    Args:
-    file_path (str): Path to the directory where output files should be saved.
-    json_file (str): Name of the JSON file containing parameter importance data.
-    output_file (str): Name of the output file for saving the plot as SVG.
-    """
-    
-    def get_parent_directory(dir):
-        """
-        Extract the parent directory from the given filepath by removing the last subfolder.
-
-        Parameters:
-        - dir: The full path from which to extract the parent directory.
-
-        Returns:
-        - Parent directory path.
-        """
-        # Ensure the path does not have a trailing slash, so dirname works correctly
-        dir = dir.rstrip(os.sep)
-
-        # Get the parent directory
-        parent_directory = os.path.dirname(dir)
-
-        return parent_directory + os.sep  # Append separator for consistency
-
-    # Get the parent directory for saving output files
-    parent_dir = get_parent_directory(file_path)
-
-    # Construct the full paths for the JSON input file and SVG output file
-    json_path = os.path.join(parent_dir, json_file)
-    output_path = os.path.join(parent_dir, output_file)
-
-    # Step 1: Load the JSON data from the file
-    with open(json_path) as f:
-        data = json.load(f)
-
-    # Convert the JSON data to a DataFrame
-    df = pd.DataFrame(data).T  # Transpose to have datasets as rows
-    df.reset_index(inplace=True)
-    df.rename(columns={'index': 'Dataset'}, inplace=True)
-
-    # Reverse the par_cols list
-    custom_order_param = par_cols[::-1]  # This reverses the list    
-    custom_order_dataset = ['cong', 'retail', 'fert', 'flow', 'occupancy']
-
-    # Melt the DataFrame for seaborn
-    df_melted = df.melt(id_vars='Dataset', var_name='Parameter', value_name='Value')
-
-    # Map categories in 'Parameter' to numerical values based on custom_order_param
-    df_melted['category_order_param'] = df_melted['Parameter'].map(dict(zip(custom_order_param, range(len(custom_order_param)))))
-
-    # Map categories in 'Dataset' to numerical values based on custom_order_dataset
-    df_melted['category_order_dataset'] = df_melted['Dataset'].map(dict(zip(custom_order_dataset, range(len(custom_order_dataset)))))
-
-    # Sort by both 'category_order_param' and 'category_order_dataset'
-    df_melted.sort_values(['category_order_param', 'category_order_dataset'], inplace=True)
-
-    # Drop the temporary sorting columns
-    df_melted.drop(['category_order_param', 'category_order_dataset'], axis=1, inplace=True)
-
-    # Step 2: Create the Bar Plot
-    plt.figure(figsize=(10, 6))
-    if dataset_to_color:
-        sns.barplot(data=df_melted, y='Parameter', x='Value', hue='Dataset', orient='h', palette=dataset_to_color)
-    else:
-        sns.barplot(data=df_melted, y='Parameter', x='Value', hue='Dataset', orient='h')
-    
-    # Use the parameter names from the melted DataFrame to create the new tick labels
-    unique_parameters = df_melted['Parameter'].unique()
-    new_tick_labels = [
-        label.replace('log_', '').replace('sq_', '').replace('outlier_threshold', 'outl_thr').replace('replacement_rate', 'rpl_rate')
-        for label in unique_parameters
-    ]
-
-    # Set the new y-axis tick labels
-    plt.yticks(ticks=np.arange(len(unique_parameters)), labels=new_tick_labels, ha='right')
-
-    # Step 3: Customize the Plot
-    plt.xlabel('importance')
-    plt.ylabel('')
-    # plt.yticks(rotation=30)
-    # plt.xticks(rotation=30)
-    plt.legend(title='dataset')
-    plt.tight_layout()
-
-    # Step 4: Save the Plot as SVG in the parent directory
-    plt.savefig(output_path, format='svg')
-    plt.close()  # Close the figure after saving to avoid display issues
-    print(f"Parameter importance plot saved to: {output_path}")
 
 def plot_histogram(df, file_path, dataset_name, bins=30, color=None):
     """
@@ -228,12 +88,12 @@ def plot_histogram(df, file_path, dataset_name, bins=30, color=None):
         sns.histplot(df['values'], bins=bins, stat='probability', kde=True)  # Adjust the number of bins as needed
 
     # Add labels and title
-    plt.xlabel('ari')
+    plt.xlabel('roc_auc')
     plt.ylabel('relative frequency')
     # plt.title(f'Histogram of {column}')
 
     # Save the figure as an SVG file for the histogram
-    svg_file_path = f"{file_path}/{dataset_name}_histogram_ARI.svg"  # Ensure file_path is defined
+    svg_file_path = f"{file_path}/{dataset_name}_histogram_roc.svg"  # Ensure file_path is defined
     plt.savefig(svg_file_path, format='svg')
     print(f"Histogram plot saved to: {svg_file_path}")
 
@@ -251,7 +111,7 @@ def plot_parameter_importance(importance, file_path, dataset_name, suffix=None, 
         importance.plot(kind='barh', figsize=(12, 8), color=color)
     else:
         importance.plot(kind='barh', figsize=(12, 8))
-    plt.xlabel('Coefficient Magnitude')
+    plt.xlabel('importance')
 
     # Create new tick labels
     new_tick_labels = [
@@ -332,7 +192,7 @@ def create_parallel_coordinates_plot(df, params, file_path, dataset_name, cmap='
     - file_path: Path to save the SVG file.
     """
 
-    log_par_cols = ['log_T', 'log_chi_prop', 'log_x', 'log_k', 'log_x', 'log_replacement_rate']
+    log_par_cols = ['log_T', 'log_x', 'log_k', 'log_x', 'log_replacement_rate']
     sq_par_cols = ['sq_outlier_threshold']
     cat_par_cols  =['log_k', 'log_x', 'sq_outlier_threshold']
 
@@ -345,7 +205,9 @@ def create_parallel_coordinates_plot(df, params, file_path, dataset_name, cmap='
     
     # Conditional squaring of scaled values: square the normalized values (values/cmax)
     # color_values = np.where(df['values'] > 0, np.square(np.square(df['values'] / np.max(df['values']))), 0)
-    color_values = np.where(df['values'] > 0, np.square(df['values'] / np.max(df['values'])), 0)
+    normalized_values = 2 * df['values'] - 1
+    color_values = np.square(np.square(normalized_values / np.max(np.abs(normalized_values))))
+    # color_values = np.where(df['values'] > 0, np.square(np.square(df['values'] / np.max(df['values']))), 0)
 
     fig = go.Figure(
         data=go.Parcoords(
@@ -448,20 +310,9 @@ def save_best_param_settings(df, dataset_name, file_path):
     thresholds = [1.0, 0.75, 0.5,  0.35, 0.25, 0.15, 0.1]
 
     # Specify the original parameter columns to include in the output
-    orig_par_cols = ['T', 'x', 'outlier_threshold', 'chi_prop', 'qv', 'zeta'] # without k
+    orig_par_cols = ['T', 'x', 'outlier_threshold', 'qv'] # without k
 
-    if dataset_name == 'retail':
-        ks = [25, 35, 50, 70, 100, 140, 200]
-    elif dataset_name == 'fert':
-        ks = [25, 35, 50, 70, 100, 140, 200]
-    elif dataset_name == 'cong':
-        ks = [35, 50, 70, 100, 140, 200, 280, 400, 560, 800]
-    elif dataset_name == 'occupancy':
-        ks = [35, 50, 70, 100, 140, 200, 280, 400, 560, 800]
-    elif dataset_name == 'flow':
-        ks = [35, 50, 70, 100, 140, 200, 280, 400, 560, 800]
-    else:
-        raise ValueError(f"Invalid dataset_name: '{dataset_name}'. Please choose a valid dataset name.")
+    ks = [35, 50, 70, 100, 140, 200, 280, 400, 560, 800]
 
     # Create an empty list to hold the results
     results = []
@@ -581,19 +432,17 @@ def preprocess_data(file_path, filter_per=1):
     df = pd.DataFrame(trials_for_df)
 
     # Define parameter columns for transformations
-    par_cols = ['sq_outlier_threshold', 
-                'zeta', 
-                'qv', 
+    par_cols = ['qv', 
                 'log_x',
                 'log_T', 
                 'log_k',
-                'log_chi_prop']
+                'sq_outlier_threshold'
+                ]
 
     # Apply log transformation to selected variables
     df['log_T'] = np.log2(df['T'])  # Log base 2 transformation
     df['log_k'] = np.log2(df['k'])
     df['log_x'] = np.log2(df['x'])
-    df['log_chi_prop'] = np.log2(df['chi_prop'])
     df['log_replacement_rate'] = np.log2(df['replacement_rate'])
     df['sq_outlier_threshold'] = np.square(df['outlier_threshold'])
 
@@ -664,8 +513,7 @@ def plot_experiment_results(file_path):
 
     # Lasso param importance 
     lasso_importance, _, _ = compute_param_importance(df, par_cols, dataset_name=dataset_name, file_path=file_path)
-    plot_parameter_importance(lasso_importance, file_path, dataset_name, color=color) 
-    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color)
+    plot_parameter_importance(lasso_importance, file_path, dataset_name, color=color)
 
     # Filter the DataFrame for good scores
     max_score = df['values'].max()
@@ -674,9 +522,8 @@ def plot_experiment_results(file_path):
 
     # Lasso param importance top
     lasso_importance, _, correlation_matrix = compute_param_importance(good_scores_df, par_cols, dataset_name=dataset_name, file_path=file_path, suffix="top")
-    plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix="top", color=color)        
-    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color, json_file='param_importance_top.json', output_file='param_importance_top.svg')
-   
+    plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix="top", color=color)      
+
     # Correlation Matrix plot
     # ordered_params = [param for param in reversed(lasso_importance.index)] # ['values'] + [param for param in reversed(lasso_importance.index)]
     plot_parameter_correlations(correlation_matrix, par_cols, file_path, dataset_name, cmap=cmap)
@@ -686,7 +533,7 @@ def plot_experiment_results(file_path):
 
     # Replace 'T' with 'replacement_rate' in par_cols
     # par_cols = [param if param != 'log_T' else 'log_replacement_rate' for param in par_cols]
-    par_cols = ['replacement_rate'] + par_cols[:4] + par_cols[5:]
+    par_cols = ['replacement_rate'] + par_cols[:2] + par_cols[3:]
     # par_cols = ['replacement_rate'] + par_cols
 
     suffix = 'rr'
@@ -694,14 +541,11 @@ def plot_experiment_results(file_path):
     # Lasso param importance rr
     lasso_importance, _, _ = compute_param_importance(df, par_cols, dataset_name=dataset_name, file_path=file_path, suffix=suffix)
     plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix=suffix, color=color) 
-    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color, json_file='param_importance_rr.json', output_file='param_importance_rr.svg')
-
     # Lasso param importance top rr
     # par_cols = par_cols[:5] + ['log_T'] + par_cols[5:]
     lasso_importance, _, correlation_matrix = compute_param_importance(good_scores_df, par_cols, dataset_name=dataset_name, file_path=file_path, suffix=suffix + "_top")
-    plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix=suffix + "_top", color=color)     
-    plot_param_importance_all(file_path, par_cols, dataset_to_color=dataset_to_color, json_file='param_importance_rr_top.json', output_file='param_importance_rr_top.svg')
-   
+    plot_parameter_importance(lasso_importance, file_path, dataset_name, suffix=suffix + "_top", color=color)  
+
     # Correlation Matrix plot
     # ordered_params = [param for param in reversed(lasso_importance.index)] # ['values'] + [param for param in reversed(lasso_importance.index)]
     plot_parameter_correlations(correlation_matrix, par_cols, file_path, dataset_name, suffix=suffix, cmap=cmap)   
