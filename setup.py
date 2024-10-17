@@ -32,12 +32,13 @@ SDOstreamclust_cpp = Extension(
 )
 
 setup(
-    name='SDOstreamclust',
+    name='pysdoclust-stream',
     version='0.1',
     license='LGPL-3.0',
     description='SDOstreamclust is an algorithm for clustering data streams',
     author='Simon Konzett',
     author_email='konzett.simon@gmail.com',
+    url='https://github.com/CN-TU/pysdoclust-stream',
     packages=['SDOstreamclust', 'SDOstreamclust.swig'],
     package_dir={'SDOstreamclust': 'python', 'SDOstreamclust.swig': 'swig'},
     ext_modules = [ SDOstreamclust_cpp ],
