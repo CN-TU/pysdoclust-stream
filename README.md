@@ -36,7 +36,7 @@ The [python] folder contains the Python interface invoking the Python interface 
 
 Finally, complete experiments, datasets, scripts and results conducted for the paper **Stream Clustering Robust to Concept Drift** are provided in the **[evaluation_tests] folder**. They have been tested with **Python v3.8.14**. 
 
-A Docker version is also available in: *omited for blind review*
+A Docker version is also available in: *omitted for blind review*
 
 
 <br>
