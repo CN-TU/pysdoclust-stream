@@ -56,7 +56,7 @@ SDOstreamclust_cpp = Extension(
 
 setup(
     name='pysdoclust-stream',
-    version='0.3',
+    version='0.3.1',
     license='LGPL-3.0',
     description='SDOstreamclust is an algorithm for clustering data streams',
     author='Simon Konzett',
